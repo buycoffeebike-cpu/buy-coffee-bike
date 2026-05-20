@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {basePath: '/buy-coffee-bike',
-     assetPrefix: '/buy-coffee-bike',};
+const nextConfig = {basePath: '/buy-a-mobile-coffee-bike',
+     assetPrefix: '/buy-a-mobile-coffee-bike',};
 
 module.exports = nextConfig;
