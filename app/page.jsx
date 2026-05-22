@@ -161,9 +161,9 @@ export default function CoffeeBikePage() {
   };
 
   const rates = { USD: 1, CAD: 1.37, EURO: 0.92 };
-  const symbols = { USD: 'USD', CAD: 'CAD', EURO: 'EUR' };
-  const fmt = (usd) => `$${Math.round(usd * rates[currency]).toLocaleString()} ${symbols[currency]}`;
-  const fmtMoney = (usd) => `$${Math.round(usd * rates[currency]).toLocaleString()}`;
+  const symbols = { USD: 'USD', CAD: 'CAD', EURO: 'EUR' }; const cur = { USD: "$", CAD: "$", EURO: "€" };
+  const fmt = (usd) => `${cur[currency]}${Math.round(usd * rates[currency]).toLocaleString()} ${symbols[currency]}`;
+  const fmtMoney = (usd) => `${cur[currency]}${Math.round(usd * rates[currency]).toLocaleString()}`;
   const fmtCAD = (n) => `$${Math.round(n).toLocaleString()} CAD`;
 
   const basePackages = {
@@ -2514,8 +2514,8 @@ export default function CoffeeBikePage() {
   <div className="max-w-7xl mx-auto border-t border-zinc-800 mt-10 pt-6 text-xs text-zinc-500 flex flex-wrap gap-4 justify-between">
     <span>© Vladvik International dba Coffee Bike World. All rights reserved.</span>
     <div className="flex gap-4">
-      <a href="#" className="hover:text-white transition">Privacy Policy</a>
-      <a href="#" className="hover:text-white transition">Terms of Service</a>
+      
+      
     </div>
   </div>
 </footer>

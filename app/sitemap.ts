@@ -1,0 +1,1 @@
+export default function sitemap() { return [{ url: 'https://coffeebike.ca/buy-a-mobile-coffee-bike', lastModified: new Date() }]; }
