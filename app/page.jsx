@@ -1082,8 +1082,9 @@ export default function CoffeeBikePage() {
               </>
             ) : (
               <>
-                <div className="text-[9px] uppercase tracking-wider text-zinc-400 font-semibold leading-none mb-0.5">Starting at</div>
-                <div className="text-base font-bold text-white">{fmt(9850)}</div>
+  <div className="text-[10px] uppercase tracking-wider text-zinc-400">
+    Instant Estimate
+  </div>
               </>
             )}
           </div>
@@ -1369,10 +1370,17 @@ export default function CoffeeBikePage() {
               <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold leading-[1.05] mb-4 sm:mb-5">Your Own Electric Mobile Coffee Business — Built, Branded, Shipped Worldwide</h1>
               <p className="text-zinc-300 text-base sm:text-lg mb-5 sm:mb-6 max-w-xl leading-relaxed">Launch your turnkey, eco-friendly business with a low entry cost and fast return on investment. No franchise fees. You own everything.</p>
               <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch gap-0 mb-6 sm:mb-7 rounded-lg border-2 overflow-hidden" style={{ borderColor: RED, backgroundColor: 'rgba(227,30,36,0.08)' }}>
-                <div className="px-5 py-3 flex-shrink-0">
-                  <div className="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold">Starting at</div>
-                  <div className="text-2xl font-bold text-white">{fmt(9850)}</div>
-                </div>
+<div className="px-5 py-3 flex items-center gap-4 flex-shrink-0">
+  <Zap className="w-5 h-5 text-red-500 flex-shrink-0" />
+  <div>
+    <div className="text-sm text-zinc-300">
+      Get your
+    </div>
+    <div className="text-lg sm:text-xl font-bold text-white leading-tight">
+      instant estimate below
+    </div>
+  </div>
+</div>
                 <div className="h-px sm:w-px sm:h-auto bg-white/15" />
                 <div className="px-5 py-3 flex items-center gap-2 flex-1 sm:min-w-[200px]">
                   <TrendingUp className="w-5 h-5 flex-shrink-0" style={{ color: RED }} />
