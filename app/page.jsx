@@ -1310,12 +1310,7 @@ export default function CoffeeBikePage() {
         className="hidden lg:flex items-center ml-auto text-[17px] font-black tracking-[0.12em] uppercase leading-none"
         style={{ fontFamily: 'Roboto Condensed, sans-serif' }}
       >
-        <a
-          href="https://coffeebike.ca/my-account/"
-          className="bg-black px-[22px] py-[27px] hover:bg-zinc-900 transition"
-        >
-          Login/Register
-        </a>
+
 
         <a
           href="https://coffeebike.ca/contact/"
@@ -1356,9 +1351,7 @@ export default function CoffeeBikePage() {
 
 
 
-        <a href="https://coffeebike.ca/my-account/" className="px-4 py-3 hover:text-[#ff1f1f] transition">
-          Login/Register
-        </a>
+
 
         <a href="https://coffeebike.ca/contact/" className="px-4 py-3 bg-[#e31e24] text-white">
           Get In Touch
