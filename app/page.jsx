@@ -1082,9 +1082,11 @@ export default function CoffeeBikePage() {
               </>
             ) : (
               <>
-  <div className="text-[10px] uppercase tracking-wider text-zinc-400">
-    Instant Estimate
+ <div>
+  <div className="text-lg sm:text-xl font-extrabold text-white leading-tight">
+    Instant Quote
   </div>
+</div>
               </>
             )}
           </div>
