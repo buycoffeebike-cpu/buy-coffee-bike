@@ -1479,7 +1479,7 @@ export default function CoffeeBikePage() {
           </Carousel>
         </div>
       </div>
-<section className="bg-white border-t border-zinc-200 px-6 py-14">
+<section className="bg-white border-t border-zinc-200 px-6 py-10 sm:py-14">
   <div className="max-w-3xl mx-auto text-center">
     <h2 className="text-3xl sm:text-4xl font-black text-zinc-950 tracking-tight">
       Not ready to build your Coffee Bike yet?
@@ -1487,7 +1487,7 @@ export default function CoffeeBikePage() {
 
     <p className="mt-4 text-base sm:text-lg text-zinc-600 leading-relaxed">
       Our full Coffee Bike Builder is below, but you don’t need to customize everything right now.
-      Fill out the Get In Touch form and our team will send you pricing, shipping guidance, and the
+      Fill out the quick Get In Touch form and our team will send you pricing, shipping guidance, and the
       best setup recommendation for your market.
     </p>
 
