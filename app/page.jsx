@@ -1922,7 +1922,41 @@ export default function CoffeeBikePage() {
           </div>
         </div>
       </div>
+      <section className="bg-white border-t border-zinc-200 px-6 py-12 sm:py-14">
+  <div className="mx-auto max-w-4xl rounded-3xl border border-zinc-200 bg-zinc-50 px-6 py-10 text-center shadow-sm sm:px-10">
+    <div className="mx-auto mb-4 inline-flex items-center rounded-full bg-red-50 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-red-600">
+      Need help choosing?
+    </div>
 
+    <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-zinc-950">
+      Not sure which setup is right for you?
+    </h2>
+
+    <p className="mx-auto mt-4 max-w-2xl text-base sm:text-lg leading-relaxed text-zinc-600">
+      If you’re not sure which Coffee Bike package, espresso machine, or add-ons make sense for your
+      market, our team can help. Send us a quick note or schedule a call and we’ll recommend the best
+      setup based on your city, budget, menu, and launch timeline.
+    </p>
+
+    <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+      <button
+        type="button"
+        onClick={() => setIsGetInTouchOpen(true)}
+        className="inline-flex w-full items-center justify-center rounded-xl bg-red-600 px-8 py-4 text-sm sm:w-auto sm:text-base font-black uppercase tracking-wide text-white transition-all duration-300 hover:bg-red-700 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+      >
+        Get In Touch
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setScheduleModalOpen(true)}
+        className="inline-flex w-full items-center justify-center rounded-xl border border-zinc-300 bg-white px-8 py-4 text-sm sm:w-auto sm:text-base font-black uppercase tracking-wide text-zinc-950 transition-all duration-300 hover:border-zinc-950 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+      >
+        Schedule a Call
+      </button>
+    </div>
+  </div>
+</section>
       <div className="py-12 px-6 bg-white">
         <div className="max-w-[1400px] mx-auto">
           <div className="text-center mb-8">
