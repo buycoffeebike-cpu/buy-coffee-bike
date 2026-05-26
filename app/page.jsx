@@ -1922,38 +1922,40 @@ export default function CoffeeBikePage() {
           </div>
         </div>
       </div>
-      <section className="bg-white border-t border-zinc-200 px-6 py-12 sm:py-14">
-  <div className="mx-auto max-w-4xl rounded-3xl border border-zinc-200 bg-zinc-50 px-6 py-10 text-center shadow-sm sm:px-10">
-    <div className="mx-auto mb-4 inline-flex items-center rounded-full bg-red-50 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-red-600">
-      Need help choosing?
-    </div>
+      <section className="bg-white border-t border-zinc-200 px-6 py-6">
+  <div className="mx-auto max-w-5xl rounded-2xl border border-zinc-200 bg-zinc-50 px-5 py-5 shadow-sm">
+    <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+      <div className="max-w-2xl">
+        <div className="text-[10px] font-black uppercase tracking-[0.18em] text-red-600">
+          Need help choosing?
+        </div>
 
-    <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-zinc-950">
-      Not sure which setup is right for you?
-    </h2>
+        <h2 className="mt-1 text-xl sm:text-2xl font-black tracking-tight text-zinc-950">
+          Not sure which setup is right for you?
+        </h2>
 
-    <p className="mx-auto mt-4 max-w-2xl text-base sm:text-lg leading-relaxed text-zinc-600">
-      If you’re not sure which Coffee Bike package, espresso machine, or add-ons make sense for your
-      market, our team can help. Send us a quick note or schedule a call and we’ll recommend the best
-      setup based on your city, budget, menu, and launch timeline.
-    </p>
+        <p className="mt-1 text-sm leading-relaxed text-zinc-600">
+          Send us a quick note or schedule a call and we’ll recommend the best Coffee Bike setup for your city, budget, menu, and launch timeline.
+        </p>
+      </div>
 
-    <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-      <button
-        type="button"
-        onClick={() => setIsGetInTouchOpen(true)}
-        className="inline-flex w-full items-center justify-center rounded-xl bg-red-600 px-8 py-4 text-sm sm:w-auto sm:text-base font-black uppercase tracking-wide text-white transition-all duration-300 hover:bg-red-700 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
-      >
-        Get In Touch
-      </button>
+      <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-shrink-0">
+        <button
+          type="button"
+          onClick={() => setIsGetInTouchOpen(true)}
+          className="inline-flex items-center justify-center rounded-xl bg-red-600 px-5 py-3 text-xs font-black uppercase tracking-wide text-white transition-all duration-300 hover:bg-red-700 hover:shadow-lg active:scale-[0.98]"
+        >
+          Get In Touch
+        </button>
 
-      <button
-        type="button"
-        onClick={() => setScheduleModalOpen(true)}
-        className="inline-flex w-full items-center justify-center rounded-xl border border-zinc-300 bg-white px-8 py-4 text-sm sm:w-auto sm:text-base font-black uppercase tracking-wide text-zinc-950 transition-all duration-300 hover:border-zinc-950 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
-      >
-        Schedule a Call
-      </button>
+        <button
+          type="button"
+          onClick={() => setScheduleModalOpen(true)}
+          className="inline-flex items-center justify-center rounded-xl border border-zinc-300 bg-white px-5 py-3 text-xs font-black uppercase tracking-wide text-zinc-950 transition-all duration-300 hover:border-zinc-950 hover:shadow-lg active:scale-[0.98]"
+        >
+          Schedule a Call
+        </button>
+      </div>
     </div>
   </div>
 </section>
