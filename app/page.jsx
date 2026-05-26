@@ -1441,7 +1441,7 @@ export default function CoffeeBikePage() {
             <p className="text-zinc-600 max-w-2xl mx-auto">A turnkey mobile coffee business with low overhead, fast ROI, and full ownership. No franchise, no royalties, no obligations.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10 max-w-7xl mx-auto">
-            <ValueCard icon={<DollarSign />} title="Low Entry Cost" desc={`From ${fmt(9850)} — a fraction of a brick-and-mortar café`} red={RED} tint={RED_TINT} />
+            <ValueCard icon={<DollarSign />} title="Low Entry Cost" desc={`From $13,495 CAD ($9,850 USD) — a fraction of a brick-and-mortar café. Financing available in Canada.`} red={RED} tint={RED_TINT} />
             <ValueCard icon={<TrendingUp />} title="Fast ROI" desc="Most owners break even in 6–12 months" red={RED} tint={RED_TINT} />
             <ValueCard icon={<Award />} title="No Franchise Fees or Obligations" desc="No royalties, no contracts, no strings attached. You own 100% of your brand and your profits — forever." red={RED} tint={RED_TINT} />
             <ValueCard icon={<Users />} title="Non-Obligatory Global Community" desc="Join a growing global network of Coffee Bike owners — all connected and supporting each other daily. New to coffee? We provide all the training you need to get started." red={RED} tint={RED_TINT} />
