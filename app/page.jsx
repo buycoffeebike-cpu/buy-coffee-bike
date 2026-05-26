@@ -4,6 +4,7 @@ import { ChevronDown, ChevronLeft, ChevronRight, Edit2, Check, Info, Lock, Searc
 
 export default function CoffeeBikePage() {
   const [currency, setCurrency] = useState('USD');
+  const [isGetInTouchOpen, setIsGetInTouchOpen] = useState(false);
   const [basePackage, setBasePackage] = useState(null);
   const [baseCustomInquiry, setBaseCustomInquiry] = useState('');
   const [setup, setSetup] = useState(null);
@@ -76,15 +77,13 @@ export default function CoffeeBikePage() {
   }, []);
 
   useEffect(() => {
-    if (!inquiryModalOpen && !scheduleModalOpen) return;
-    if (document.getElementById('ghl-form-embed-script')) return;
+    if (!inquiryModalOpen && !scheduleModalOpen && !isGetInTouchOpen) return;    if (document.getElementById('ghl-form-embed-script')) return;
     const s = document.createElement('script');
     s.id = 'ghl-form-embed-script';
     s.src = 'https://link.coffeebike.ca/js/form_embed.js';
     s.async = true;
     document.body.appendChild(s);
-  }, [inquiryModalOpen, scheduleModalOpen]);
-
+  }, [inquiryModalOpen, scheduleModalOpen, isGetInTouchOpen]);
   useEffect(() => {
     if (inquiryModalOpen || scheduleModalOpen || depositModalOpen || financingModalOpen || pressModalOpen) {
       const prev = document.body.style.overflow;
@@ -1480,7 +1479,77 @@ export default function CoffeeBikePage() {
           </Carousel>
         </div>
       </div>
+<section className="bg-white border-t border-zinc-200 px-6 py-14">
+  <div className="max-w-3xl mx-auto text-center">
+    <h2 className="text-3xl sm:text-4xl font-black text-zinc-950 tracking-tight">
+      Not ready to build your Coffee Bike yet?
+    </h2>
 
+    <p className="mt-4 text-base sm:text-lg text-zinc-600 leading-relaxed">
+      Our full Coffee Bike Builder is below, but you don’t need to customize everything right now.
+      Fill out the Get In Touch form and our team will send you pricing, shipping guidance, and the
+      best setup recommendation for your market.
+    </p>
+
+    <button
+      type="button"
+      onClick={() => setIsGetInTouchOpen(true)}
+      className="mt-8 inline-flex items-center justify-center rounded-xl bg-red-600 px-8 py-4 text-sm sm:text-base font-black uppercase tracking-wide text-white transition-all duration-300 hover:bg-red-700 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+    >
+      Get In Touch
+    </button>
+  </div>
+</section>
+{isGetInTouchOpen && (
+  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 px-4 py-6">
+    <div className="relative w-full max-w-4xl max-h-[92vh] overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="flex items-start justify-between gap-4 border-b border-zinc-200 px-5 py-4">
+        <div>
+          <h3 className="text-xl sm:text-2xl font-black text-zinc-950">
+            Get In Touch
+          </h3>
+          <p className="mt-1 text-sm text-zinc-500">
+            Tell us where you want to launch and we’ll help recommend the best setup.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsGetInTouchOpen(false)}
+          className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-zinc-100 text-2xl leading-none text-zinc-700 transition hover:bg-zinc-200"
+          aria-label="Close Get In Touch form"
+        >
+          ×
+        </button>
+      </div>
+
+      <div className="h-[78vh] overflow-y-auto bg-white">
+        <iframe
+          src="https://link.coffeebike.ca/widget/form/xnay3GGsJKCfqhvw55Yx"
+          style={{
+            width: '100%',
+            height: '1423px',
+            border: 'none',
+            borderRadius: '0px',
+          }}
+          id="inline-xnay3GGsJKCfqhvw55Yx"
+          data-layout="{'id':'INLINE'}"
+          data-trigger-type="alwaysShow"
+          data-trigger-value=""
+          data-activation-type="alwaysActivated"
+          data-activation-value=""
+          data-deactivation-type="neverDeactivate"
+          data-deactivation-value=""
+          data-form-name="Save My Build"
+          data-height="1423"
+          data-layout-iframe-id="inline-xnay3GGsJKCfqhvw55Yx"
+          data-form-id="xnay3GGsJKCfqhvw55Yx"
+          title="Save My Build"
+        />
+      </div>
+    </div>
+  </div>
+)}
       <div id="configurator-section" className="py-12 px-6 bg-zinc-50 border-y border-zinc-200" style={{ scrollMarginTop: '80px' }}>
         <div className="max-w-[1400px] mx-auto">
           <div className="mb-6 text-center">
