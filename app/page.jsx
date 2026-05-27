@@ -1895,7 +1895,15 @@ export default function CoffeeBikePage() {
                 
                   <div id="order-actions" className="border-t border-zinc-200 pt-4 mt-4 scroll-mt-32">
                   <div className="text-xs text-zinc-600 font-semibold uppercase mb-1">Estimated Total</div>
-                  <div className="text-3xl lg:text-4xl font-bold mb-3">{fmt(total)}</div>
+                  {total > 0 ? (
+  <div className="text-3xl lg:text-4xl font-bold mb-3">
+    {fmt(total)}
+  </div>
+) : (
+  <div className="text-base lg:text-lg font-bold text-zinc-500 leading-tight mb-3">
+    Select a base package to see your estimate
+  </div>
+)}
                   <p className="text-[11px] text-zinc-500 leading-snug mb-4">Shipping is not included in the estimated total. A final quote will be provided during final order confirmation.</p>
                 </div>
                 <button onClick={openInquiry} className="w-full text-white font-bold py-3 rounded mb-2 hover:opacity-90 flex items-center justify-center gap-2 text-sm" style={{ backgroundColor: RED }}>
