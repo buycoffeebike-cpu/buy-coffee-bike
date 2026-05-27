@@ -1239,12 +1239,20 @@ export default function CoffeeBikePage() {
             </div>
           )}
           
-          <div className="w-full bg-black/95 backdrop-blur-md border-t border-white/10 px-4 py-3 flex items-center justify-between shadow-2xl">
+          <div className="w-full bg-black/95 backdrop-blur-md border-t border-white/10 px-5 py-4 flex items-center justify-between shadow-2xl">
             <button onClick={() => setMobileSummaryOpen(!mobileSummaryOpen)} className="flex items-center gap-3 min-w-0 flex-1 text-left">
               <ChevronDown className={`w-5 h-5 text-white flex-shrink-0 transition-transform ${mobileSummaryOpen ? 'rotate-0' : 'rotate-180'}`} />
               <div className="min-w-0">
                 <div className="text-[9px] uppercase tracking-wider text-zinc-400 font-semibold leading-none mb-0.5">{mobileSummaryOpen ? 'Tap to close' : 'Your Build · Tap for details'}</div>
-                <div className="text-base font-bold text-white truncate">{fmt(total)}</div>
+                {total > 0 ? (
+  <div className="text-xl font-black text-white leading-tight">
+    {fmt(total)}
+  </div>
+) : (
+  <div className="text-base font-black text-white leading-tight">
+    Select package for estimate
+  </div>
+)}
               </div>
             </button>
             <button onClick={() => {
