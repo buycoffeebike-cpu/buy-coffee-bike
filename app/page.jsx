@@ -1222,7 +1222,7 @@ export default function CoffeeBikePage() {
 </OrderItem>
                 <div id="mobile-summary-ctas" className="border-t border-zinc-200 pt-3 mt-3 scroll-mt-4">
                   <button onClick={() => { setMobileSummaryOpen(false); openInquiry(); }} className="w-full text-white font-bold py-2.5 rounded text-sm hover:opacity-90 flex items-center justify-center gap-2 mb-2" style={{ backgroundColor: RED }}>
-                    Save My Build & Send Inquiry <ArrowRight className="w-4 h-4" />
+                  Send My Build & Get Quote <ArrowRight className="w-4 h-4" />
                   </button>
                   <button onClick={() => { setMobileSummaryOpen(false); openSchedule(); }} className="w-full bg-black text-white font-bold py-2.5 rounded text-sm">Schedule a Call</button>
                   <div className="mt-3 pt-3 border-t border-zinc-100 space-y-2">
@@ -1915,7 +1915,7 @@ export default function CoffeeBikePage() {
                   <p className="text-[11px] text-zinc-500 leading-snug mb-4">Shipping is not included in the estimated total. A final quote will be provided during final order confirmation.</p>
                 </div>
                 <button onClick={openInquiry} className="w-full text-white font-bold py-3 rounded mb-2 hover:opacity-90 flex items-center justify-center gap-2 text-sm" style={{ backgroundColor: RED }}>
-                  Save My Build & Send Inquiry <ArrowRight className="w-4 h-4" />
+                Send My Build & Get Quote <ArrowRight className="w-4 h-4" />
                 </button>
                 <button onClick={openSchedule} className="w-full bg-black hover:bg-zinc-800 text-white font-bold py-3 rounded mb-4 text-sm">Schedule a Call With Our Team</button>
                 <div className="border-t border-zinc-200 pt-3 mb-3">
@@ -2523,7 +2523,7 @@ export default function CoffeeBikePage() {
             <p className="text-sm lg:text-base text-zinc-300 mb-7 max-w-xl mx-auto leading-relaxed">Save your build and send an inquiry — our team will reach out within one business day to walk you through every detail.</p>
             <div className="flex flex-wrap gap-3 justify-center mb-6">
               <button onClick={openInquiry} className="text-white font-bold px-6 py-3 rounded text-sm hover:opacity-90 whitespace-nowrap flex items-center gap-2" style={{ backgroundColor: RED }}>
-                Save My Build & Send Inquiry <ArrowRight className="w-4 h-4" />
+              Send My Build & Get Quote <ArrowRight className="w-4 h-4" />
               </button>
               <button onClick={openSchedule} className="bg-white text-black font-bold px-6 py-3 rounded text-sm hover:bg-zinc-100 whitespace-nowrap">Schedule a Call</button>
               <button onClick={openDeposit} className="border border-white/40 hover:border-white text-white font-bold px-6 py-3 rounded text-sm whitespace-nowrap transition">Reserve with $250</button>
