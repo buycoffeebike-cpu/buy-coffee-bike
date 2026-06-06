@@ -693,8 +693,7 @@ export default function CoffeeBikePage() {
 
   const Logo = () => (
     <a href="#" className="block" aria-label="Coffee Bike">
-      <img
-        src="https://coffeebike.ca/wp-content/uploads/2025/04/cofee_bike_logo_rwhite_transparent.png"
+      <img loading="lazy" decoding="async"         src="https://coffeebike.ca/wp-content/uploads/2025/04/cofee_bike_logo_rwhite_transparent.png"
         alt="Coffee Bike"
         className="h-12 w-auto"
       />
@@ -713,7 +712,7 @@ export default function CoffeeBikePage() {
             <X className="w-5 h-5" />
           </button>
           <div className="flex flex-col items-center gap-4 max-w-full max-h-full">
-            <img src={typeof zoomImg === 'string' ? zoomImg : zoomImg.src} alt="" className="max-w-full max-h-[80vh] object-contain rounded-lg cursor-zoom-out" onClick={() => setZoomImg(null)} />
+            <img loading="lazy" decoding="async" src={typeof zoomImg === 'string' ? zoomImg : zoomImg.src} alt="" className="max-w-full max-h-[80vh] object-contain rounded-lg cursor-zoom-out" onClick={() => setZoomImg(null)} />
             {typeof zoomImg === 'object' && zoomImg.label && <div className="text-white text-sm font-semibold tracking-wide text-center px-4">{zoomImg.label}</div>}
           </div>
         </div>
@@ -1111,8 +1110,7 @@ export default function CoffeeBikePage() {
   {basePackage ? (
     <>
       <div className="flex items-center gap-2 mt-1.5">
-        <img
-          src={basePackages[basePackage].img || IMG.classic}
+        <img loading="lazy" decoding="async"           src={basePackages[basePackage].img || IMG.classic}
           alt=""
           className="w-10 h-10 rounded object-cover flex-shrink-0"
         />
@@ -1146,7 +1144,7 @@ export default function CoffeeBikePage() {
                 <OrderItem num="2" label="SETUP" onEdit={() => { setMobileSummaryOpen(false); editStep('step2'); }}>
                   {setup ? (
                     <div className="flex items-start gap-2 mt-1.5">
-                      <img src={setups[setup].img} alt="" className="w-10 h-10 rounded object-cover flex-shrink-0" />
+                      <img loading="lazy" decoding="async" src={setups[setup].img} alt="" className="w-10 h-10 rounded object-cover flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="text-xs font-semibold leading-tight">{setups[setup].name}</div>
                         <div className="text-xs text-zinc-700 mt-0.5">{setups[setup].included ? 'Included' : fmt(setups[setup].price)}</div>
@@ -1274,8 +1272,7 @@ export default function CoffeeBikePage() {
         className="flex items-center flex-shrink-0 mr-[55px]"
         aria-label="Coffee Bike Home"
       >
-        <img
-          src="https://coffeebike.ca/wp-content/uploads/2025/04/cofee_bike_logo_rwhite_transparent.png"
+        <img loading="lazy" decoding="async"           src="https://coffeebike.ca/wp-content/uploads/2025/04/cofee_bike_logo_rwhite_transparent.png"
           alt="Coffee Bike"
           className="h-[95px] w-auto"
         />
@@ -1422,8 +1419,7 @@ export default function CoffeeBikePage() {
         <a href="https://www.cbc.ca/dragonsden/pitches/coffee-bike" target="_blank" rel="noopener noreferrer" className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 text-center sm:text-left hover:opacity-90 transition group">
           <div className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-bold">As Featured On</div>
           <div className="flex items-center gap-2 text-white">
-          <img
-  src="https://coffeebike.ca/wp-content/uploads/2026/05/Dragons-Den-2.png"
+          <img loading="lazy" decoding="async"   src="https://coffeebike.ca/wp-content/uploads/2026/05/Dragons-Den-2.png"
   alt="Dragons' Den Canada"
   className="h-10 w-auto object-contain"
 />
@@ -1743,7 +1739,7 @@ export default function CoffeeBikePage() {
   {basePackage ? (
     <>
       <div className="flex items-center gap-3 mt-2">
-        <img src={basePackages[basePackage].img || IMG.classic} alt="" className="w-12 h-12 rounded object-cover flex-shrink-0" />
+        <img loading="lazy" decoding="async" src={basePackages[basePackage].img || IMG.classic} alt="" className="w-12 h-12 rounded object-cover flex-shrink-0" />
         <div className="min-w-0">
           <div className="text-sm font-semibold truncate">{basePackages[basePackage].name}</div>
           <div className="text-sm text-zinc-700">{fmt(basePackages[basePackage].price)}</div>
@@ -1758,7 +1754,7 @@ export default function CoffeeBikePage() {
                   {setup ? (
                     <>
                       <div className="flex items-start gap-3 mt-2">
-                        <img src={setups[setup].img} alt="" className="w-12 h-12 rounded object-cover flex-shrink-0" />
+                        <img loading="lazy" decoding="async" src={setups[setup].img} alt="" className="w-12 h-12 rounded object-cover flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-semibold leading-tight">{setups[setup].name}</div>
                           <div className="text-sm text-zinc-700 mt-1">{setups[setup].included ? 'Included' : fmt(setups[setup].price)}</div>
@@ -2430,8 +2426,7 @@ export default function CoffeeBikePage() {
             <a href="https://www.cbc.ca/dragonsden/pitches/coffee-bike" target="_blank" rel="noopener noreferrer" className="bg-white border border-zinc-200 rounded-lg p-5 text-center hover:shadow-md hover:border-zinc-300 transition group block">
               <div className="w-12 h-12 rounded mx-auto mb-3 flex items-center justify-center text-white" style={{ backgroundColor: '' }}>
               <div className="mx-auto mb-4 flex items-center justify-center">
-  <img
-    src="https://coffeebike.ca/wp-content/uploads/2026/05/Dragons-Den-2.png"
+  <img loading="lazy" decoding="async"     src="https://coffeebike.ca/wp-content/uploads/2026/05/Dragons-Den-2.png"
     alt="Dragons' Den Canada"
     className="h-16 w-auto object-contain"
   />
@@ -2512,8 +2507,7 @@ export default function CoffeeBikePage() {
       <footer className="bg-zinc-950 text-white py-12 px-6">
   <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-10">
   <div>
-  <img
-    src="https://coffeebike.ca/wp-content/uploads/2025/04/cofee_bike_logo_rwhite_transparent.png"
+  <img loading="lazy" decoding="async"     src="https://coffeebike.ca/wp-content/uploads/2025/04/cofee_bike_logo_rwhite_transparent.png"
     alt="Coffee Bike"
     className="h-14 w-auto mb-4"
   />
