@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react'; function LazyYouTube({videoId,title,thumbnailUrl}){const[load,setLoad]=useState(false);useEffect(()=>{const t=setTimeout(()=>setLoad(true),1200);return()=>clearTimeout(t)},[]);return(<><img src={thumbnailUrl} alt={title} loading="eager" decoding="async" className="absolute inset-0 w-full h-full object-cover" />{load&&<iframe src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&rel=0&modestbranding=1&playsinline=1`} title={title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen className="absolute inset-0 w-full h-full" style={{border:0}} />}</>);}
 import { ChevronDown, ChevronLeft, ChevronRight, Edit2, Check, Info, Lock, Search, Leaf, Globe, Clock, Award, Mail, MapPin, Play, TrendingUp, DollarSign, Calendar, Users, Zap, Coffee, Star, ArrowRight, Sparkles, ZoomIn, X, Eye } from 'lucide-react';
 
 export default function CoffeeBikePage() {
@@ -1410,15 +1410,7 @@ export default function CoffeeBikePage() {
             </div>
             <div className="md:w-1/2 w-full">
               <div className="relative rounded-xl overflow-hidden aspect-video shadow-2xl bg-black">
-                <iframe
-                  src="https://www.youtube-nocookie.com/embed/gtu8djcY-KY?autoplay=1&mute=1&loop=1&playlist=gtu8djcY-KY&rel=0&modestbranding=1&playsinline=1"
-                  title="Coffee Bike — Watch Our Story"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  referrerPolicy="strict-origin-when-cross-origin"
-                  allowFullScreen
-                  className="absolute inset-0 w-full h-full"
-                  style={{ border: 0 }}
-                />
+                <LazyYouTube videoId="gtu8djcY-KY" title="Coffee Bike — Watch Our Story" thumbnailUrl="https://i.ytimg.com/vi/gtu8djcY-KY/maxresdefault.jpg" />
               </div>
               <div className="text-xs text-zinc-400 mt-2 text-center">Check our YouTube channel and IG for more videos!</div>
             </div>
@@ -1532,28 +1524,7 @@ export default function CoffeeBikePage() {
       </div>
 
       <div className="h-[78vh] overflow-y-auto bg-white">
-        <iframe
-          src="https://link.coffeebike.ca/widget/form/xnay3GGsJKCfqhvw55Yx"
-          style={{
-            width: '100%',
-            height: '1423px',
-            border: 'none',
-            borderRadius: '0px',
-          }}
-          id="inline-xnay3GGsJKCfqhvw55Yx"
-          data-layout="{'id':'INLINE'}"
-          data-trigger-type="alwaysShow"
-          data-trigger-value=""
-          data-activation-type="alwaysActivated"
-          data-activation-value=""
-          data-deactivation-type="neverDeactivate"
-          data-deactivation-value=""
-          data-form-name="Save My Build"
-          data-height="1423"
-          data-layout-iframe-id="inline-xnay3GGsJKCfqhvw55Yx"
-          data-form-id="xnay3GGsJKCfqhvw55Yx"
-          title="Save My Build"
-        />
+        <LazyYouTube videoId="gtu8djcY-KY" title="Coffee Bike — Watch Our Story" thumbnailUrl="https://i.ytimg.com/vi/gtu8djcY-KY/maxresdefault.jpg" />
       </div>
     </div>
   </div>
