@@ -1524,7 +1524,7 @@ export default function CoffeeBikePage() {
       </div>
 
       <div className="h-[78vh] overflow-y-auto bg-white">
-        <LazyYouTube videoId="gtu8djcY-KY" title="Coffee Bike — Watch Our Story" thumbnailUrl="https://i.ytimg.com/vi/gtu8djcY-KY/maxresdefault.jpg" />
+        <iframe src="https://link.coffeebike.ca/widget/form/xnay3GGsJKCfqhvw55Yx" style={{ width: '100%', height: '1423px', border: 'none', borderRadius: '0px' }} id="inline-xnay3GGsJKCfqhvw55Yx" data-layout="{'id':'INLINE'}" data-trigger-type="alwaysShow" data-trigger-value="" data-activation-type="alwaysActivated" data-activation-value="" data-deactivation-type="neverDeactivate" data-deactivation-value="" data-form-name="Save My Build" data-height="1423" data-layout-iframe-id="inline-xnay3GGsJKCfqhvw55Yx" data-form-id="xnay3GGsJKCfqhvw55Yx" title="Save My Build" />
       </div>
     </div>
   </div>
