@@ -1477,9 +1477,9 @@ export default function CoffeeBikePage() {
       </div>
 <section className="bg-white border-t border-zinc-200 px-6 py-10 sm:py-14">
   <div className="max-w-3xl mx-auto text-center">
-    <h2 className="text-3xl sm:text-4xl font-black text-zinc-950 tracking-tight">
+    <h3 className="text-3xl sm:text-4xl font-black text-zinc-950 tracking-tight">
       Not ready to build your Coffee Bike yet?
-    </h2>
+    </h3>
 
     <p className="mt-4 text-base sm:text-lg text-zinc-600 leading-relaxed">
       Our full Coffee Bike Builder is below, but you don’t need to customize everything right now.
@@ -1913,9 +1913,9 @@ export default function CoffeeBikePage() {
           Need help choosing?
         </div>
 
-        <h2 className="mt-1 text-xl sm:text-2xl font-black tracking-tight text-zinc-950">
+        <h3 className="mt-1 text-xl sm:text-2xl font-black tracking-tight text-zinc-950">
           Not sure which setup is right for you?
-        </h2>
+        </h3>
 
         <p className="mt-1 text-sm leading-relaxed text-zinc-600">
           Send us a quick note or schedule a call and we’ll recommend the best Coffee Bike setup for your city, budget, menu, and launch timeline.
