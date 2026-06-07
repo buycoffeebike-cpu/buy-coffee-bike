@@ -86,9 +86,17 @@ export default function CoffeeBikePage() {
   }, [inquiryModalOpen, scheduleModalOpen, isGetInTouchOpen]);
   useEffect(() => {
     if (inquiryModalOpen || scheduleModalOpen || depositModalOpen || financingModalOpen || pressModalOpen) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => { document.body.style.overflow = prev; };
+      const y = window.scrollY;
+      const st = document.body.style;
+      st.position = 'fixed';
+      st.top = '-' + y + 'px';
+      st.left = '0';
+      st.right = '0';
+      st.width = '100%';
+      return () => {
+        st.position = ''; st.top = ''; st.left = ''; st.right = ''; st.width = '';
+        window.scrollTo(0, y);
+      };
     }
   }, [inquiryModalOpen, scheduleModalOpen, depositModalOpen, financingModalOpen, pressModalOpen]);
 
@@ -725,7 +733,7 @@ export default function CoffeeBikePage() {
       {/* INQUIRY MODAL */}
       {inquiryModalOpen && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6" style={{ zIndex: 9999 }} onClick={() => setInquiryModalOpen(false)}>
-         <div className="bg-white rounded-2xl shadow-2xl w-[94vw] max-w-2xl overflow-hidden relative flex flex-col" style={{ maxHeight: '86vh' }} onClick={(e) => e.stopPropagation()}>
+         <div className="bg-white rounded-2xl shadow-2xl w-[94vw] max-w-2xl overflow-hidden relative flex flex-col modal-shell-86" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-200 bg-white flex-shrink-0">
               <div className="min-w-0">
                 <div className="text-[10px] uppercase tracking-wider font-bold mb-0.5" style={{ color: RED }}>Save My Build</div>
@@ -757,8 +765,8 @@ export default function CoffeeBikePage() {
     </div>
   </div>
 )}
-<div className="flex-1 overflow-y-auto bg-white px-3 sm:px-5 pb-4">
-  <iframe src={iframeUrl} style={{ width: '100%', height: '78vh', border: 'none', borderRadius: 0, display: 'block' }} id="inline-xnay3GGsJKCfqhvw55Yx" title="Save My Build"></iframe>
+<div className="modal-embed flex-1 min-h-0 overflow-hidden bg-white px-3 sm:px-5 pb-4">
+  <iframe src={iframeUrl} style={{ width: '100%', height: '100%', border: 'none', borderRadius: 0, display: 'block' }} scrolling="yes" id="inline-xnay3GGsJKCfqhvw55Yx" title="Save My Build"></iframe>
 </div>
 </div>
 </div>
@@ -767,7 +775,7 @@ export default function CoffeeBikePage() {
       {/* SCHEDULE MODAL */}
       {scheduleModalOpen && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6" style={{ zIndex: 9999 }} onClick={() => setScheduleModalOpen(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-[94vw] max-w-4xl overflow-hidden relative flex flex-col h-[94vh]" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl shadow-2xl w-[94vw] max-w-4xl overflow-hidden relative flex flex-col modal-shell-94" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-200 bg-white flex-shrink-0">
               <div className="min-w-0">
                 <div className="text-[10px] uppercase tracking-wider font-bold mb-0.5" style={{ color: RED }}>Schedule a Call</div>
@@ -799,7 +807,7 @@ export default function CoffeeBikePage() {
                 </div>
               </div>
             )}
-<div className="flex-1 min-h-0 overflow-hidden bg-white px-3 sm:px-5 pb-4">
+<div className="modal-embed flex-1 min-h-0 overflow-hidden bg-white px-3 sm:px-5 pb-4">
   <iframe
     src={bookingUrl}
     style={{
@@ -820,7 +828,7 @@ export default function CoffeeBikePage() {
       {/* DEPOSIT MODAL */}
       {depositModalOpen && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6" style={{ zIndex: 9999 }} onClick={() => setDepositModalOpen(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-[94vw] max-w-4xl overflow-hidden relative flex flex-col" style={{ maxHeight: '94vh' }} onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl shadow-2xl w-[94vw] max-w-4xl overflow-hidden relative flex flex-col modal-max-94" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-200 bg-white flex-shrink-0">
               <div className="min-w-0">
                 <div className="text-[10px] uppercase tracking-wider font-bold mb-0.5" style={{ color: RED }}>Reserve Your Production Spot</div>
@@ -922,7 +930,7 @@ export default function CoffeeBikePage() {
       {/* FINANCING MODAL */}
       {financingModalOpen && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6" style={{ zIndex: 9999 }} onClick={() => setFinancingModalOpen(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden relative flex flex-col" style={{ maxHeight: '90vh' }} onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden relative flex flex-col modal-max-90" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-200 bg-white flex-shrink-0">
               <div className="min-w-0 flex items-center gap-2">
                 <span className="text-xl">🍁</span>
@@ -1039,7 +1047,7 @@ export default function CoffeeBikePage() {
       {/* PRESS MODAL */}
       {pressModalOpen && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6" style={{ zIndex: 9999 }} onClick={() => setPressModalOpen(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden relative flex flex-col" style={{ maxHeight: '90vh' }} onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden relative flex flex-col modal-max-90" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-200 bg-white flex-shrink-0">
               <div className="min-w-0">
                 <div className="text-[10px] uppercase tracking-wider font-bold mb-0.5" style={{ color: RED }}>In The Press</div>
@@ -1102,7 +1110,7 @@ export default function CoffeeBikePage() {
       {inConfigurator && (
         <div className="fixed bottom-0 left-0 right-0 z-40 sm:hidden">
           {mobileSummaryOpen && (
-            <div className="bg-white border-t border-zinc-200 max-h-[60vh] overflow-y-auto shadow-2xl">
+            <div className="bg-white border-t border-zinc-200 max-h-[60dvh] overflow-y-auto shadow-2xl">
               <div className="p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-base font-bold">Your Order</h3>
@@ -1523,8 +1531,8 @@ export default function CoffeeBikePage() {
         </button>
       </div>
 
-      <div className="h-[78vh] overflow-y-auto bg-white">
-        <iframe src="https://link.coffeebike.ca/widget/form/xnay3GGsJKCfqhvw55Yx" style={{ width: '100%', height: '1423px', border: 'none', borderRadius: '0px' }} id="inline-xnay3GGsJKCfqhvw55Yx" data-layout="{'id':'INLINE'}" data-trigger-type="alwaysShow" data-trigger-value="" data-activation-type="alwaysActivated" data-activation-value="" data-deactivation-type="neverDeactivate" data-deactivation-value="" data-form-name="Save My Build" data-height="1423" data-layout-iframe-id="inline-xnay3GGsJKCfqhvw55Yx" data-form-id="xnay3GGsJKCfqhvw55Yx" title="Save My Build" />
+      <div className="modal-embed h-[78dvh] overflow-hidden bg-white">
+        <iframe src="https://link.coffeebike.ca/widget/form/xnay3GGsJKCfqhvw55Yx" style={{ width: '100%', height: '100%', border: 'none', borderRadius: '0px' }} scrolling="yes" id="inline-xnay3GGsJKCfqhvw55Yx" data-layout="{'id':'INLINE'}" data-trigger-type="alwaysShow" data-trigger-value="" data-activation-type="alwaysActivated" data-activation-value="" data-deactivation-type="neverDeactivate" data-deactivation-value="" data-form-name="Save My Build" data-height="1423" data-layout-iframe-id="inline-xnay3GGsJKCfqhvw55Yx" data-form-id="xnay3GGsJKCfqhvw55Yx" title="Save My Build" />
       </div>
     </div>
   </div>

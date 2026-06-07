@@ -29,3 +29,42 @@ body {
 html {
   scroll-behavior: smooth;
 }
+
+/* === iOS fixes === */
+@media (max-width: 767px) {
+  .backdrop-blur-sm,
+  .backdrop-blur-md {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+.modal-embed {
+  display: flex;
+  flex-direction: column;
+}
+.modal-embed div {
+  display: flex !important;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.modal-embed iframe {
+  flex: 1 1 auto;
+  height: auto !important;
+  min-height: 0;
+}
+.modal-embed,
+.overflow-y-auto {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.modal-shell-86 { height: 86vh; max-height: 86vh; }
+.modal-shell-94 { height: 94vh; max-height: 94vh; }
+.modal-max-90 { max-height: 90vh; }
+.modal-max-94 { max-height: 94vh; }
+@supports (height: 100dvh) {
+  .modal-shell-86 { height: 86dvh; max-height: 86dvh; }
+  .modal-shell-94 { height: 94dvh; max-height: 94dvh; }
+  .modal-max-90 { max-height: 90dvh; }
+  .modal-max-94 { max-height: 94dvh; }
+}
