@@ -675,7 +675,7 @@ export default function CoffeeBikePage() {
     if (!src) return <div className={`${aspect} ${className} bg-gradient-to-br from-zinc-100 to-zinc-200 flex items-center justify-center text-zinc-400 text-xs font-medium`}>{alt || 'Image'}</div>;
     return (
       <div className={`relative ${aspect} ${className} overflow-hidden bg-zinc-100`}>
-        <img src={src} alt={alt} className="w-full h-full object-cover pointer-events-none" style={{ objectPosition }} loading="lazy" />
+        <Image src={src} alt={alt} width={400} height={300} sizes="(max-width: 768px) 33vw, 250px" className="w-full h-full object-cover pointer-events-none" style={{ objectPosition }} />
         <button type="button" onClick={(e) => { e.stopPropagation(); setZoomImg(src); }} aria-label="Zoom in" className="absolute top-2 right-2 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-sm flex items-center justify-center transition-all hover:scale-110 shadow-lg">
           <ZoomIn className="w-5 h-5 text-white" strokeWidth={2.5} />
         </button>
