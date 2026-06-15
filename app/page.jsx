@@ -1385,7 +1385,7 @@ export default function CoffeeBikePage() {
           <div className="flex flex-col md:flex-row gap-8 items-center">
             <div className="md:w-1/2">
               <EyebrowBadge className="mb-4">Welcome to Coffee Bike World</EyebrowBadge>
-              <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold leading-[1.05] mb-4 sm:mb-5">Your Own Electric Mobile Coffee Business — Built, Branded, Shipped Worldwide</h1>
+              <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold leading-[1.05] mb-4 sm:mb-5">Buy a Mobile Coffee Bike — Your Own Electric Coffee Business, Built, Branded & Shipped Worldwide</h1>
               <p className="text-zinc-300 text-base sm:text-lg mb-5 sm:mb-6 max-w-xl leading-relaxed">Launch your turnkey, eco-friendly business with a low entry cost and fast return on investment. No franchise fees. You own everything.</p>
               <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch gap-0 mb-6 sm:mb-7 rounded-lg border-2 overflow-hidden" style={{ borderColor: RED, backgroundColor: 'rgba(227,30,36,0.08)' }}>
 <div className="px-5 py-3 flex items-center gap-4 flex-shrink-0">
