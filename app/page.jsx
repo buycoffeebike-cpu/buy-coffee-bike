@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useMemo, useRef, useEffect } from 'react'; import Image from 'next/image'; function LazyYouTube({videoId,title,thumbnailUrl}){const[load,setLoad]=useState(false);useEffect(()=>{const t=setTimeout(()=>setLoad(true),1200);return()=>clearTimeout(t)},[]);return(<><Image src={thumbnailUrl} alt={title} width={1280} height={720} priority className="absolute inset-0 w-full h-full object-cover" />{load&&<iframe src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&rel=0&modestbranding=1&playsinline=1`} title={title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen className="absolute inset-0 w-full h-full" style={{border:0}} />}</>);}
+import React, { useState, useMemo, useRef, useEffect } from 'react'; import Image from 'next/image';
+import LiteYouTube from '../components/LiteYouTube';
 import { ChevronDown, ChevronLeft, ChevronRight, Edit2, Check, Info, Lock, Search, Leaf, Globe, Clock, Award, Mail, MapPin, Play, TrendingUp, DollarSign, Calendar, Users, Zap, Coffee, Star, ArrowRight, Sparkles, ZoomIn, X, Eye } from 'lucide-react';
 
 export default function CoffeeBikePage() {
@@ -1418,8 +1419,15 @@ export default function CoffeeBikePage() {
               </div>
             </div>
             <div className="md:w-1/2 w-full">
-              <div className="relative rounded-xl overflow-hidden aspect-video shadow-2xl bg-black">
-                <LazyYouTube videoId="gtu8djcY-KY" title="Coffee Bike — Watch Our Story" thumbnailUrl="https://i.ytimg.com/vi/gtu8djcY-KY/maxresdefault.jpg" />
+              <div className="relative rounded-xl overflow-hidden aspect-square shadow-2xl bg-black">
+                <Image
+                  src="https://coffeebike.ca/wp-content/uploads/2025/05/Mobile-Espresso-Bar-scaled.jpeg"
+                  alt="Coffee Bike mobile espresso bar and electric mobile coffee shop"
+                  fill
+                  priority
+                  sizes="(min-width: 1400px) 660px, (min-width: 768px) calc(50vw - 40px), calc(100vw - 32px)"
+                  className="object-cover object-[50%_30%]"
+                />
               </div>
               <div className="text-xs text-zinc-400 mt-2 text-center">Check our YouTube channel and IG for more videos!</div>
             </div>
@@ -1487,6 +1495,25 @@ export default function CoffeeBikePage() {
           </Carousel>
         </div>
       </div>
+      <section id="walkthrough-section" aria-labelledby="walkthrough-heading" className="bg-black text-white py-12 sm:py-16 px-4 sm:px-6" style={{ scrollMarginTop: '80px' }}>
+        <div className="max-w-5xl mx-auto">
+          <header className="text-center mb-8">
+            <EyebrowBadge className="mb-3">See It In Action</EyebrowBadge>
+            <h2 id="walkthrough-heading" className="text-3xl lg:text-4xl font-bold mb-3">Coffee Bike Vol. 2 Full Walkthrough — Inside Our Mobile Coffee Shop</h2>
+            <p className="text-zinc-300 max-w-2xl mx-auto leading-relaxed">Take a complete tour of our latest Coffee Bike Vol. 2 and see how a fully equipped electric mobile coffee shop works — from the commercial espresso system and plumbing to refrigeration, storage, branding and e-bike mobility.</p>
+          </header>
+          <div className="relative rounded-xl overflow-hidden aspect-video shadow-2xl bg-zinc-900 ring-1 ring-white/10">
+            <LiteYouTube
+              videoId="uVGy63fO6uk"
+              title="Coffee Bike Vol. 2 full walkthrough"
+              playLabel="Play Coffee Bike Vol. 2 full walkthrough"
+              trackingName="coffee_bike_v2_walkthrough"
+              caption="Full walkthrough · 6:32"
+            />
+          </div>
+        </div>
+      </section>
+
 <section className="bg-white border-t border-zinc-200 px-6 py-10 sm:py-14">
   <div className="max-w-3xl mx-auto text-center">
     <h3 className="text-3xl sm:text-4xl font-black text-zinc-950 tracking-tight">
