@@ -170,7 +170,7 @@ function Page({ intent, market }) {
               <span className="text-[15px] text-zinc-600">{M.heroPriceNote}</span>
             </div>
             <ul className="mt-4 hidden gap-1.5 text-[15px] text-zinc-800 md:grid">
-              {['Health-code layout: sinks, hot water and a fridge on board', 'Rides where trucks can’t park, and indoors in winter', 'Yours outright: no franchise fees, no royalties'].map((x) => (
+              {['Sinks, hot water and a fridge on board', 'Rides where trucks can’t park, and indoors in winter', 'Yours outright: no franchise fees, no royalties'].map((x) => (
                 <li key={x} className="flex gap-2.5"><Check className="mt-0.5 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
               ))}
             </ul>
@@ -289,6 +289,14 @@ function Page({ intent, market }) {
             </div>
           ))}
         </dl>
+        <div className="mt-8">
+          <h3 className="text-lg font-extrabold text-zinc-950">Make it yours</h3>
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {['Your name, colours and wrap', 'Custom LED sign', 'Nitro cold brew tap', 'LED screen', 'Latte art printer', 'Lithium batteries', 'Iced Express for ice cream and cold drinks', 'Multi-grill for hot food'].map((x) => (
+              <li key={x} className="rounded-full border border-zinc-300 bg-white px-3.5 py-1.5 text-sm font-semibold text-zinc-800">{x}</li>
+            ))}
+          </ul>
+        </div>
         <a href={SPEC_SHEET} target="_blank" rel="noopener" onClick={() => track('spec_sheet', { where: 'build', intent, market })} className="mt-6 inline-flex items-center gap-2 py-2 font-semibold text-zinc-800 underline underline-offset-4">
           <FileText className="h-5 w-5" /> Specs and health inquiry package (PDF)
         </a>
@@ -333,7 +341,7 @@ function Page({ intent, market }) {
 
       {/* owners */}
       <Section id="owners" tone="dark">
-        <Heading dark eyebrow="Owners" title="49 bikes. 36 owners. Here are some of them." sub="Side businesses, second careers, cafés and roasteries adding a mobile bar, and brands that take their coffee to the crowd." />
+        <Heading dark eyebrow="Owners" title="49 bikes. 36 owners. Here are some of them." sub="First businesses, second careers, cafés and roasteries adding a mobile bar, and brands that take their coffee to the crowd. Several owners run two or three bikes." />
         <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-4">
           {[PHOTOS.liudmyla, PHOTOS.fleet, PHOTOS.sanam, PHOTOS.levis].map((p) => (
             <div key={p.src} className="relative aspect-[3/4] overflow-hidden rounded-xl bg-zinc-800">
@@ -394,10 +402,13 @@ function Page({ intent, market }) {
                 </div>
               ))}
             </div>
+            <p className="mt-3 rounded-xl bg-[#F4F4F3] p-4 text-[15px] leading-relaxed text-zinc-700">
+              <strong className="text-zinc-950">Working with a smaller budget?</strong> Ask about a simpler build you can upgrade later: pick “I need a smaller build” in the form.
+            </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {[
                 { icon: CreditCard, ...P.financing },
-                { icon: Calendar, t: 'Reserve with US$250', d: 'Holds a production spot and is applied in full to your order.', href: DEPOSIT_URL, cta: 'Reserve' },
+                { icon: Calendar, t: 'Reserve with US$250', d: 'Holds a production spot and is applied in full to your order. Invoiced by Coffee Bike World, Vancouver, BC.', href: DEPOSIT_URL, cta: 'Reserve' },
               ].map(({ icon: Icon, t, d, href, cta }) => (
                 <div key={t} className="rounded-xl border border-zinc-200 p-4">
                   <Icon className="h-5 w-5" style={{ color: RED }} aria-hidden />

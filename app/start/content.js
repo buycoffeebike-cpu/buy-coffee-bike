@@ -107,14 +107,14 @@ export const INTENTS = {
   truck: {
     eyebrow: 'Shopping for a coffee truck?',
     h1: 'Start where a coffee truck would, for a fraction of the cost',
-    sub: 'The same espresso drinks from an electric coffee bike: no fuel, no tow vehicle, no truck parking. It goes where trucks can’t, including plazas, markets and office lobbies. Branded as yours and delivered to your door.',
+    sub: 'The same espresso drinks from an electric coffee bike: no gas to drive it, no tow vehicle, no truck parking. It goes where trucks can’t, including plazas, markets and office lobbies. Branded as yours and delivered to your door.',
     compare: 'truck',
     title: 'The coffee truck alternative: the Coffee Bike',
   },
   van: {
     eyebrow: 'Shopping for a coffee van?',
     h1: 'A mobile coffee business without the van',
-    sub: 'A commercial espresso bar on an electric bike: no fuel, no van insurance, no parking hunt. It goes where vans can’t, including plazas, markets and office lobbies. Branded as yours and delivered to your door.',
+    sub: 'A commercial espresso bar on an electric bike: no gas to drive it, no van insurance, no parking hunt. It goes where vans can’t, including plazas, markets and office lobbies. Branded as yours and delivered to your door.',
     compare: 'truck',
     title: 'The coffee van alternative: the Coffee Bike',
   },
@@ -333,7 +333,7 @@ export const STEPS = [
   { t: 'Get your price and options', d: 'We reply within one business day with pricing for your build and answers to your questions.' },
   { t: 'Plan your build on a call', d: 'Setup, branding and add-ons, with someone who has run Coffee Bikes for years. No pressure.' },
   { t: 'Approve your invoice', d: 'Pay by bank transfer or card within 5 business days. Canadians can apply for financing through iFinance.' },
-  { t: 'Built for you', d: 'Made to order in about 4–8 weeks; units in stock ship right away.' },
+  { t: 'Built for you', d: 'Made to order in about 6–8 weeks; a bike in stock ships right away.' },
   { t: 'Delivered to your door', d: 'Crated, palletized and insured, typically 2–6 weeks in transit. Then launch with the manual, videos and owners’ community.' },
 ];
 
@@ -341,7 +341,7 @@ export const STEPS = [
 const FAQ_BASE = [
   { q: "Do I need permits?", a: { us: "Yes, and the rules differ by city. Most health departments review your setup (sinks, water, food-safe surfaces) and inspect it, and many ask for a commissary or approved base. Permits often take 60–90 days, so owners apply while their bike is being built. Owners usually trade on private property (a deal with a landlord, market or venue) or in public space with a mobile vending permit where the city offers one.", ca: "Yes, and the rules differ by city and province. Most health authorities review your setup (sinks, water, food-safe surfaces) and inspect it, and many ask for a commissary or approved base. Permits often take 60–90 days, so owners apply while their bike is being built. Owners usually trade on private property (a deal with a landlord, market or venue) or in public space with a mobile vending permit where the city offers one." } },
   { q: "What does a complete Coffee Bike cost?", a: { us: "Most US owners invest about US$15,850 for a ready-to-serve espresso build: the bike, branded body and canopy, sinks, fridge, batteries and a Fracino single-group espresso setup. A double-group setup, UL certification and add-ons change the price, and shipping is quoted for your address.", ca: "Most Canadian owners invest about CA$25,000, depending on the final build: the espresso setup, certification, branding, add-ons and training. We quote every build in Canadian dollars, shipping is quoted for your address, and Canadian residents can apply for financing through iFinance." } },
-  { q: "How soon can I open?", a: "Units in stock ship right away. Made-to-order builds take about 4–8 weeks, and delivery typically adds 2–6 weeks depending on where you are. If you want to open for spring markets, ordering in winter gives you time to arrange permits and a spot." },
+  { q: "How soon can I open?", a: "A bike in stock ships right away. Made-to-order builds take about 6–8 weeks, and delivery typically adds 2–6 weeks depending on where you are. If you want to open for spring markets, ordering in winter gives you time to arrange permits and a spot." },
   { q: "What about winter and rain?", a: "Many owners move indoors in the cold months: office lobbies, hospitals, campuses, residential towers, grocery stores and gyms. The bike needs no build-out on the landlord’s side: it rolls in, plugs into a standard outlet and serves." },
   { q: "How far can it go, and can it handle hills?", a: "The electric motor climbs steep hills fully loaded, with twin hydraulic brakes and front and rear suspension. One battery pack covers about 10–15 km and two about 20–30 km, depending on the roads." },
   { q: "Is this a franchise?", a: "No. You buy the bike and own it outright. There are no royalties, no marketing fees and no monthly contracts, and you choose your own name, menu and prices." },
@@ -350,6 +350,11 @@ const FAQ_BASE = [
   { q: "Are there import duties?", a: { us: "Your quote shows shipping and any duties or brokerage for your address before you order, so nothing surprises you at delivery.", ca: null } },
   { q: "How do I pay, and is there financing?", a: { us: "You receive an invoice within one business day of confirming your build and pay by bank transfer or card. Our financing partner serves Canadian residents only, so US buyers usually pay by transfer or card or arrange their own bank or equipment financing; tell us and we’ll share what other US owners did. You can reserve a production spot with a US$250 deposit, applied in full to your order.", ca: "You receive an invoice within one business day of confirming your build and pay by bank transfer (CAD or USD) or card. Canadian residents can apply for financing through iFinance. You can reserve a production spot with a US$250 deposit, applied in full to your order." } },
   { q: "Can I sell more than coffee?", a: "Yes. It’s your business and your menu: specialty coffee, tea, matcha, hot chocolate and more. The Iced Express package suits ice cream and bottled drinks, and a multi-grill option adds hot food." },
+  { q: "What is the difference between builds?", a: { us: "The espresso setup (none, single group or double group), certification, branding and add-ons. Most owners choose a ready-to-serve espresso build at about US$15,850. Working with a smaller budget? Ask about a simpler build you can upgrade later.", ca: "The espresso setup (none, single group or double group), certification, branding and add-ons. Most Canadian owners invest about CA$25,000. Working with a smaller budget? Ask about a simpler build you can upgrade later, or apply for financing through iFinance." } },
+  { q: "Can I brand it and choose the colours?", a: "Yes. Your name, logo and colours on the body and canopy, a wrap if you want one, and a custom LED sign. Owners also add a nitro cold brew tap, an LED screen or a latte art printer." },
+  { q: "How big is it, and will it fit in a van or through a door?", a: "The body is 120 × 90 cm (47 × 35 in) and 151 cm tall closed, on a cargo bike frame. Tell us your doorway, elevator or van measurements and we’ll check before you order." },
+  { q: "How much can I make?", a: "It depends on your prices, costs, location and hours, so we don’t promise income. Use the break-even calculator with your own numbers, and we’ll walk through your plan on a call." },
+  { q: "Where is Coffee Bike World based?", a: "Vancouver, British Columbia, at 1356 Frances St. We have run our own Coffee Bikes here for more than eight years and ship to owners across Canada and the US." },
   { q: "Can I see one before I buy?", a: "Start with the 6-minute walkthrough on this page, then book a discovery call and ask us anything, down to the portafilter size. If you are near Vancouver, ask about seeing one in person." },
   { q: "Where do I store and charge it overnight?", a: "Most owners keep it in a garage, storage unit or partner venue with a standard outlet. Smart chargers are included, and the 200 W solar roof tops the batteries up outdoors." },
 ];
