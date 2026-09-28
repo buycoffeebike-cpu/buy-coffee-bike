@@ -87,9 +87,19 @@ export const INTENT_KEYS = Object.keys(INTENTS);
 
 export const TRUST = [
   { k: 'As seen on', v: 'Dragons’ Den' },
-  { k: 'Cups served', v: '1.5M+' },
+  { k: 'Bikes sold', v: '36' },
   { k: 'Running our own', v: '8+ years' },
   { k: 'Warranty', v: '1 year' },
+];
+
+/** From the Coffee Bike Vol. 2 specification and health inquiry package (the PDF linked on the page). */
+export const SPECS = [
+  { k: 'Body', v: '120 × 90 cm (47 × 35 in), 151 cm tall closed' },
+  { k: 'Payload', v: 'About 200–300 kg (440–660 lb)' },
+  { k: 'Motor', v: '500, 750 or 1,250 W to suit local rules; pedal assist and throttle' },
+  { k: 'Water', v: 'Fresh 50 L, waste 60 L, hot and cold on demand; tanks can be resized' },
+  { k: 'Power', v: '2,000 W inverter, smart chargers, 200 W solar roof; switches to shore power' },
+  { k: 'Output', v: 'About 60–100 drinks an hour, depending on menu and barista' },
 ];
 
 /**
@@ -204,4 +214,8 @@ export const FAQS = [
   { q: 'Do you deliver to the US and Canada?', a: 'Yes. Every Coffee Bike is crated, palletized, insured and delivered to your door. We quote shipping before you confirm your order.' },
   { q: 'How do I pay, and is there financing?', a: 'You receive an invoice within one business day of confirming your build and pay by bank transfer or card (3.9% card fee). Canadian residents can apply for financing through iFinance. You can also reserve a production spot with a US$250 deposit, which is applied in full to your order.' },
   { q: 'Can I sell more than coffee?', a: 'Yes. It’s your business and your menu: specialty coffee, tea, matcha, hot chocolate and more. The Iced Express package suits ice cream and bottled drinks, and a multi-grill option adds hot food.' },
+  { q: 'Is financing available in the US?', a: 'Not through us today: our financing partner, iFinance, serves Canadian residents. US buyers usually pay by bank transfer or card, or arrange their own bank or equipment financing before ordering.' },
+  { q: 'Can I see one before I buy?', a: 'Start with the 6-minute walkthrough on this page, then book a discovery call and ask us anything, down to the portafilter size. If you are near Vancouver, ask about seeing one in person.' },
+  { q: 'Where do I store and charge it overnight?', a: 'Most owners keep it in a garage, storage unit or partner venue with a standard outlet. Smart chargers are included, and the 200 W solar roof tops the batteries up outdoors.' },
+  { q: 'Can I pay in Canadian dollars?', a: 'Yes. Prices are shown in US and Canadian dollars, and invoices can be paid by bank transfer in CAD or USD.' },
 ];

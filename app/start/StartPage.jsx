@@ -6,7 +6,7 @@ import { ArrowRight, Calendar, Check, ChevronDown, CreditCard, FileText, ShieldC
 import LiteYouTube from '../../components/LiteYouTube';
 import {
   ADS_CONVERSION, ADS_TAG, CALL_URL, COMPARE_COLS, COMPARE_NOTE, COMPARE_ROWS, DEPOSIT_URL, FAQS, FEATURES, FINANCING_URL, FOUNDER,
-  HERO, INTENTS, LOGO, OWNERS, PRICE_LINES, QUOTE_FORM_ID, QUOTE_FORM_URL, SPEC_SHEET, STEPS, TRUST, WALKTHROUGH_ID,
+  HERO, INTENTS, LOGO, OWNERS, PRICE_LINES, QUOTE_FORM_ID, QUOTE_FORM_URL, SPEC_SHEET, SPECS, STEPS, TRUST, WALKTHROUGH_ID,
 } from './content';
 
 const RED = '#E31E24';
@@ -269,17 +269,25 @@ export default function StartPage({ intent = 'bike' }) {
             </article>
           ))}
         </div>
+        <dl className="mt-8 grid gap-x-8 gap-y-3 rounded-xl bg-white p-5 sm:grid-cols-2 sm:p-6">
+          {SPECS.map((s) => (
+            <div key={s.k} className="grid grid-cols-[88px_1fr] gap-3 text-[15px]">
+              <dt className="font-bold text-zinc-950">{s.k}</dt>
+              <dd className="text-zinc-700">{s.v}</dd>
+            </div>
+          ))}
+        </dl>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
           <Cta where="build" intent={intent}>Get my price &amp; build options <ArrowRight className="h-5 w-5" /></Cta>
-          <a href={SPEC_SHEET} target="_blank" rel="noopener" onClick={() => track('spec_sheet', { intent })} className="inline-flex items-center gap-2 px-2 py-3 font-semibold text-zinc-800 underline underline-offset-4">
-            <FileText className="h-5 w-5" /> Full specifications (PDF)
+          <a href={SPEC_SHEET} target="_blank" rel="noopener" onClick={() => track('spec_sheet', { where: 'build', intent })} className="inline-flex items-center gap-2 px-2 py-3 font-semibold text-zinc-800 underline underline-offset-4">
+            <FileText className="h-5 w-5" /> Specs and health inquiry package (PDF)
           </a>
         </div>
       </Section>
 
       {/* owners */}
       <Section id="owners" tone="dark">
-        <Heading dark eyebrow="Owners" title="Running Coffee Bikes across Canada and the US" sub="Side businesses, second careers, cafés adding a mobile bar. In their own words." />
+        <Heading dark eyebrow="Owners" title="Running Coffee Bikes across Canada and the US" sub="36 bikes sold to 31 independent owners in Canada, the US and Peru: side businesses, second careers, cafés adding a mobile bar. In their own words." />
         <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           {(allOwners ? OWNERS : OWNERS.slice(0, 4)).map((o, i) => (
             <figure key={o.name} className={`${!allOwners && i === 3 ? 'hidden lg:flex' : 'flex'} flex-col rounded-xl bg-zinc-900 p-5`}>
@@ -431,6 +439,25 @@ export default function StartPage({ intent = 'bike' }) {
               <p className="mt-1.5 leading-relaxed text-zinc-600">{d}</p>
             </div>
           ))}
+        </div>
+      </Section>
+
+      {/* permits */}
+      <Section id="permits">
+        <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-start">
+          <Heading eyebrow="Permits" title="Ask your health department before you buy" sub="Every city has its own rules, and approval is up to them. Our package gives them what they usually ask for, so you can check before you order." />
+          <div className="rounded-xl border border-zinc-200 p-6">
+            <h3 className="font-bold text-zinc-950">The free health inquiry package includes</h3>
+            <ul className="mt-3 space-y-2.5 text-[15px] leading-relaxed text-zinc-700">
+              {['Specifications, dimensions and blueprints', 'Sink, water tank, pump and hot water setup', 'A checklist of what to ask: sinks, water capacity, commissary, where you can vend', 'A sample letter to send your health department or city'].map((x) => (
+                <li key={x} className="flex gap-3"><Check className="mt-1 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
+              ))}
+            </ul>
+            <a href={SPEC_SHEET} target="_blank" rel="noopener" onClick={() => track('spec_sheet', { where: 'permits', intent })} className="mt-5 inline-flex items-center gap-2 rounded-md border border-zinc-300 px-4 py-3 font-bold text-zinc-900 hover:border-zinc-500">
+              <FileText className="h-5 w-5" /> Download the package (PDF)
+            </a>
+            <p className="mt-3 text-xs leading-relaxed text-zinc-500">A reference for your conversation with the authorities, not a guarantee of approval. Sink layout and tank sizes can be changed before your bike is built.</p>
+          </div>
         </div>
       </Section>
 
