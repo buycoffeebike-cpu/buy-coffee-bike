@@ -2,11 +2,11 @@
 
 import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, BatteryCharging, Building2, Calendar, Check, ChevronDown, Clock, Coffee, CreditCard, Droplets, FileText, Mail, MapPin, ShieldCheck, Snowflake, Sun, Users, Warehouse } from 'lucide-react';
+import { ArrowRight, BatteryCharging, Calendar, Check, ChevronDown, Clock, Coffee, CreditCard, Droplets, FileText, Mail, MapPin, ShieldCheck, Snowflake, Sun, Users } from 'lucide-react';
 import LiteYouTube from '../../components/LiteYouTube';
 import {
   ADDRESS, ADS_TAG, CALL_URL, COMPARE_COLS, DEPOSIT_URL, EMAIL, FEATURES, INCLUDED, INTENTS, LOGO, MARKETS, OWNERS, PHOTOS, PRICING,
-  SPEC_SHEET, SPECS, STEPS, TRUST, WALKTHROUGH_ID, compareNote, compareRows, faqs, whatsappLink,
+  SPEC_SHEET, SPECS, TRUST, WALKTHROUGH_ID, compareNote, compareRows, faqs, steps, whatsappLink,
 } from './content';
 import { HeroQuestion, QuoteFlow, QuoteModal, QuoteProvider, RED, useQuote } from './quote';
 
@@ -73,6 +73,9 @@ function Page({ intent, market }) {
   const P = PRICING[market];
   const q = useQuote();
   const [vs, setVs] = useState(I.compare);
+  // phones get the three rows that matter most (cost, running costs, moving it); the rest on request
+  const [allRows, setAllRows] = useState(false);
+  const [allFaq, setAllFaq] = useState(false);
   const [sticky, setSticky] = useState(false);
   const quoteRef = useRef(null);
   const quoteInView = useRef(false);
@@ -139,7 +142,7 @@ function Page({ intent, market }) {
   const compareTitle = { truck: 'a coffee truck', trailer: 'a coffee trailer', cart: 'a coffee cart', cafe: 'a storefront café' }[I.compare] ?? 'a coffee truck';
   return (
     <div className="bg-white text-zinc-900 antialiased">
-      {/* header: no way off the page except the footer; call and text one tap away */}
+      {/* header: no way off the page except the footer; WhatsApp one tap away */}
       <header className="sticky top-0 z-40 bg-black text-white" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
           <a href="#top" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} aria-label="Coffee Bike World, back to top" className="flex items-center">
@@ -149,7 +152,7 @@ function Page({ intent, market }) {
           <div className="flex items-center gap-1 sm:gap-5">
             <a href={whatsappLink(market)} target="_blank" rel="noopener" onClick={() => track('whatsapp_click', { where: 'header', intent, market })} className="inline-flex items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold text-zinc-300 hover:text-white" aria-label="Message us on WhatsApp">
               <WhatsAppIcon className="h-5 w-5" />
-              <span className="hidden md:inline">WhatsApp</span>
+              <span className="text-[13px] md:text-sm">WhatsApp</span>
             </a>
             <a href="#price" className="hidden text-sm font-semibold text-zinc-300 hover:text-white sm:inline">Pricing</a>
             <a href="#owners" className="hidden text-sm font-semibold text-zinc-300 hover:text-white sm:inline">Owners</a>
@@ -179,6 +182,7 @@ function Page({ intent, market }) {
           <div className="md:col-start-1 md:row-start-2">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[14px] font-semibold text-zinc-800">
               <span className="inline-flex items-center gap-1.5"><Users className="h-4 w-4" style={{ color: RED }} aria-hidden /> 49 bikes sold to 36 owners</span>
+              <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4" style={{ color: RED }} aria-hidden /> {M.ownersIn}</span>
               <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4" style={{ color: RED }} aria-hidden /> 1-year warranty</span>
             </div>
             <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
@@ -186,16 +190,21 @@ function Page({ intent, market }) {
               <span className="text-[15px] text-zinc-600">{M.heroPriceNote}</span>
             </div>
             <ul className="mt-4 hidden gap-1.5 text-[15px] text-zinc-800 md:grid">
-              {['Sinks, hot water and a fridge on board', 'Rides where trucks can’t park, and indoors in winter', 'Yours outright: no franchise fees, no royalties'].map((x) => (
+              {['Sinks, hot water and a fridge on board', 'Goes where trucks can’t, where your permits allow, and indoors in winter', 'Yours outright: no franchise fees, no royalties'].map((x) => (
                 <li key={x} className="flex gap-2.5"><Check className="mt-0.5 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
               ))}
             </ul>
           </div>
           <div className="md:col-start-1 md:row-start-3">
             <HeroQuestion />
-            <a href="#walkthrough" onClick={() => track('cta_click', { where: 'hero_video', intent, market })} className="mt-3 inline-flex items-center gap-2 py-1 text-[15px] font-bold text-zinc-800 underline underline-offset-4">
-              Or watch the 6-minute walkthrough first
-            </a>
+            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1">
+              <a href={CALL_URL} target="_blank" rel="noopener" onClick={() => track('cta_click', { where: 'hero_call', intent, market })} className="inline-flex items-center gap-2 py-1 text-[15px] font-bold text-zinc-800 underline underline-offset-4">
+                <Calendar className="h-4 w-4" aria-hidden /> Prefer to talk? Book a 15-minute call
+              </a>
+              <a href="#walkthrough" onClick={() => track('cta_click', { where: 'hero_video', intent, market })} className="inline-flex items-center gap-2 py-1 text-[15px] font-bold text-zinc-800 underline underline-offset-4">
+                Watch the 6-minute walkthrough
+              </a>
+            </div>
           </div>
         </div>
         <div className="border-t border-zinc-200 bg-white">
@@ -225,7 +234,7 @@ function Page({ intent, market }) {
             ))}
           </div>
           <div className="mt-4 divide-y divide-zinc-200 rounded-xl border border-zinc-200">
-            {rows.map((r) => (
+            {(allRows ? rows : rows.slice(0, 3)).map((r) => (
               <div key={r.label} className="grid gap-2 p-4">
                 <div className="text-xs font-bold uppercase tracking-wider text-zinc-500">{r.label}</div>
                 <div className="grid grid-cols-2 gap-3 text-sm">
@@ -235,6 +244,11 @@ function Page({ intent, market }) {
               </div>
             ))}
           </div>
+          {!allRows ? (
+            <button type="button" onClick={() => { setAllRows(true); track('compare_more', { intent, market }); }} className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-zinc-800 underline underline-offset-4">
+              Show all {rows.length} differences <ChevronDown className="h-4 w-4" aria-hidden />
+            </button>
+          ) : null}
         </div>
         <div className="mt-10 hidden overflow-x-auto rounded-xl border border-zinc-200 md:block">
           <table className="w-full min-w-[860px] border-collapse text-left text-sm">
@@ -307,65 +321,6 @@ function Page({ intent, market }) {
         <a href={SPEC_SHEET} target="_blank" rel="noopener" onClick={() => track('spec_sheet', { where: 'build', intent, market })} className="mt-6 inline-flex items-center gap-2 py-2 font-semibold text-zinc-800 underline underline-offset-4">
           <FileText className="h-5 w-5" /> Specs and health inquiry package (PDF)
         </a>
-      </Section>
-
-      {/* walkthrough */}
-      <Section id="walkthrough">
-        <Heading eyebrow="See it" title="Walk around the bike in six minutes" sub="Every compartment, the espresso machine, the batteries and how it rides." />
-        <div className="relative mt-8 aspect-video overflow-hidden rounded-xl bg-zinc-900">
-          <LiteYouTube videoId={WALKTHROUGH_ID} title="Coffee Bike full walkthrough" trackingName="coffee_bike_walkthrough_start_page" caption="Full walkthrough · 6:32" />
-        </div>
-      </Section>
-
-      <DayAndWhere />
-
-      {/* seasons */}
-      <Section id="seasons" tone="soft">
-        <div className="grid gap-10 lg:grid-cols-[1fr_0.8fr] lg:items-center">
-          <div>
-            <Heading eyebrow="All year" title="A business for all four seasons" sub={market === 'ca' ? 'The first question Canadians ask. Here is how owners answer it.' : 'The most common question from the northern US and Canada. Here is how owners answer it.'} />
-            <div className="mt-8 grid gap-4">
-              {[
-                { icon: Sun, t: 'Spring to fall', d: 'Farmers markets, festivals, sports games, weddings and private events.' },
-                { icon: Snowflake, t: 'Winter', d: 'Indoors: office lobbies, hospitals, campuses, residential towers, grocery stores and gyms, plus holiday markets outside.' },
-                { icon: Building2, t: 'Why landlords say yes', d: 'No build-out and no plumbing or electrical changes on their side. The bike rolls in, plugs into a standard outlet and serves.' },
-              ].map(({ icon: Icon, t, d }) => (
-                <div key={t} className="flex gap-4 rounded-xl bg-white p-5">
-                  <Icon className="mt-0.5 h-6 w-6 flex-none" style={{ color: RED }} aria-hidden />
-                  <div>
-                    <h3 className="text-lg font-bold text-zinc-950">{t}</h3>
-                    <p className="mt-1 leading-relaxed text-zinc-600">{d}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="relative aspect-square overflow-hidden rounded-2xl bg-zinc-200">
-            <Image src={PHOTOS.indoors.src} alt={PHOTOS.indoors.alt} fill sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover object-[50%_60%]" />
-          </div>
-        </div>
-      </Section>
-
-      {/* owners */}
-      <Section id="owners" tone="dark">
-        <Heading dark eyebrow="Owners" title="49 bikes. 36 owners. Here are some of them." sub="First businesses, second careers, cafés and roasteries adding a mobile bar, and brands that take their coffee to the crowd. Several owners run two or three bikes." />
-        {/* the reviews as the main sales page shows them: each owner's own photo, then their words */}
-        <div className="-mx-4 mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:px-6" onScroll={onOwnersScroll}>
-          {owners.map((o) => (
-            <figure key={o.name} className="flex w-[260px] flex-none snap-start flex-col overflow-hidden rounded-xl bg-zinc-900">
-              <div className="relative aspect-[4/5] bg-zinc-800">
-                <Image src={o.img} alt={`${o.name}, ${o.biz}`} fill sizes="260px" className="object-cover" />
-              </div>
-              <figcaption className="flex flex-1 flex-col p-4">
-                <div className="font-bold text-white">{o.name}</div>
-                <div className="text-sm text-zinc-400">{o.place} · {o.biz}</div>
-                <div className="mt-0.5 text-xs text-zinc-500">Owner for {o.months >= 12 ? `${Math.floor(o.months / 12)}+ year${o.months >= 24 ? 's' : ''}` : `${o.months} months`}</div>
-                <blockquote className="mt-3 text-[14px] italic leading-relaxed text-zinc-200">“{o.quote}”</blockquote>
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-        <p className="mt-2 text-sm text-zinc-400">Swipe for more owners →</p>
       </Section>
 
       {/* price */}
@@ -449,11 +404,69 @@ function Page({ intent, market }) {
         </div>
       </section>
 
+      {/* owners */}
+      <Section id="owners" tone="dark">
+        <Heading dark eyebrow="Owners" title="49 bikes. 36 owners. Here are some of them." sub="First businesses, second careers, cafés and roasteries adding a mobile bar, and brands that take their coffee to the crowd. Several owners run two or three bikes." />
+        {/* the reviews as the main sales page shows them: each owner's own photo, then their words */}
+        <div className="-mx-4 mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:px-6" onScroll={onOwnersScroll}>
+          {owners.map((o) => (
+            <figure key={o.name} className="flex w-[260px] flex-none snap-start flex-col overflow-hidden rounded-xl bg-zinc-900">
+              <div className="relative aspect-[4/5] bg-zinc-800">
+                <Image src={o.img} alt={`${o.name}, ${o.biz}`} fill sizes="260px" className="object-cover" />
+              </div>
+              <figcaption className="flex flex-1 flex-col p-4">
+                <div className="font-bold text-white">{o.name}</div>
+                <div className="text-sm text-zinc-400">{o.place} · {o.biz}</div>
+                <div className="mt-0.5 text-xs text-zinc-500">Owner for {o.months >= 12 ? `${Math.floor(o.months / 12)}+ year${o.months >= 24 ? 's' : ''}` : `${o.months} months`}</div>
+                <blockquote className="mt-3 text-[14px] italic leading-relaxed text-zinc-200">“{o.quote}”</blockquote>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+        <p className="mt-2 text-sm text-zinc-400">Swipe for more owners →</p>
+      </Section>
+
+      {/* walkthrough */}
+      <Section id="walkthrough">
+        <Heading eyebrow="See it" title="Walk around the bike in six minutes" sub="Every compartment, the espresso machine, the batteries and how it rides." />
+        <div className="relative mt-8 aspect-video overflow-hidden rounded-xl bg-zinc-900">
+          <LiteYouTube videoId={WALKTHROUGH_ID} title="Coffee Bike full walkthrough" trackingName="coffee_bike_walkthrough_start_page" caption="Full walkthrough · 6:32" />
+        </div>
+      </Section>
+
+      <DayAndWhere />
+
+      {/* seasons */}
+      <Section id="seasons" tone="soft">
+        <div className="grid gap-10 lg:grid-cols-[1fr_0.8fr] lg:items-center">
+          <div>
+            <Heading eyebrow="All year" title="A business for all four seasons" sub={market === 'ca' ? 'The first question Canadians ask. Here is how owners answer it.' : 'The most common question from the northern US and Canada. Here is how owners answer it.'} />
+            <div className="mt-8 grid gap-4">
+              {[
+                { icon: Sun, t: 'Spring to fall', d: 'Farmers markets, festivals, sports games, weddings and private events.' },
+                { icon: Snowflake, t: 'Winter, indoors', d: 'Office lobbies, hospitals, campuses, residential towers, grocery stores and gyms. Landlords need no build-out: the bike rolls in, plugs into a standard outlet and serves.' },
+              ].map(({ icon: Icon, t, d }) => (
+                <div key={t} className="flex gap-4 rounded-xl bg-white p-5">
+                  <Icon className="mt-0.5 h-6 w-6 flex-none" style={{ color: RED }} aria-hidden />
+                  <div>
+                    <h3 className="text-lg font-bold text-zinc-950">{t}</h3>
+                    <p className="mt-1 leading-relaxed text-zinc-600">{d}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="relative aspect-square overflow-hidden rounded-2xl bg-zinc-200">
+            <Image src={PHOTOS.indoors.src} alt={PHOTOS.indoors.alt} fill sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover object-[50%_60%]" />
+          </div>
+        </div>
+      </Section>
+
       {/* how buying works */}
       <Section id="how" tone="soft">
         <Heading eyebrow="How buying works" title="From your first message to your first customer" />
-        <ol className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {STEPS.map((s, i) => (
+        <ol className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+          {steps(market).map((s, i) => (
             <li key={s.t} className="rounded-xl bg-white p-6">
               <div className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-extrabold text-white" style={{ backgroundColor: RED }}>{i + 1}</div>
               <h3 className="mt-4 text-lg font-bold text-zinc-950">{s.t}</h3>
@@ -486,7 +499,7 @@ function Page({ intent, market }) {
       <Section id="faq" tone="soft">
         <Heading eyebrow="Questions" title="What buyers ask before ordering" />
         <div className="mt-8 divide-y divide-zinc-200 rounded-xl bg-white">
-          {questions.map((f) => (
+          {(allFaq ? questions : questions.slice(0, 8)).map((f) => (
             <details key={f.q} className="group p-5" onToggle={(e) => e.currentTarget.open && track('faq_open', { q: f.q.slice(0, 60), intent, market })}>
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-bold text-zinc-950">
                 {f.q}
@@ -496,6 +509,11 @@ function Page({ intent, market }) {
             </details>
           ))}
         </div>
+        {!allFaq && questions.length > 8 ? (
+          <button type="button" onClick={() => { setAllFaq(true); track('faq_more', { intent, market }); }} className="mt-4 inline-flex items-center gap-1 font-bold text-zinc-800 underline underline-offset-4">
+            Show all {questions.length} questions <ChevronDown className="h-4 w-4" aria-hidden />
+          </button>
+        ) : null}
       </Section>
 
       {/* last call */}
@@ -521,7 +539,6 @@ function Page({ intent, market }) {
           </div>
           <div className="flex flex-wrap gap-x-6 gap-y-2 md:justify-end">
             <a href="https://coffeebike.ca" className="hover:text-white">coffeebike.ca</a>
-            <a href="https://coffeebike.ca/buy-a-mobile-coffee-bike" className="hover:text-white">Configure a bike</a>
             <a href="https://coffeebike.ca/privacy-policy/" className="hover:text-white">Privacy policy</a>
             <span>© {new Date().getFullYear()}</span>
           </div>
@@ -550,40 +567,38 @@ function Page({ intent, market }) {
  */
 function DayAndWhere() {
   const day = [
-    { icon: Clock, t: 'Open in minutes', d: 'Ride in, open the canopy and start the machine: propane outdoors, a standard outlet indoors.' },
-    { icon: Coffee, t: 'Keeps up with a line', d: 'About 60–100 drinks an hour, depending on your menu and your barista.' },
-    { icon: Droplets, t: 'Water on board', d: '50 L fresh and 60 L waste, hot and cold on demand. Refill and empty at your base.' },
-    { icon: BatteryCharging, t: 'Power for the day', d: 'Batteries with a 2,000 W inverter and a 200 W solar roof, or shore power where there is an outlet.' },
-    { icon: Warehouse, t: 'Stored overnight', d: 'A garage, storage unit or partner venue with a standard outlet for the smart chargers.' },
+    { icon: Clock, t: 'Open in minutes', d: 'Ride in, open the canopy, start the machine: propane outdoors, a standard outlet indoors.' },
+    { icon: Coffee, t: 'Keeps up with a line', d: 'About 60–100 drinks an hour, depending on your menu and barista.' },
+    { icon: Droplets, t: 'Water on board', d: '50 L fresh, 60 L waste, hot and cold on demand.' },
+    { icon: BatteryCharging, t: 'Power and storage', d: 'Batteries, a 2,000 W inverter and a solar roof; overnight in a garage or partner venue with an outlet.' },
   ];
-  const where = ['Farmers markets and street fairs', 'Weddings, parties and private events', 'Office lobbies, campuses and hospitals', 'Sports games and community events', 'Brand launches and corporate events', 'Partner spots: a gym, a grocery entrance, a café patio'];
+  const where = ['Farmers markets', 'Weddings and private events', 'Office lobbies', 'Campuses and hospitals', 'Sports games', 'Brand launches', 'Partner venues'];
   return (
     <Section id="day">
-      <div className="grid gap-12 lg:grid-cols-2">
+      <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
         <div>
           <Heading eyebrow="Day to day" title="A day with a Coffee Bike" />
-          <div className="mt-8 grid gap-3">
+          <dl className="mt-6 grid gap-4">
             {day.map(({ icon: Icon, t, d }) => (
-              <div key={t} className="flex gap-4 rounded-xl border border-zinc-200 p-4">
-                <Icon className="mt-0.5 h-6 w-6 flex-none" style={{ color: RED }} aria-hidden />
+              <div key={t} className="flex gap-3.5">
+                <Icon className="mt-0.5 h-5 w-5 flex-none" style={{ color: RED }} aria-hidden />
                 <div>
-                  <h3 className="font-bold text-zinc-950">{t}</h3>
-                  <p className="mt-0.5 text-[15px] leading-relaxed text-zinc-600">{d}</p>
+                  <dt className="font-bold text-zinc-950">{t}</dt>
+                  <dd className="text-[15px] leading-relaxed text-zinc-600">{d}</dd>
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-        <div>
-          <Heading eyebrow="Where owners sell" title="Take your coffee to the crowd" sub="Your permits decide where you can vend, so every city is different. Many owners start with private events and a partner venue, then add markets." />
-          <ul className="mt-8 grid gap-2.5 sm:grid-cols-2">
+          </dl>
+          <h3 className="mt-8 font-bold text-zinc-950">Where owners sell</h3>
+          <ul className="mt-2.5 flex flex-wrap gap-2">
             {where.map((x) => (
-              <li key={x} className="flex gap-2.5 rounded-lg bg-[#F4F4F3] px-3.5 py-3 text-[15px] font-semibold text-zinc-900"><MapPin className="mt-0.5 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
+              <li key={x} className="inline-flex items-center gap-1.5 rounded-full bg-[#F4F4F3] px-3 py-1.5 text-sm font-semibold text-zinc-900"><MapPin className="h-3.5 w-3.5 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
             ))}
           </ul>
-          <div className="relative mt-6 aspect-[4/3] overflow-hidden rounded-2xl bg-zinc-200">
-            <Image src={PHOTOS.boardwalk.src} alt={PHOTOS.boardwalk.alt} fill sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover object-[50%_45%]" />
-          </div>
+          <p className="mt-3 text-sm text-zinc-500">Your permits decide where you can vend, so every city is different.</p>
+        </div>
+        <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-zinc-200">
+          <Image src={PHOTOS.boardwalk.src} alt={PHOTOS.boardwalk.alt} fill sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover object-[50%_45%]" />
         </div>
       </div>
     </Section>
@@ -634,7 +649,7 @@ function Numbers({ intent, market }) {
   return (
     <section id="numbers" className="scroll-mt-16 bg-zinc-950 py-14 text-white md:py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <Heading dark eyebrow="Break-even" title="How many drinks cover the bike?" sub="Enter your own price and cost per drink. Nothing is filled in for you, because only you know your market." />
+        <Heading dark eyebrow="Break-even" title="How many drinks cover the bike?" sub="Enter your own price and cost per drink. Only the typical build price is filled in; change it to yours. Nothing else is assumed, because only you know your market." />
         <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_1fr]">
           <div className="grid grid-cols-2 gap-4">
             {field(`Your price per drink (${cur})`, price, setPrice, { min: 0, step: 0.25, id: 'calc-price', placeholder: 'Your price' })}

@@ -281,7 +281,7 @@ export function QuoteFlow({ where = 'inline' }) {
   const set = (k) => (e) => q.setContact((c) => ({ ...c, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
   const blur = (k) => () => setBlurred((b) => ({ ...b, [k]: true }));
   const suggestion = emailFix(q.contact.email);
-  const title = key === 'fit' ? 'Does a typical build fit your plan?' : key === 'contact' ? 'Where should we send your price?' : QUESTIONS[key].title;
+  const title = key === 'fit' ? M.fitQuestion : key === 'contact' ? 'Where should we send your price?' : QUESTIONS[key].title;
 
   return (
     <div className="text-left">
@@ -414,6 +414,18 @@ function Thanks() {
       </h3>
       <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">We’ll reply within one business day with your price and build options, and we’ll message you if a quick question helps.</p>
 
+      {/* the call comes first: 8 of 9 buyers planned their build on one */}
+      <div className="mt-5 rounded-xl border-2 border-zinc-900 p-4">
+        <p className="flex items-center gap-2 font-extrabold text-zinc-950"><Calendar className="h-5 w-5" aria-hidden /> Step 1 of 2 done. Next: pick a time to review your build</p>
+        <p className="mt-1 text-sm text-zinc-600">A 15-minute call. Most owners planned their build on one with us.</p>
+        <a href={booking} target="_blank" rel="noopener" onClick={() => track('cta_click', { where: 'thanks_call', market: q.market, intent: q.intent })} className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 font-extrabold text-white" style={{ backgroundColor: RED }}>
+          Open the calendar <ArrowRight className="h-5 w-5" />
+        </a>
+        <div className="mt-3 overflow-hidden rounded-lg border border-zinc-200">
+          <iframe src={booking} title="Book a call with Coffee Bike World" className="block h-[600px] w-full border-0" loading="lazy" onLoad={() => track('booking_view', { market: q.market, intent: q.intent })} />
+        </div>
+      </div>
+
       <div className="mt-4 rounded-xl bg-zinc-100 p-4">
         <p className="text-sm font-bold uppercase tracking-wider text-zinc-500">Your starting point</p>
         <p className="mt-1 text-[15px] leading-relaxed text-zinc-900"><strong>{M.thanksPrice}</strong> {M.thanksNote}</p>
@@ -432,15 +444,6 @@ function Thanks() {
         </a>
       ) : null}
 
-      <div className="mt-5">
-        <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-zinc-500"><Calendar className="h-4 w-4" aria-hidden /> Pick a time to talk</p>
-        <div className="mt-2 overflow-hidden rounded-xl border border-zinc-200">
-          <iframe src={booking} title="Book a call with Coffee Bike World" className="block h-[640px] w-full border-0" loading="lazy" onLoad={() => track('booking_view', { market: q.market, intent: q.intent })} />
-        </div>
-        <a href={booking} target="_blank" rel="noopener" onClick={() => track('cta_click', { where: 'thanks_call', market: q.market, intent: q.intent })} className="mt-2 inline-block text-sm font-semibold text-zinc-700 underline underline-offset-4">
-          Open the calendar in a new tab
-        </a>
-      </div>
 
       <div className="mt-5 grid gap-2.5">
         <a href={SPEC_SHEET} target="_blank" rel="noopener" onClick={() => track('spec_sheet', { where: 'thanks', market: q.market, intent: q.intent })} className="flex items-center gap-3 rounded-xl border-2 border-zinc-200 px-4 py-3.5 font-bold text-zinc-900 hover:border-zinc-400">
@@ -504,7 +507,7 @@ export function HeroQuestion() {
   }
   return (
     <div>
-      <p className="text-[15px] font-bold text-zinc-950">Get your price in about a minute. What are you planning?</p>
+      <p className="text-[15px] font-bold leading-snug text-zinc-950">Get your exact price, shipping to your city and a launch plan. What are you planning?</p>
       <div className="mt-2.5 grid grid-cols-2 gap-2">
         {QUESTIONS.use.options.slice(0, 4).map((o) => (
           <button
@@ -521,6 +524,7 @@ export function HeroQuestion() {
           </button>
         ))}
       </div>
+      <p className="mt-2 text-[13px] text-zinc-600">About a minute. No payment, no obligation. We reply within one business day.</p>
     </div>
   );
 }

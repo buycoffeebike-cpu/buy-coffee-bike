@@ -48,18 +48,20 @@ export const MARKETS = {
     key: "us",
     base: "/start",
     typical: "US$15,850",
+    fitQuestion: "Is about US$15,850 realistic for you?",
+    ownersIn: "Owners in Florida, Arizona, Oregon and California",
     heroPrice: "About US$15,850",
-    heroPriceNote: "for a ready-to-serve espresso build, before tax and shipping",
+    heroPriceNote: "for a ready-to-serve espresso build, before tax. Shipping quoted to your address",
     sticky: { k: "Typical build", v: "US$15,850" },
     fitLine: "Most US owners invest about US$15,850 for a ready-to-serve espresso build, before tax and shipping. Your final price depends on your build.",
     fit: [
-      { v: "fits", t: "Yes, that works" },
-      { v: "finance", t: "Yes, with financing", d: "Help me find financing" },
-      { v: "smaller", t: "I need a smaller build" },
+      { v: "fits", t: "Yes, I can plan around that" },
+      { v: "finance", t: "Yes, with financing", d: "We’ll send you US financing options" },
+      { v: "smaller", t: "I need a simpler, lower-cost build" },
       { v: "unsure", t: "Not sure yet" },
     ],
     thanksPrice: "A ready-to-serve espresso build is about US$15,850.",
-    thanksNote: "Your quote adds your options, shipping and any duties for your address.",
+    thanksNote: "Your quote adds your options and shipping to your address.",
     phonePlaceholder: "+1 555 555 0123",
     cityPlaceholder: "e.g. Austin, TX",
     ownersFirst: ["Portland, OR", "Lithia, FL", "Lawndale, CA", "Tempe, AZ"],
@@ -68,14 +70,16 @@ export const MARKETS = {
     key: "ca",
     base: "/start/ca",
     typical: "CA$25,000",
+    fitQuestion: "Is about CA$25,000 realistic for you?",
+    ownersIn: "Owners in BC, Alberta, Manitoba and Ontario",
     heroPrice: "About CA$25,000",
-    heroPriceNote: "for a typical Canadian build, depending on your final build. Taxes extra",
+    heroPriceNote: "for a typical Canadian build, depending on your final build. Taxes extra; shipping quoted to your address",
     sticky: { k: "Typical build", v: "CA$25,000" },
     fitLine: "Most Canadian owners invest about CA$25,000, depending on the final build. Taxes are extra and shipping is quoted for your address.",
     fit: [
-      { v: "fits", t: "Yes, that works" },
+      { v: "fits", t: "Yes, I can plan around that" },
       { v: "finance", t: "Yes, with financing", d: "Through iFinance, on approved credit" },
-      { v: "smaller", t: "I need a smaller build" },
+      { v: "smaller", t: "I need a simpler, lower-cost build" },
       { v: "unsure", t: "Not sure yet" },
     ],
     thanksPrice: "Most Canadian owners invest about CA$25,000, depending on the final build.",
@@ -204,7 +208,7 @@ const MONEY_ROWS = {
     },
     {
       label: 'Running costs',
-      bike: 'No gas for driving it and no commercial auto policy. Charging costs about a dollar a day',
+      bike: 'No gas to drive it. Charging costs about a dollar a day',
       truck: 'Fuel and maintenance US$500–1,000 a month; commercial auto insurance about US$2,500 a year',
       trailer: 'A tow vehicle, generator fuel and a place to store it',
       cart: 'A vehicle or trailer to haul it between spots',
@@ -222,7 +226,7 @@ const MONEY_ROWS = {
     },
     {
       label: 'Running costs',
-      bike: 'No gas for driving it and no commercial auto policy. Charging costs about a dollar a day',
+      bike: 'No gas to drive it. Charging costs about a dollar a day',
       truck: 'Fuel and maintenance CA$700–1,400 a month; commercial auto insurance about CA$3,400 a year',
       trailer: 'A tow vehicle, generator fuel and a place to store it',
       cart: 'A vehicle or trailer to haul it between spots',
@@ -283,12 +287,12 @@ export const FEATURES = [
  * left out of Andrew's quote (an earnings claim on an ads page needs a disclosure the page cannot carry).
  */
 export const OWNERS = [
-  { name: "Colby", place: "Vancouver, BC", biz: "Cafe Racer Coffee Bike", months: 14, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Racer.png", quote: "I have a corporate 9-to-5 and two boys in soccer, so a brick-and-mortar was never going to work for my life. The Coffee Bike fits perfectly — I run it at my sons' Saturday games and farmers markets on Sundays, then back to the office Monday. The kids think it's the coolest thing in the world. Honestly, it pays for itself and I get to be present at every game." },
+  { name: "Colby", place: "Vancouver, BC", biz: "Cafe Racer Coffee Bike", months: 14, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Racer.png", quote: "I have a corporate 9-to-5 and two boys in soccer, so a brick-and-mortar was never going to work for my life. The Coffee Bike fits perfectly — I run it at my sons' Saturday games and farmers markets on Sundays, then back to the office Monday. The kids think it's the coolest thing in the world." },
   { name: "Benjamin", place: "Lima, Peru", biz: "Edman Bonhus", months: 28, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Edman.png", quote: "My family moved from Sweden to Peru and I started by roasting my own beans here. The Coffee Bike was how I got those beans to actual customers — direct, mobile, with no lease. It worked so well that I've now opened a permanent retail shop on top of it, and I'm planning more Coffee Bike locations across Lima. It's the most flexible way to grow I've ever seen." },
   { name: "Andrew", place: "Langford, BC", biz: "Aerobic Geisha", months: 20, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Aerobic-Geisha.png", quote: "I'm a coffee nerd first, business owner second — and the Coffee Bike let me lead with the coffee. Things grew faster than I expected. I just picked up my second bike… The dual-fuel setup keeps up with the volume and the build is genuinely commercial-grade. Worth every penny." },
   { name: "Jeremy", place: "Swan River, MB", biz: "Swan Valley Coffee Roasters", months: 10, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Swan-river.png", quote: "Swan River is a small town and I wasn't sure how a specialty coffee setup would land here. Turns out my community has been showing up for it in a big way. Farmers markets, community events, the local hockey rink — people are excited about real coffee. The bike gives me a way to bring that to them without needing a downtown storefront we just don't have." },
-  { name: "Shaun", place: "Barrie, ON", biz: "Banana Cafe Bike", months: 24, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Banana.png", quote: "Two bikes in and counting. We got nominated for a local entrepreneurial award this year, and we're catering for clients like Tesla — stuff I genuinely couldn't have imagined when I started. My goal now is to put Banana Cafe Bikes across the entire county. The model is repeatable, the margins are real, and the team behind the bike is responsive every time I need them." },
-  { name: "Tom", place: "Lithia, FL", biz: "Monkeynuts Cafe", months: 16, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Monkeynuts.png", quote: "I'm retired and I wanted something that kept me moving, kept me social, and earned a little on the side. The Coffee Bike checks every box. I take great care of mine and it takes great care of me. Got a steady event circuit going now and the locals know me. Already talking with Vlad about a second one — apparently retirement is busier than I planned." },
+  { name: "Shaun", place: "Barrie, ON", biz: "Banana Cafe Bike", months: 24, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Banana.png", quote: "Two bikes in and counting. We got nominated for a local entrepreneurial award this year, and we're catering for clients like Tesla — stuff I genuinely couldn't have imagined when I started. My goal now is to put Banana Cafe Bikes across the entire county. The model is repeatable… and the team behind the bike is responsive every time I need them." },
+  { name: "Tom", place: "Lithia, FL", biz: "Monkeynuts Cafe", months: 16, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Monkeynuts.png", quote: "I'm retired and I wanted something that kept me moving and kept me social… The Coffee Bike checks every box. I take great care of mine and it takes great care of me. Got a steady event circuit going now and the locals know me. Already talking with Vlad about a second one — apparently retirement is busier than I planned." },
   { name: "Ludmila", place: "Edmonton, AB", biz: "SIP Espresso Bar", months: 12, img: "https://coffeebike.ca/wp-content/uploads/2026/05/SIP.png", quote: "I was already baking cupcakes and pastries on the side of my corporate job, and the Coffee Bike was the missing piece. Now I show up to events with fresh bakes AND mobile espresso, and the combination is unbeatable. I still keep my day job and run this on the side — it's genuinely possible to do both if you're organized. The bike makes it work." },
   { name: "Anais", place: "Tempe, AZ", biz: "Lucy's Coffee Express", months: 8, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Lucys.png", quote: "This was a complete career change for me and I'm not going to pretend it was easy. There were real challenges getting started — permits, location, building a customer base from zero. What kept me going was Vlad and the Coffee Bike team actually answering when I called. I'm still building my name in Tempe but every week is better than the last. Not giving up." },
   { name: "Davina", place: "Portland, OR", biz: "Dibina Coffee", months: 15, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Dibina.png", quote: "I already had a coffee cart, and the Coffee Bike became the next chapter — a way to bring my Guam heritage to more people through coffee and snacks you can't find anywhere else in Portland. The mobility is what makes it. I can take my flavors to the events and neighborhoods where they resonate. It's coffee, but it's also home." },
@@ -313,15 +317,15 @@ export const PRICING = {
   us: {
     big: 'US$15,850',
     lead: 'About US$15,850',
-    leadNote: 'for a ready-to-serve espresso build, before tax. Your final price depends on the options below, shipping and any duties for your address.',
+    leadNote: 'for a ready-to-serve espresso build, before tax. Your final price depends on the options below and shipping.',
     changes: [
       { item: 'Double-group espresso setup instead of single', price: '+US$2,000', note: 'For high-volume events and long lines' },
       { item: 'UL certification for the espresso setup', price: '+US$575', note: 'Recommended in the US and Canada' },
       { item: 'Popular add-ons', price: 'US$525–2,150', note: 'Nitro cold brew tap, 33" LED screen, latte art printer, lithium batteries' },
       { item: '2-day barista training', price: 'US$850', note: 'In Vancouver or by video call' },
-      { item: 'Shipping and duties', price: 'Quoted', note: 'Crated, palletized and insured to your door; any duties shown in your quote' },
+      { item: 'Shipping', price: 'Quoted', note: 'Crated, palletized and insured to your door' },
     ],
-    financing: { t: 'Paying for it', d: 'Bank transfer or card. Need financing? Tell us in the form and we’ll share what other US owners arranged.' },
+    financing: { t: 'Paying for it', d: 'Bank transfer or card. Need financing? Pick “Yes, with financing” in the form and we’ll send you US financing options.' },
   },
   ca: {
     big: 'CA$25,000',
@@ -338,14 +342,14 @@ export const PRICING = {
   },
 };
 
-export const STEPS = [
+/** How buying works; the payment step differs by market (iFinance serves Canadian residents only). */
+const STEPS_BASE = [
   { t: 'Tell us what you’re planning', d: 'About a minute: what you’re planning, when you want to open and where.' },
-  { t: 'Get your price and options', d: 'We reply within one business day with pricing for your build and answers to your questions.' },
-  { t: 'Plan your build on a call', d: 'Setup, branding and add-ons, with someone who has run Coffee Bikes for years. No pressure.' },
-  { t: 'Approve your invoice', d: 'Pay by bank transfer or card within 5 business days. Canadians can apply for financing through iFinance.' },
-  { t: 'Built for you', d: 'Made to order in about 4–6 weeks; a bike in stock ships right away.' },
+  { t: 'Get your price, plan your build', d: 'We reply within one business day with pricing, then a short call for setup, branding and add-ons. No pressure.' },
+  { t: 'Approve your invoice', d: { us: 'Pay by bank transfer or card. Built to order in about 4–6 weeks.', ca: 'Pay by bank transfer or card, or apply for financing through iFinance. Built to order in about 4–6 weeks.' } },
   { t: 'Delivered to your door', d: 'Crated, palletized and insured, typically 2–4 weeks in transit. Then launch with the manual, videos and owners’ community.' },
 ];
+export const steps = (market) => STEPS_BASE.map((x) => ({ t: x.t, d: typeof x.d === 'string' ? x.d : x.d[market] }));
 
 /** Questions buyers ask, answered for the visitor’s market (money and financing differ between Canada and the US). */
 const FAQ_BASE = [
@@ -357,7 +361,6 @@ const FAQ_BASE = [
   { q: "Is this a franchise?", a: "No. You buy the bike and own it outright. There are no royalties, no marketing fees and no monthly contracts, and you choose your own name, menu and prices." },
   { q: "What training and support do I get?", a: { us: "Every bike comes with a 20+ page barista manual, setup videos and access to our private owners’ community. Optional: a 2-day training in Vancouver or by video call (US$850) and an online barista course (US$275). Parts are available through the owners’ portal, and the bike has a 1-year manufacturer warranty.", ca: "Every bike comes with a 20+ page barista manual, setup videos and access to our private owners’ community. Optional: a 2-day training in Vancouver or by video call and an online barista course. Parts are available through the owners’ portal, and the bike has a 1-year manufacturer warranty." } },
   { q: "Do you deliver to my door?", a: { us: "Yes, anywhere in the US. Every Coffee Bike is crated, palletized, insured and delivered to your door. We quote shipping before you confirm your order.", ca: "Yes, anywhere in Canada. Every Coffee Bike is crated, palletized, insured and delivered to your door. We quote shipping before you confirm your order." } },
-  { q: "Are there import duties?", a: { us: "Your quote shows shipping and any duties or brokerage for your address before you order, so nothing surprises you at delivery.", ca: null } },
   { q: "How do I pay, and is there financing?", a: { us: "You receive an invoice within one business day of confirming your build and pay by bank transfer or card. Our financing partner serves Canadian residents only, so US buyers usually pay by transfer or card or arrange their own bank or equipment financing; tell us and we’ll share what other US owners did. You can reserve a production spot with a US$250 deposit, applied in full to your order.", ca: "You receive an invoice within one business day of confirming your build and pay by bank transfer (CAD or USD) or card. Canadian residents can apply for financing through iFinance. You can reserve a production spot with a US$250 deposit, applied in full to your order." } },
   { q: "Can I sell more than coffee?", a: "Yes. It’s your business and your menu: specialty coffee, tea, matcha, hot chocolate and more. The Iced Express package suits ice cream and bottled drinks, and a multi-grill option adds hot food." },
   { q: "What is the difference between builds?", a: { us: "The espresso setup (none, single group or double group), certification, branding and add-ons. Most owners choose a ready-to-serve espresso build at about US$15,850. Working with a smaller budget? Ask about a simpler build you can upgrade later.", ca: "The espresso setup (none, single group or double group), certification, branding and add-ons. Most Canadian owners invest about CA$25,000. Working with a smaller budget? Ask about a simpler build you can upgrade later, or apply for financing through iFinance." } },
