@@ -2,106 +2,137 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { Play } from 'lucide-react';
 
+const YT = 'https://www.youtube.com';
 const RED = '#E31E24';
 
 type Props = {
   /** YouTube video id, e.g. "uVGy63fO6uk" */
   videoId: string;
-  /** Descriptive title for the embedded player iframe */
+  /** Descriptive title for the player iframe */
   title: string;
-  /** Accessible label for the play button */
-  playLabel: string;
   /** Optional analytics name sent as `video_name` with the `video_play` event */
   trackingName?: string;
-  /** Optional short caption shown on the facade (e.g. "Full walkthrough · 6:32") */
+  /** Optional short caption shown on the placeholder (e.g. "Full walkthrough · 6:32") */
   caption?: string;
+  /** Optional playlist id: the player then shows the series' own next/previous controls */
+  playlistId?: string;
+  /** Load the player right away (the visitor picked an episode) instead of when it nears the viewport */
+  eager?: boolean;
+  /** `sizes` for the placeholder thumbnail */
+  sizes?: string;
 };
 
 type GtagWindow = Window & { gtag?: (...args: unknown[]) => void };
 
 /**
- * Lightweight YouTube facade. Renders only a lazy thumbnail and a play button
- * until the visitor explicitly presses Play; only then is the genuine YouTube
- * embedded player created, so plays are attributed to the original video and
- * nothing from youtube.com is loaded during the initial page load.
- *
- * Must be placed inside a `position: relative` container with a fixed aspect
- * ratio (e.g. `aspect-video`); both states fill that container, so swapping the
- * facade for the player causes no layout shift.
+ * The genuine YouTube player, loaded only as it approaches the viewport: nothing from YouTube is requested on page
+ * load, and every play starts from YouTube's own play button, the only kind of playback YouTube counts toward a
+ * video's official view count (IFrame Player API reference: "A playback only counts toward a video's official view
+ * count if it is initiated via a native play button in the player"). Until the player has loaded, a same-size
+ * thumbnail holds the space, so nothing shifts. Place it inside a `position: relative` box with a fixed aspect ratio
+ * (e.g. `aspect-video`).
  */
-export default function LiteYouTube({ videoId, title, playLabel, trackingName, caption }: Props) {
-  const [playing, setPlaying] = useState(false);
+export default function LiteYouTube({ videoId, title, trackingName, caption, playlistId, eager = false, sizes = '(min-width: 1072px) 1024px, calc(100vw - 32px)' }: Props) {
+  const rootRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLIFrameElement>(null);
+  const reported = useRef<string | null>(null);
+  const [origin, setOrigin] = useState<string | null>(null);
+  const [near, setNear] = useState(false);
+  const [loadedId, setLoadedId] = useState<string | null>(null);
+
+  // Mount the player about one screen before it scrolls into view.
+  useEffect(() => {
+    setOrigin(window.location.origin);
+    const el = rootRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setNear(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setNear(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: '800px 0px' }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   useEffect(() => {
-    if (playing) frameRef.current?.focus();
-  }, [playing]);
+    if (eager) setNear(true);
+  }, [eager]);
 
-  const play = () => {
-    setPlaying(true);
-    try {
-      const w = window as GtagWindow;
-      if (typeof w.gtag === 'function') {
-        w.gtag('event', 'video_play', {
-          video_id: videoId,
-          video_name: trackingName ?? videoId,
-          video_provider: 'youtube',
-        });
+  // GA4 `video_play`, once per video, when YouTube reports that it is playing (no YouTube script is loaded for this).
+  useEffect(() => {
+    if (!near) return;
+    const onMessage = (e: MessageEvent) => {
+      if (e.origin !== YT || e.source !== frameRef.current?.contentWindow) return;
+      let data: unknown = e.data;
+      if (typeof data === 'string') {
+        try {
+          data = JSON.parse(data);
+        } catch {
+          return;
+        }
       }
+      const msg = data as { event?: string; info?: unknown };
+      const state = msg.event === 'onStateChange' ? msg.info : msg.event === 'infoDelivery' ? (msg.info as { playerState?: number } | null)?.playerState : undefined;
+      if (state !== 1 || reported.current === videoId) return;
+      reported.current = videoId;
+      try {
+        (window as GtagWindow).gtag?.('event', 'video_play', { video_id: videoId, video_name: trackingName ?? videoId, video_provider: 'youtube' });
+      } catch {
+        /* analytics must never get in the way of playback */
+      }
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [near, videoId, trackingName]);
+
+  const onLoad = () => {
+    setLoadedId(videoId);
+    // Ask the player to report its state: the lightweight half of the IFrame API protocol.
+    try {
+      frameRef.current?.contentWindow?.postMessage(JSON.stringify({ event: 'listening', id: videoId, channel: 'widget' }), YT);
     } catch {
-      /* analytics must never block playback */
+      /* ignore */
     }
   };
 
-  if (playing) {
-    return (
-      <iframe
-        ref={frameRef}
-        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&playsinline=1&rel=0`}
-        title={title}
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        referrerPolicy="strict-origin-when-cross-origin"
-        allowFullScreen
-        className="absolute inset-0 h-full w-full"
-        style={{ border: 0 }}
-      />
-    );
-  }
+  const loaded = loadedId === videoId;
+  const params = new URLSearchParams({ rel: '0', playsinline: '1', enablejsapi: '1' });
+  if (origin) params.set('origin', origin);
+  if (playlistId) params.set('list', playlistId);
 
   return (
-    <button
-      type="button"
-      onClick={play}
-      aria-label={playLabel}
-      className="group absolute inset-0 block h-full w-full cursor-pointer overflow-hidden text-left focus:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-white"
-    >
-      <Image
-        src={`https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`}
-        alt=""
-        fill
-        sizes="(min-width: 1072px) 1024px, calc(100vw - 48px)"
-        className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-      />
-      <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/5 to-black/10" />
-      <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center">
-        <span
-          className="flex h-20 w-20 items-center justify-center rounded-full shadow-2xl ring-4 ring-white/25 transition-transform duration-300 group-hover:scale-105 group-focus-visible:scale-105 sm:h-24 sm:w-24"
-          style={{ backgroundColor: RED }}
-        >
-          <Play className="ml-1 h-9 w-9 text-white sm:h-11 sm:w-11" fill="currentColor" strokeWidth={0} />
-        </span>
-      </span>
-      {caption && (
-        <span
-          aria-hidden="true"
-          className="absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-black/70 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white sm:bottom-4 sm:left-4 sm:text-xs"
-        >
-          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: RED }} />
-          {caption}
-        </span>
+    <div ref={rootRef} className="absolute inset-0">
+      <div aria-hidden="true" className={`absolute inset-0 transition-opacity duration-300 ${loaded ? 'pointer-events-none opacity-0' : 'opacity-100'}`}>
+        <Image src={`https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`} alt="" fill sizes={sizes} className="object-cover" />
+        <span className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/5 to-black/10" />
+        {caption && (
+          <span className="absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-full bg-black/70 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white sm:bottom-4 sm:left-4 sm:text-xs">
+            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: RED }} />
+            {caption}
+          </span>
+        )}
+      </div>
+      {near && origin && (
+        <iframe
+          ref={frameRef}
+          src={`${YT}/embed/${videoId}?${params.toString()}`}
+          title={title}
+          onLoad={onLoad}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerPolicy="strict-origin-when-cross-origin"
+          allowFullScreen
+          className={`absolute inset-0 h-full w-full transition-opacity duration-300 ${loaded ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+          style={{ border: 0 }}
+        />
       )}
-    </button>
+    </div>
   );
 }

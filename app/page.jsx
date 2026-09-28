@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useMemo, useRef, useEffect } from 'react'; import Image from 'next/image';
 import LiteYouTube from '../components/LiteYouTube';
+import SetupSeries from '../components/SetupSeries';
 import { ChevronDown, ChevronLeft, ChevronRight, Edit2, Check, Info, Lock, Search, Leaf, Globe, Clock, Award, Mail, MapPin, Play, TrendingUp, DollarSign, Calendar, Users, Zap, Coffee, Star, ArrowRight, Sparkles, ZoomIn, X, Eye } from 'lucide-react';
 
 export default function CoffeeBikePage() {
@@ -1292,7 +1293,7 @@ export default function CoffeeBikePage() {
       </a>
 
       <div
-        className="hidden lg:flex items-center gap-[8px] text-[17px] font-black tracking-[0.12em] uppercase leading-none"
+        className="hidden xl:flex items-center gap-[8px] text-[17px] font-black tracking-[0.12em] uppercase leading-none"
         style={{ fontFamily: 'Roboto Condensed, sans-serif' }}
       >
         <a
@@ -1323,11 +1324,18 @@ export default function CoffeeBikePage() {
           Buy a Coffee Bike
         </a>
 
+        <a
+          href="https://coffeebike.ca/coffee-bike-videos/"
+          className="px-[15px] py-[18px] hover:text-[#ff1f1f] transition"
+        >
+          Coffee Bike Videos
+        </a>
+
  
       </div>
 
       <div
-        className="hidden lg:flex items-center ml-auto text-[17px] font-black tracking-[0.12em] uppercase leading-none"
+        className="hidden xl:flex items-center ml-auto text-[17px] font-black tracking-[0.12em] uppercase leading-none"
         style={{ fontFamily: 'Roboto Condensed, sans-serif' }}
       >
 
@@ -1343,7 +1351,7 @@ export default function CoffeeBikePage() {
       <button
         type="button"
         onClick={() => setMobileNavOpen(!mobileNavOpen)}
-        className="lg:hidden ml-auto w-11 h-11 flex items-center justify-center border border-zinc-700 rounded-md"
+        className="xl:hidden ml-auto w-11 h-11 flex items-center justify-center border border-zinc-700 rounded-md"
         aria-label="Open menu"
       >
         <span className="text-2xl leading-none">☰</span>
@@ -1352,7 +1360,7 @@ export default function CoffeeBikePage() {
 
     {mobileNavOpen && (
       <div
-        className="lg:hidden pb-5 flex flex-col gap-1 text-[17px] font-black tracking-[0.12em] uppercase"
+        className="xl:hidden pb-5 flex flex-col gap-1 text-[17px] font-black tracking-[0.12em] uppercase"
         style={{ fontFamily: 'Roboto Condensed, sans-serif' }}
       >
         <a href="https://coffeebike.ca/" className="px-4 py-3 text-[#ff1f1f] bg-black">
@@ -1367,6 +1375,10 @@ export default function CoffeeBikePage() {
 
         <a href="#configurator-section" className="px-4 py-3 hover:text-[#ff1f1f] transition">
           Buy a Coffee Bike
+        </a>
+
+        <a href="https://coffeebike.ca/coffee-bike-videos/" className="px-4 py-3 hover:text-[#ff1f1f] transition">
+          Coffee Bike Videos
         </a>
 
 
@@ -1506,7 +1518,6 @@ export default function CoffeeBikePage() {
             <LiteYouTube
               videoId="uVGy63fO6uk"
               title="Coffee Bike Vol. 2 full walkthrough"
-              playLabel="Play Coffee Bike Vol. 2 full walkthrough"
               trackingName="coffee_bike_v2_walkthrough"
               caption="Full walkthrough · 6:32"
             />
@@ -2502,6 +2513,22 @@ export default function CoffeeBikePage() {
           </div>
         </div>
       </div>
+
+      <section id="setup-series-section" aria-labelledby="setup-series-heading" className="py-12 px-4 sm:px-6 bg-zinc-50 border-t border-zinc-200" style={{ scrollMarginTop: '80px' }}>
+        <div className="max-w-6xl mx-auto">
+          <header className="text-center mb-8">
+            <EyebrowBadge className="mb-3">Owner Setup Series</EyebrowBadge>
+            <h2 id="setup-series-heading" className="text-3xl lg:text-4xl font-bold mb-3">How to Set Up Your Coffee Bike — Free <span className="whitespace-nowrap">9-Part</span> Owner Guide</h2>
+            <p className="text-zinc-600 max-w-2xl mx-auto leading-relaxed">See exactly what happens after your Coffee Bike arrives: delivery and unpacking, espresso machine installation, batteries, riding, daily system checks and maintenance. Every owner gets this series, plus direct support from our team.</p>
+          </header>
+          <SetupSeries />
+          <div className="mt-8 flex justify-center">
+            <button type="button" onClick={() => document.getElementById('configurator-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="text-white font-bold px-6 py-3 rounded text-sm hover:opacity-90 flex items-center gap-2" style={{ backgroundColor: RED }}>
+              Build Your Coffee Bike <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </section>
 
       <div className="py-10 px-6 bg-zinc-900 text-white">
         <div className="max-w-6xl mx-auto">
