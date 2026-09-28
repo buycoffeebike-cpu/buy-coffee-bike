@@ -1,14 +1,10 @@
 import StartPage from './StartPage';
-import { INTENTS } from './content';
+import { pageMeta } from './content';
 
-// The Google Ads landing page for coffee bike searches. Kept out of organic search: the sales page owns those rankings.
-export const metadata = {
-  title: `${INTENTS.bike.title} | Coffee Bike World`,
-  description: INTENTS.bike.sub,
-  robots: { index: false, follow: true },
-  alternates: { canonical: 'https://coffeebike.ca/buy-a-mobile-coffee-bike/start' },
-};
+// The Google Ads landing page for US coffee bike searches (prices in US dollars). Kept out of organic search: the
+// sales page owns those rankings.
+export const metadata = pageMeta('us', 'bike');
 
 export default function Page() {
-  return <StartPage intent="bike" />;
+  return <StartPage market="us" intent="bike" />;
 }

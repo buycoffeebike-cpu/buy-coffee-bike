@@ -2,14 +2,14 @@
 
 import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, Calendar, Check, ChevronDown, CreditCard, FileText, ShieldCheck, Snowflake, Sun, Building2 } from 'lucide-react';
+import { ArrowRight, BatteryCharging, Building2, Calendar, Check, ChevronDown, Clock, Coffee, CreditCard, Droplets, FileText, Mail, MapPin, MessageSquare, Phone, ShieldCheck, Snowflake, Sun, Users, Warehouse } from 'lucide-react';
 import LiteYouTube from '../../components/LiteYouTube';
 import {
-  ADS_CONVERSION, ADS_TAG, CALL_URL, COMPARE_COLS, COMPARE_NOTE, COMPARE_ROWS, DEPOSIT_URL, FAQS, FEATURES, FINANCING_URL, FOUNDER,
-  HERO, INTENTS, LOGO, OWNERS, PRICE_LINES, QUOTE_FORM_ID, QUOTE_FORM_URL, SPEC_SHEET, SPECS, STEPS, TRUST, WALKTHROUGH_ID,
+  ADDRESS, ADS_TAG, CALL_URL, COMPARE_COLS, DEPOSIT_URL, EMAIL, FEATURES, FOUNDER, INCLUDED, INTENTS, LOGO, MARKETS, OWNERS, PHONE, PHOTOS, PRICING,
+  SPEC_SHEET, SPECS, STEPS, TRUST, WALKTHROUGH_ID, compareNote, compareRows, faqs,
 } from './content';
+import { HeroQuestion, QuoteFlow, QuoteModal, QuoteProvider, RED, useQuote } from './quote';
 
-const RED = '#E31E24';
 const DISPLAY = { fontFamily: '"Roboto Condensed", Inter, system-ui, sans-serif' };
 const BALANCE = { textWrap: 'balance' };
 
@@ -18,34 +18,6 @@ const track = (name, params) => {
     window.gtag?.('event', name, params);
   } catch {}
 };
-
-/** The contact the quote form just saved (GoHighLevel posts it to the page): email and phone for enhanced conversions. */
-function contactOf(payload) {
-  try {
-    const o = typeof payload === 'string' ? JSON.parse(payload) : payload;
-    if (!o || typeof o !== 'object') return null;
-    const email = [o.email, o.contact?.email].find((v) => typeof v === 'string' && v.includes('@'));
-    const phoneRaw = [o.phone, o.phone_number, o.contact?.phone].find((v) => typeof v === 'string');
-    const digits = phoneRaw ? phoneRaw.replace(/[^\d+]/g, '') : '';
-    const phone = digits.startsWith('+') ? digits : digits.length === 10 ? `+1${digits}` : digits.length === 11 && digits.startsWith('1') ? `+${digits}` : '';
-    const out = {};
-    if (email) out.email = email.trim().toLowerCase();
-    if (phone) out.phone_number = phone;
-    return Object.keys(out).length ? out : null;
-  } catch {
-    return null;
-  }
-}
-
-function Cta({ where, intent, children, className = '', variant = 'primary' }) {
-  const base = 'inline-flex items-center justify-center gap-2 rounded-md px-5 py-3.5 text-base font-bold transition focus:outline-none focus-visible:ring-4 focus-visible:ring-red-300';
-  const look = variant === 'primary' ? 'text-white shadow-sm hover:brightness-110' : 'border border-zinc-300 bg-white text-zinc-900 hover:border-zinc-500';
-  return (
-    <a href="#quote" onClick={() => track('cta_click', { where, intent })} className={`${base} ${look} ${className}`} style={variant === 'primary' ? { backgroundColor: RED } : undefined}>
-      {children}
-    </a>
-  );
-}
 
 function Section({ id, tone = 'light', className = '', children }) {
   const bg = tone === 'dark' ? 'bg-zinc-950 text-white' : tone === 'soft' ? 'bg-[#F4F4F3] text-zinc-900' : 'bg-white text-zinc-900';
@@ -56,9 +28,9 @@ function Section({ id, tone = 'light', className = '', children }) {
   );
 }
 
-function Heading({ eyebrow, title, sub, dark = false }) {
+function Heading({ eyebrow, title, sub, dark = false, center = false }) {
   return (
-    <div className="max-w-3xl">
+    <div className={`max-w-3xl ${center ? 'mx-auto text-center' : ''}`}>
       {eyebrow ? <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{eyebrow}</p> : null}
       <h2 className={`mt-2 text-3xl font-extrabold leading-tight md:text-5xl ${dark ? 'text-white' : 'text-zinc-950'}`} style={{ ...DISPLAY, ...BALANCE }}>{title}</h2>
       {sub ? <p className={`mt-3 text-lg ${dark ? 'text-zinc-300' : 'text-zinc-600'}`}>{sub}</p> : null}
@@ -66,73 +38,79 @@ function Heading({ eyebrow, title, sub, dark = false }) {
   );
 }
 
-export default function StartPage({ intent = 'bike' }) {
+/** Every "get my price" button: opens the quote pop-up at the visitor's current step. */
+function PriceButton({ where, children, className = '', variant = 'primary' }) {
+  const q = useQuote();
+  const look = variant === 'primary' ? 'text-white shadow-sm hover:brightness-110' : variant === 'light' ? 'bg-white text-zinc-950 hover:bg-zinc-100' : 'border border-zinc-300 bg-white text-zinc-900 hover:border-zinc-500';
+  return (
+    <button type="button" onClick={() => q.openQuote(where)} className={`inline-flex items-center justify-center gap-2 rounded-xl px-5 py-4 text-base font-extrabold transition focus:outline-none focus-visible:ring-4 focus-visible:ring-red-300 ${look} ${className}`} style={variant === 'primary' ? { backgroundColor: RED } : undefined}>
+      {children}
+    </button>
+  );
+}
+
+export default function StartPage({ intent = 'bike', market = 'us' }) {
+  return (
+    <QuoteProvider market={market} intent={intent}>
+      <Page intent={intent} market={market} />
+      <QuoteModal />
+    </QuoteProvider>
+  );
+}
+
+function Page({ intent, market }) {
   const I = INTENTS[intent] ?? INTENTS.bike;
+  const M = MARKETS[market];
+  const P = PRICING[market];
+  const q = useQuote();
   const [vs, setVs] = useState(I.compare);
   const [allOwners, setAllOwners] = useState(false);
-  const [formLoaded, setFormLoaded] = useState(false);
-  const [sent, setSent] = useState(false);
   const [sticky, setSticky] = useState(false);
   const quoteRef = useRef(null);
   const quoteInView = useRef(false);
+  const rows = useMemo(() => compareRows(market), [market]);
+  const owners = useMemo(() => [...OWNERS].sort((a, b) => Number(!M.ownersFirst.includes(a.place)) - Number(!M.ownersFirst.includes(b.place))), [M]);
+  const questions = useMemo(() => faqs(market), [market]);
 
-  // Google Ads tag on this page, and the conversion when the quote form is sent
+  // Google Ads tag on this page (the conversion itself fires from the quote form)
   useEffect(() => {
     window.gtag?.('config', ADS_TAG, { allow_enhanced_conversions: true });
-    let fired = false;
-    const onMessage = (e) => {
-      const d = e.data;
-      if (!Array.isArray(d) || d[0] !== 'set-sticky-contacts') return;
-      if (!/(^https:\/\/link\.coffeebike\.ca$)|leadconnectorhq\.com$|msgsndr\.com$/.test(e.origin)) return;
-      if (fired) return;
-      fired = true;
-      const user = contactOf(d[2]);
-      if (user) window.gtag?.('set', 'user_data', user);
-      window.gtag?.('event', 'conversion', { send_to: ADS_CONVERSION, value: 100, currency: 'CAD' });
-      track('generate_lead', { form: 'quote', intent });
-      setSent(true);
-    };
-    window.addEventListener('message', onMessage);
-    return () => window.removeEventListener('message', onMessage);
-  }, [intent]);
+  }, []);
 
-  // the form is heavy: load it as the visitor approaches it, and count when it is really on screen
+  // sitelinks land with ?s=: open the form, or scroll to prices or owners
+  useEffect(() => {
+    const s = new URLSearchParams(window.location.search).get('s');
+    if (!s) return;
+    if (s === 'quote') q.openQuote('sitelink');
+    else {
+      const id = s.startsWith('price') || s === 'training' ? 'price' : s === 'owners' ? 'owners' : null;
+      if (id) setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }), 250);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // the inline form counts as seen once it is really on screen; the phone price bar steps aside there
   useEffect(() => {
     const el = quoteRef.current;
     if (!el) return;
-    const near = new IntersectionObserver((xs) => xs.some((x) => x.isIntersecting) && (setFormLoaded(true), near.disconnect()), { rootMargin: '1400px 0px' });
     let seen = false;
-    const onScreen = new IntersectionObserver(
+    const io = new IntersectionObserver(
       (xs) => {
         const v = xs.some((x) => x.isIntersecting);
         quoteInView.current = v;
         if (v && !seen) {
           seen = true;
-          track('quote_form_view', { intent });
+          track('quote_form_view', { intent, market });
         }
       },
-      { threshold: 0.2 },
+      { threshold: 0.15 },
     );
-    near.observe(el);
-    onScreen.observe(el);
-    return () => {
-      near.disconnect();
-      onScreen.disconnect();
-    };
-  }, [intent]);
+    io.observe(el);
+    return () => io.disconnect();
+  }, [intent, market]);
 
   useEffect(() => {
-    if (!formLoaded || document.getElementById('ghl-form-embed-script')) return;
-    const s = document.createElement('script');
-    s.id = 'ghl-form-embed-script';
-    s.src = 'https://link.coffeebike.ca/js/form_embed.js';
-    s.async = true;
-    document.body.appendChild(s);
-  }, [formLoaded]);
-
-  // phones: a price button follows the visitor once the hero is behind them, and steps aside at the form
-  useEffect(() => {
-    const onScroll = () => setSticky(window.scrollY > 640 && !quoteInView.current);
+    const onScroll = () => setSticky(window.scrollY > 700 && !quoteInView.current);
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener('scroll', onScroll);
@@ -140,82 +118,117 @@ export default function StartPage({ intent = 'bike' }) {
 
   const vsCol = COMPARE_COLS.find((c) => c.key === vs) ?? COMPARE_COLS[1];
   const compareTitle = { truck: 'a coffee truck', trailer: 'a coffee trailer', cart: 'a coffee cart', cafe: 'a storefront café' }[I.compare] ?? 'a coffee truck';
-
   return (
     <div className="bg-white text-zinc-900 antialiased">
-      {/* header */}
+      {/* header: no way off the page except the footer; call and text one tap away */}
       <header className="sticky top-0 z-40 bg-black text-white" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <a href="https://coffeebike.ca" aria-label="Coffee Bike World home" className="flex items-center">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+          <a href="#top" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} aria-label="Coffee Bike World, back to top" className="flex items-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={LOGO} alt="Coffee Bike" className="h-8 w-auto" />
           </a>
-          <div className="flex items-center gap-3 sm:gap-4">
-            <a href="#price" className="text-sm font-semibold text-zinc-300 hover:text-white">Pricing</a>
-            <a href="#owners" className="hidden text-sm font-semibold text-zinc-300 hover:text-white sm:inline">Owners</a>
-            <a href="#faq" className="text-sm font-semibold text-zinc-300 hover:text-white">FAQ</a>
-            <a href="#quote" onClick={() => track('cta_click', { where: 'header', intent })} className="rounded-md px-4 py-2 text-sm font-bold uppercase tracking-wide text-white" style={{ backgroundColor: RED }}>
-              Get my price
+          <div className="flex items-center gap-1 sm:gap-5">
+            <a href={`tel:${PHONE.tel}`} onClick={() => track('cta_click', { where: 'header_phone', intent, market })} className="inline-flex items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold text-zinc-300 hover:text-white" aria-label={`Call ${PHONE.label}`}>
+              <Phone className="h-4 w-4" aria-hidden />
+              <span className="hidden md:inline">{PHONE.label}</span>
             </a>
+            <a href={`sms:${PHONE.tel}`} onClick={() => track('cta_click', { where: 'header_text', intent, market })} className="inline-flex items-center rounded-md px-2 py-2 text-zinc-300 hover:text-white md:hidden" aria-label={`Text ${PHONE.label}`}>
+              <MessageSquare className="h-4 w-4" aria-hidden />
+            </a>
+            <a href="#price" className="hidden text-sm font-semibold text-zinc-300 hover:text-white sm:inline">Pricing</a>
+            <a href="#owners" className="hidden text-sm font-semibold text-zinc-300 hover:text-white sm:inline">Owners</a>
+            <button type="button" onClick={() => q.openQuote('header')} className="rounded-md px-4 py-2 text-sm font-extrabold uppercase tracking-wide text-white hover:brightness-110" style={{ backgroundColor: RED }}>
+              Get my price
+            </button>
           </div>
         </div>
       </header>
 
       {/* hero */}
       <section className="bg-[#F4F4F3]">
-        {/* phones: headline, then the bike, then price and buttons; larger screens: words left, bike right */}
-        <div className="mx-auto grid max-w-6xl gap-x-10 gap-y-5 px-4 py-8 sm:px-6 md:grid-cols-[1.05fr_1fr] md:grid-rows-[auto_auto] md:py-16">
-          <div className="md:col-start-1 md:row-start-1 md:self-end">
+        <div className="mx-auto grid max-w-6xl gap-x-12 gap-y-4 px-4 pb-8 pt-6 sm:px-6 md:grid-cols-[1fr_1fr] md:pb-16 md:pt-14">
+          <div className="md:col-start-1 md:row-start-1">
             <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{I.eyebrow}</p>
-            <h1 className="mt-3 text-[2.3rem] font-extrabold leading-[1.02] tracking-tight text-zinc-950 md:text-6xl" style={{ ...DISPLAY, ...BALANCE }}>{I.h1}</h1>
+            <h1 className="mt-2 text-[2.15rem] font-extrabold leading-[1.02] tracking-tight text-zinc-950 md:text-[3.6rem]" style={{ ...DISPLAY, ...BALANCE }}>{I.h1}</h1>
+            <p className="mt-4 hidden max-w-xl text-lg leading-relaxed text-zinc-700 md:block">{I.sub}</p>
           </div>
-          <div className="relative md:col-start-2 md:row-span-2 md:row-start-1 md:self-center">
-            <Image src={HERO} alt="A red Coffee Bike espresso bar with its canopy open" width={1200} height={900} priority sizes="(min-width: 768px) 50vw, 100vw" className="h-auto w-full rounded-xl" />
-            <div className="absolute bottom-3 left-3 rounded-md bg-white/95 px-3 py-2 shadow-sm">
-              <span className="text-xs font-bold uppercase tracking-wide text-zinc-900">As seen on Dragons’ Den</span>
+          <div className="relative md:col-start-2 md:row-span-3 md:row-start-1 md:self-start">
+            <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-zinc-200 md:aspect-[4/5]">
+              <Image src={PHOTOS.queue.src} alt={PHOTOS.queue.alt} fill priority sizes="(min-width: 768px) 50vw, 100vw" className="object-cover object-[42%_50%]" />
+            </div>
+            <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
+              <span className="rounded-md bg-white/95 px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-zinc-900 shadow-sm">As seen on Dragons’ Den</span>
             </div>
           </div>
           <div className="md:col-start-1 md:row-start-2">
-            <p className="max-w-xl text-[17px] leading-relaxed text-zinc-700 md:text-lg">{I.sub}</p>
-            <div className="mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <span className="text-2xl font-extrabold text-zinc-950">From US$9,850</span>
-              <span className="text-zinc-600">CA$13,495 · most owners invest US$10–20k all-in</span>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[14px] font-semibold text-zinc-800">
+              <span className="inline-flex items-center gap-1.5"><Users className="h-4 w-4" style={{ color: RED }} aria-hidden /> 49 bikes sold to 36 owners</span>
+              <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4" style={{ color: RED }} aria-hidden /> 1-year warranty</span>
             </div>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <Cta where="hero" intent={intent}>Get my price &amp; build options <ArrowRight className="h-5 w-5" /></Cta>
-              <a href="#walkthrough" onClick={() => track('cta_click', { where: 'hero_video', intent })} className="inline-flex items-center justify-center gap-2 rounded-md border border-zinc-300 bg-white px-5 py-3.5 text-base font-bold text-zinc-900 hover:border-zinc-500">
-                Watch the 6-minute walkthrough
-              </a>
+            <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+              <span className="text-[26px] font-extrabold leading-none text-zinc-950" style={DISPLAY}>{M.heroPrice}</span>
+              <span className="text-[15px] text-zinc-600">{M.heroPriceNote}</span>
             </div>
-            <p className="mt-3 text-sm text-zinc-600">We reply within one business day. No obligation.</p>
+            <ul className="mt-4 hidden gap-1.5 text-[15px] text-zinc-800 md:grid">
+              {['Health-code layout: sinks, hot water and a fridge on board', 'Rides where trucks can’t park, and indoors in winter', 'Yours outright: no franchise fees, no royalties'].map((x) => (
+                <li key={x} className="flex gap-2.5"><Check className="mt-0.5 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="md:col-start-1 md:row-start-3">
+            <HeroQuestion />
+            <a href="#walkthrough" onClick={() => track('cta_click', { where: 'hero_video', intent, market })} className="mt-3 inline-flex items-center gap-2 py-1 text-[15px] font-bold text-zinc-800 underline underline-offset-4">
+              Or watch the 6-minute walkthrough first
+            </a>
           </div>
         </div>
         <div className="border-t border-zinc-200 bg-white">
-          <dl className="mx-auto grid max-w-6xl grid-cols-2 gap-px px-4 sm:px-6 md:grid-cols-4">
+          <dl className="mx-auto grid max-w-6xl grid-cols-2 gap-x-4 px-4 sm:px-6 md:grid-cols-4">
             {TRUST.map((t) => (
               <div key={t.k} className="py-4">
-                <dt className="text-xs uppercase tracking-wider text-zinc-500">{t.k}</dt>
-                <dd className="text-xl font-extrabold text-zinc-950" style={DISPLAY}>{t.v}</dd>
+                <dt className="text-[11px] uppercase tracking-wider text-zinc-500">{t.k}</dt>
+                <dd>
+                  <span className="block text-xl font-extrabold leading-tight text-zinc-950" style={DISPLAY}>{t.v}</span>
+                  <span className="block text-xs text-zinc-500">{t.d}</span>
+                </dd>
               </div>
             ))}
           </dl>
         </div>
       </section>
 
+      {/* permits */}
+      <Section id="permits">
+        <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-start">
+          <Heading eyebrow="Permits" title="Ask your health department before you buy" sub="Every city has its own rules, and approval is up to them. Our package gives them what they usually ask for, so you can check before you order." />
+          <div className="rounded-xl border border-zinc-200 p-6">
+            <h3 className="font-bold text-zinc-950">The free health inquiry package includes</h3>
+            <ul className="mt-3 space-y-2.5 text-[15px] leading-relaxed text-zinc-700">
+              {['Specifications, dimensions and blueprints', 'Sink, water tank, pump and hot water setup', 'A checklist of what to ask: sinks, water capacity, commissary, where you can vend', 'A sample letter to send your health department or city'].map((x) => (
+                <li key={x} className="flex gap-3"><Check className="mt-1 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
+              ))}
+            </ul>
+            <a href={SPEC_SHEET} target="_blank" rel="noopener" onClick={() => track('spec_sheet', { where: 'permits', intent, market })} className="mt-5 inline-flex items-center gap-2 rounded-md border border-zinc-300 px-4 py-3 font-bold text-zinc-900 hover:border-zinc-500">
+              <FileText className="h-5 w-5" /> Download the package (PDF)
+            </a>
+            <p className="mt-3 text-xs leading-relaxed text-zinc-500">A reference for your conversation with the authorities, not a guarantee of approval. Sink layout and tank sizes can be changed before your bike is built.</p>
+          </div>
+        </div>
+      </Section>
+
       {/* comparison */}
       <Section id="compare">
         <Heading eyebrow="Before you buy" title={intent === 'bike' || intent === 'compare' ? 'How a Coffee Bike compares' : `A Coffee Bike or ${compareTitle}?`} sub="What it takes to start and run each way of selling coffee on the move." />
-        {/* phones: the bike against one option at a time */}
         <div className="mt-8 md:hidden">
           <div className="flex flex-wrap gap-2" role="tablist" aria-label="Compare the Coffee Bike with">
             {COMPARE_COLS.filter((c) => c.key !== 'bike').map((c) => (
-              <button key={c.key} role="tab" aria-selected={vs === c.key} onClick={() => { setVs(c.key); track('compare_switch', { to: c.key, intent }); }} className={`rounded-full border px-3.5 py-2 text-sm font-semibold ${vs === c.key ? 'border-zinc-900 bg-zinc-900 text-white' : 'border-zinc-300 bg-white text-zinc-700'}`}>
+              <button key={c.key} role="tab" aria-selected={vs === c.key} onClick={() => { setVs(c.key); track('compare_switch', { to: c.key, intent, market }); }} className={`rounded-full border px-3.5 py-2 text-sm font-semibold ${vs === c.key ? 'border-zinc-900 bg-zinc-900 text-white' : 'border-zinc-300 bg-white text-zinc-700'}`}>
                 {c.label}
               </button>
             ))}
           </div>
           <div className="mt-4 divide-y divide-zinc-200 rounded-xl border border-zinc-200">
-            {COMPARE_ROWS.map((r) => (
+            {rows.map((r) => (
               <div key={r.label} className="grid gap-2 p-4">
                 <div className="text-xs font-bold uppercase tracking-wider text-zinc-500">{r.label}</div>
                 <div className="grid grid-cols-2 gap-3 text-sm">
@@ -226,7 +239,6 @@ export default function StartPage({ intent = 'bike' }) {
             ))}
           </div>
         </div>
-        {/* larger screens: every option side by side */}
         <div className="mt-10 hidden overflow-x-auto rounded-xl border border-zinc-200 md:block">
           <table className="w-full min-w-[860px] border-collapse text-left text-sm">
             <thead>
@@ -238,7 +250,7 @@ export default function StartPage({ intent = 'bike' }) {
               </tr>
             </thead>
             <tbody>
-              {COMPARE_ROWS.map((r) => (
+              {rows.map((r) => (
                 <tr key={r.label} className="border-t border-zinc-200 align-top">
                   <th scope="row" className="p-4 text-xs font-bold uppercase tracking-wider text-zinc-500">{r.label}</th>
                   {COMPARE_COLS.map((c) => (
@@ -249,13 +261,13 @@ export default function StartPage({ intent = 'bike' }) {
             </tbody>
           </table>
         </div>
-        <p className="mt-4 max-w-3xl text-xs leading-relaxed text-zinc-500">{COMPARE_NOTE}</p>
+        <p className="mt-4 max-w-3xl text-xs leading-relaxed text-zinc-500">{compareNote(market)}</p>
+        <PriceButton where="compare" className="mt-8 w-full sm:w-auto">Get my price <ArrowRight className="h-5 w-5" /></PriceButton>
       </Section>
 
       {/* what you get */}
       <Section id="build" tone="soft">
         <Heading eyebrow="What you get" title="A commercial espresso bar that rides" sub="Every part of it comes from 8+ years of serving at busy events and festivals with our own bikes." />
-        {/* phones: a thumbnail beside the text; larger screens: photo cards */}
         <div className="mt-8 grid gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
           {FEATURES.map((f) => (
             <article key={f.title} className="grid grid-cols-[96px_1fr] overflow-hidden rounded-xl bg-white sm:block">
@@ -277,20 +289,61 @@ export default function StartPage({ intent = 'bike' }) {
             </div>
           ))}
         </dl>
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <Cta where="build" intent={intent}>Get my price &amp; build options <ArrowRight className="h-5 w-5" /></Cta>
-          <a href={SPEC_SHEET} target="_blank" rel="noopener" onClick={() => track('spec_sheet', { where: 'build', intent })} className="inline-flex items-center gap-2 px-2 py-3 font-semibold text-zinc-800 underline underline-offset-4">
-            <FileText className="h-5 w-5" /> Specs and health inquiry package (PDF)
-          </a>
+        <a href={SPEC_SHEET} target="_blank" rel="noopener" onClick={() => track('spec_sheet', { where: 'build', intent, market })} className="mt-6 inline-flex items-center gap-2 py-2 font-semibold text-zinc-800 underline underline-offset-4">
+          <FileText className="h-5 w-5" /> Specs and health inquiry package (PDF)
+        </a>
+      </Section>
+
+      {/* walkthrough */}
+      <Section id="walkthrough">
+        <Heading eyebrow="See it" title="Walk around the bike in six minutes" sub="Every compartment, the espresso machine, the batteries and how it rides." />
+        <div className="relative mt-8 aspect-video overflow-hidden rounded-xl bg-zinc-900">
+          <LiteYouTube videoId={WALKTHROUGH_ID} title="Coffee Bike full walkthrough" trackingName="coffee_bike_walkthrough_start_page" caption="Full walkthrough · 6:32" />
+        </div>
+      </Section>
+
+      <DayAndWhere />
+
+      {/* seasons */}
+      <Section id="seasons" tone="soft">
+        <div className="grid gap-10 lg:grid-cols-[1fr_0.8fr] lg:items-center">
+          <div>
+            <Heading eyebrow="All year" title="A business for all four seasons" sub={market === 'ca' ? 'The first question Canadians ask. Here is how owners answer it.' : 'The most common question from the northern US and Canada. Here is how owners answer it.'} />
+            <div className="mt-8 grid gap-4">
+              {[
+                { icon: Sun, t: 'Spring to fall', d: 'Farmers markets, festivals, sports games, weddings and private events.' },
+                { icon: Snowflake, t: 'Winter', d: 'Indoors: office lobbies, hospitals, campuses, residential towers, grocery stores and gyms, plus holiday markets outside.' },
+                { icon: Building2, t: 'Why landlords say yes', d: 'No build-out and no plumbing or electrical changes on their side. The bike rolls in, plugs into a standard outlet and serves.' },
+              ].map(({ icon: Icon, t, d }) => (
+                <div key={t} className="flex gap-4 rounded-xl bg-white p-5">
+                  <Icon className="mt-0.5 h-6 w-6 flex-none" style={{ color: RED }} aria-hidden />
+                  <div>
+                    <h3 className="text-lg font-bold text-zinc-950">{t}</h3>
+                    <p className="mt-1 leading-relaxed text-zinc-600">{d}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="relative aspect-square overflow-hidden rounded-2xl bg-zinc-200">
+            <Image src={PHOTOS.winter.src} alt={PHOTOS.winter.alt} fill sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover" />
+          </div>
         </div>
       </Section>
 
       {/* owners */}
       <Section id="owners" tone="dark">
-        <Heading dark eyebrow="Owners" title="Running Coffee Bikes across Canada and the US" sub="36 bikes sold to 31 independent owners in Canada, the US and Peru: side businesses, second careers, cafés adding a mobile bar. In their own words." />
-        <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-          {(allOwners ? OWNERS : OWNERS.slice(0, 4)).map((o, i) => (
-            <figure key={o.name} className={`${!allOwners && i === 3 ? 'hidden lg:flex' : 'flex'} flex-col rounded-xl bg-zinc-900 p-5`}>
+        <Heading dark eyebrow="Owners" title="49 bikes. 36 owners. Here are some of them." sub="Side businesses, second careers, cafés and roasteries adding a mobile bar, and brands that take their coffee to the crowd." />
+        <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-4">
+          {[PHOTOS.liudmyla, PHOTOS.fleet, PHOTOS.sanam, PHOTOS.levis].map((p) => (
+            <div key={p.src} className="relative aspect-[3/4] overflow-hidden rounded-xl bg-zinc-800">
+              <Image src={p.src} alt={p.alt} fill sizes="(min-width: 768px) 25vw, 50vw" className="object-cover" />
+            </div>
+          ))}
+        </div>
+        <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+          {(allOwners ? owners : owners.slice(0, 4)).map((o, i) => (
+            <figure key={o.name} className={`${!allOwners && i >= 2 ? 'hidden md:flex' : 'flex'} flex-col rounded-xl bg-zinc-900 p-5`}>
               <blockquote className="flex-1 text-[15px] leading-relaxed text-zinc-200">“{o.quote}”</blockquote>
               <figcaption className="mt-5 flex items-center gap-3">
                 <div className="relative h-12 w-12 flex-none overflow-hidden rounded-full bg-zinc-800">
@@ -305,7 +358,7 @@ export default function StartPage({ intent = 'bike' }) {
           ))}
         </div>
         {!allOwners ? (
-          <button onClick={() => { setAllOwners(true); track('owners_more', { intent }); }} className="mt-6 inline-flex items-center gap-2 rounded-md border border-zinc-700 px-4 py-3 font-semibold text-white hover:border-zinc-400">
+          <button onClick={() => { setAllOwners(true); track('owners_more', { intent, market }); }} className="mt-6 inline-flex items-center gap-2 rounded-md border border-zinc-700 px-4 py-3 font-semibold text-white hover:border-zinc-400">
             Read more owner stories <ChevronDown className="h-4 w-4" />
           </button>
         ) : null}
@@ -313,99 +366,95 @@ export default function StartPage({ intent = 'bike' }) {
 
       {/* price */}
       <Section id="price">
-        <Heading eyebrow="Pricing" title="What it costs, in plain numbers" sub="Prices in US dollars unless marked. Shipping is quoted separately once we know your address." />
-        <div className="mt-8 overflow-hidden rounded-xl border border-zinc-200">
-          {PRICE_LINES.map((p, i) => (
-            <div key={p.item} className={`grid gap-1 p-4 sm:grid-cols-[1fr_auto] sm:items-baseline sm:gap-6 ${i ? 'border-t border-zinc-200' : 'bg-zinc-50'}`}>
-              <div>
-                <div className="font-bold text-zinc-950">{p.item}</div>
-                <div className="text-sm text-zinc-600">{p.note}</div>
-              </div>
-              <div className="text-lg font-extrabold tabular-nums text-zinc-950 sm:text-right">
-                {p.usd}
-                {p.cad ? <span className="ml-2 text-sm font-semibold text-zinc-500">{p.cad}</span> : null}
-              </div>
-            </div>
-          ))}
-          <div className="grid gap-1 border-t-2 border-zinc-900 bg-zinc-950 p-4 text-white sm:grid-cols-[1fr_auto] sm:items-baseline">
-            <div className="font-bold">A ready-to-serve espresso build</div>
-            <div className="text-xl font-extrabold tabular-nums sm:text-right">about US$15,850 <span className="ml-2 text-sm font-semibold text-zinc-400">about CA$21,750</span></div>
-          </div>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <Heading eyebrow="Pricing" title="What it costs, in plain numbers" />
         </div>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { icon: CreditCard, t: 'Bank transfer or card', d: 'Invoice within one business day; 3.9% fee on cards.' },
-            { icon: Check, t: 'Financing in Canada', d: 'Canadian residents can apply through iFinance.', href: FINANCING_URL, cta: 'Apply' },
-            { icon: ShieldCheck, t: '1-year warranty', d: 'Manufacturing defects repaired or replaced; parts through the owners’ portal.' },
-            { icon: Calendar, t: 'Reserve with US$250', d: 'Holds a production spot and is applied in full to your order.', href: DEPOSIT_URL, cta: 'Reserve' },
-          ].map(({ icon: Icon, t, d, href, cta }) => (
-            <div key={t} className="rounded-xl border border-zinc-200 p-4">
-              <Icon className="h-5 w-5" style={{ color: RED }} aria-hidden />
-              <div className="mt-2 font-bold text-zinc-950">{t}</div>
-              <p className="mt-1 text-sm leading-relaxed text-zinc-600">{d}</p>
-              {href ? (
-                <a href={href} target="_blank" rel="noopener" onClick={() => track('cta_click', { where: `price_${cta.toLowerCase()}`, intent })} className="mt-2 inline-block text-sm font-bold underline underline-offset-4" style={{ color: RED }}>{cta} →</a>
-              ) : null}
+        <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_1fr]">
+          <div className="rounded-2xl bg-zinc-950 p-6 text-white sm:p-8">
+            <p className="text-sm font-bold uppercase tracking-wider text-zinc-400">Typical build</p>
+            <p className="mt-1 text-5xl font-extrabold tabular-nums sm:text-6xl" style={DISPLAY}>{P.lead}</p>
+            <p className="mt-2 max-w-md text-[15px] leading-relaxed text-zinc-300">{P.leadNote}</p>
+            <ul className="mt-6 grid gap-2.5 text-[15px] leading-snug text-zinc-100">
+              {INCLUDED.map((x) => (
+                <li key={x} className="flex gap-3"><Check className="mt-0.5 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
+              ))}
+            </ul>
+            <PriceButton where="price" className="mt-7 w-full">Get my exact price <ArrowRight className="h-5 w-5" /></PriceButton>
+          </div>
+          <div>
+            <h3 className="text-lg font-extrabold text-zinc-950">What changes the price</h3>
+            <div className="mt-3 divide-y divide-zinc-200 rounded-xl border border-zinc-200">
+              {P.changes.map((c) => (
+                <div key={c.item} className="flex items-baseline justify-between gap-4 p-4">
+                  <div>
+                    <div className="font-bold text-zinc-950">{c.item}</div>
+                    <div className="text-sm text-zinc-600">{c.note}</div>
+                  </div>
+                  {c.price ? <div className="flex-none font-extrabold tabular-nums text-zinc-950">{c.price}</div> : null}
+                </div>
+              ))}
             </div>
-          ))}
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {[
+                { icon: CreditCard, ...P.financing },
+                { icon: Calendar, t: 'Reserve with US$250', d: 'Holds a production spot and is applied in full to your order.', href: DEPOSIT_URL, cta: 'Reserve' },
+              ].map(({ icon: Icon, t, d, href, cta }) => (
+                <div key={t} className="rounded-xl border border-zinc-200 p-4">
+                  <Icon className="h-5 w-5" style={{ color: RED }} aria-hidden />
+                  <div className="mt-2 font-bold text-zinc-950">{t}</div>
+                  <p className="mt-1 text-sm leading-relaxed text-zinc-600">{d}</p>
+                  {href ? (
+                    <a href={href} target="_blank" rel="noopener" onClick={() => track('cta_click', { where: `price_${cta.toLowerCase()}`, intent, market })} className="mt-2 inline-block text-sm font-bold underline underline-offset-4" style={{ color: RED }}>{cta} →</a>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </Section>
 
-      {/* quote form */}
+      {/* quote form, in the page */}
       <section id="quote" ref={quoteRef} className="scroll-mt-14 bg-zinc-950 py-14 text-white md:py-20">
-        <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_360px]">
-          <div>
+        <div className="mx-auto grid max-w-6xl items-start gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_minmax(0,520px)]">
+          <div className="lg:pt-6">
             <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>Your price</p>
             <h2 className="mt-2 text-3xl font-extrabold leading-tight md:text-5xl" style={{ ...DISPLAY, ...BALANCE }}>Get your price and build options</h2>
-            <p className="mt-3 text-lg text-zinc-300">Two minutes. We reply within one business day with pricing for your build and answers to your questions.</p>
-            {sent ? (
-              <div className="mt-6 rounded-lg bg-emerald-500/15 p-4 text-emerald-200">Thank you. Your request is in: we’ll be in touch within one business day.</div>
-            ) : null}
-            <div className="mt-6 overflow-hidden rounded-xl bg-white">
-              {formLoaded ? (
-                <iframe
-                  src={QUOTE_FORM_URL}
-                  style={{ width: '100%', height: '1500px', border: 'none', borderRadius: '0px' }}
-                  scrolling="no"
-                  id={`inline-${QUOTE_FORM_ID}`}
-                  data-layout="{'id':'INLINE'}"
-                  data-trigger-type="alwaysShow"
-                  data-trigger-value=""
-                  data-activation-type="alwaysActivated"
-                  data-activation-value=""
-                  data-deactivation-type="neverDeactivate"
-                  data-deactivation-value=""
-                  data-form-name="Save My Build"
-                  data-height="1500"
-                  data-layout-iframe-id={`inline-${QUOTE_FORM_ID}`}
-                  data-form-id={QUOTE_FORM_ID}
-                  title="Get your Coffee Bike price"
-                />
-              ) : (
-                <div className="flex h-[640px] items-center justify-center text-zinc-500">Loading the form…</div>
-              )}
+            <p className="mt-3 text-lg text-zinc-300">Four one-tap questions, then where to send your price. We reply within one business day with pricing for your build.</p>
+            <ul className="mt-6 space-y-3 text-[15px] leading-relaxed text-zinc-300">
+              {['A short call to plan your setup, branding and add-ons. No pressure.', 'Nothing is charged until you approve an invoice.', 'Opening for spring? Permits often take 60–90 days, so owners order in winter and apply while the bike is built.'].map((x) => (
+                <li key={x} className="flex gap-3"><Check className="mt-1 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
+              ))}
+            </ul>
+            <div className="mt-8 grid gap-3 sm:grid-cols-2">
+              <a href={CALL_URL} target="_blank" rel="noopener" onClick={() => track('cta_click', { where: 'book_call', intent, market })} className="block rounded-xl border border-zinc-700 p-4 hover:border-zinc-400">
+                <div className="flex items-center gap-2 font-bold"><Calendar className="h-4 w-4" aria-hidden /> Prefer to talk first?</div>
+                <div className="mt-1 text-sm text-zinc-400">Book a discovery call →</div>
+              </a>
+              <a href={`tel:${PHONE.tel}`} onClick={() => track('cta_click', { where: 'quote_phone', intent, market })} className="block rounded-xl border border-zinc-700 p-4 hover:border-zinc-400">
+                <div className="flex items-center gap-2 font-bold"><Phone className="h-4 w-4" aria-hidden /> Call or text</div>
+                <div className="mt-1 text-sm text-zinc-400">{PHONE.label}</div>
+              </a>
             </div>
           </div>
-          <aside className="space-y-4 lg:pt-24">
-            <div className="rounded-xl bg-zinc-900 p-5">
-              <h3 className="font-bold">What happens next</h3>
-              <ul className="mt-3 space-y-3 text-[15px] leading-relaxed text-zinc-300">
-                {['A reply within one business day, by email or WhatsApp.', 'A short call to plan your setup, branding and add-ons. No pressure.', 'Nothing is charged until you approve an invoice.', 'Opening for spring? Permits often take 60–90 days, so owners order in winter and apply while the bike is built.'].map((x) => (
-                  <li key={x} className="flex gap-3"><Check className="mt-1 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
-                ))}
-              </ul>
-            </div>
-            <a href={CALL_URL} target="_blank" rel="noopener" onClick={() => track('cta_click', { where: 'book_call', intent })} className="block rounded-xl border border-zinc-700 p-5 hover:border-zinc-400">
-              <div className="font-bold">Prefer to talk first?</div>
-              <div className="mt-1 text-sm text-zinc-400">Book a discovery call with our team →</div>
-            </a>
-            <a href={DEPOSIT_URL} target="_blank" rel="noopener" onClick={() => track('cta_click', { where: 'deposit', intent })} className="block rounded-xl border border-zinc-700 p-5 hover:border-zinc-400">
-              <div className="font-bold">Ready to go?</div>
-              <div className="mt-1 text-sm text-zinc-400">Reserve a production spot with a US$250 deposit, applied in full to your order →</div>
-            </a>
-          </aside>
+          <div className="w-full rounded-2xl bg-white p-5 text-zinc-900 shadow-xl sm:p-7">
+            <QuoteFlow where="inline" />
+          </div>
         </div>
       </section>
+
+      {/* how buying works */}
+      <Section id="how" tone="soft">
+        <Heading eyebrow="How buying works" title="From your first message to your first customer" />
+        <ol className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {STEPS.map((s, i) => (
+            <li key={s.t} className="rounded-xl bg-white p-6">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-extrabold text-white" style={{ backgroundColor: RED }}>{i + 1}</div>
+              <h3 className="mt-4 text-lg font-bold text-zinc-950">{s.t}</h3>
+              <p className="mt-1.5 leading-relaxed text-zinc-600">{s.d}</p>
+            </li>
+          ))}
+        </ol>
+      </Section>
 
       {/* founder */}
       <Section id="founder">
@@ -424,73 +473,14 @@ export default function StartPage({ intent = 'bike' }) {
         </div>
       </Section>
 
-      {/* seasons */}
-      <Section id="seasons" tone="soft">
-        <Heading eyebrow="All year" title="A business for all four seasons" sub="The most common question from Canada and the northern US. Here is how owners answer it." />
-        <div className="mt-10 grid gap-5 md:grid-cols-3">
-          {[
-            { icon: Sun, t: 'Spring to fall', d: 'Farmers markets, festivals, sports games, weddings and private events.' },
-            { icon: Snowflake, t: 'Winter', d: 'Indoors: office lobbies, hospitals, campuses, residential towers, grocery stores and gyms.' },
-            { icon: Building2, t: 'Why landlords say yes', d: 'No build-out and no plumbing or electrical changes on their side. The bike rolls in, plugs into a standard outlet and serves.' },
-          ].map(({ icon: Icon, t, d }) => (
-            <div key={t} className="rounded-xl bg-white p-6">
-              <Icon className="h-7 w-7" style={{ color: RED }} aria-hidden />
-              <h3 className="mt-4 text-lg font-bold text-zinc-950">{t}</h3>
-              <p className="mt-1.5 leading-relaxed text-zinc-600">{d}</p>
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      {/* permits */}
-      <Section id="permits">
-        <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-start">
-          <Heading eyebrow="Permits" title="Ask your health department before you buy" sub="Every city has its own rules, and approval is up to them. Our package gives them what they usually ask for, so you can check before you order." />
-          <div className="rounded-xl border border-zinc-200 p-6">
-            <h3 className="font-bold text-zinc-950">The free health inquiry package includes</h3>
-            <ul className="mt-3 space-y-2.5 text-[15px] leading-relaxed text-zinc-700">
-              {['Specifications, dimensions and blueprints', 'Sink, water tank, pump and hot water setup', 'A checklist of what to ask: sinks, water capacity, commissary, where you can vend', 'A sample letter to send your health department or city'].map((x) => (
-                <li key={x} className="flex gap-3"><Check className="mt-1 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
-              ))}
-            </ul>
-            <a href={SPEC_SHEET} target="_blank" rel="noopener" onClick={() => track('spec_sheet', { where: 'permits', intent })} className="mt-5 inline-flex items-center gap-2 rounded-md border border-zinc-300 px-4 py-3 font-bold text-zinc-900 hover:border-zinc-500">
-              <FileText className="h-5 w-5" /> Download the package (PDF)
-            </a>
-            <p className="mt-3 text-xs leading-relaxed text-zinc-500">A reference for your conversation with the authorities, not a guarantee of approval. Sink layout and tank sizes can be changed before your bike is built.</p>
-          </div>
-        </div>
-      </Section>
-
-      <Numbers intent={intent} />
-
-      {/* how buying works */}
-      <Section id="how" tone="soft">
-        <Heading eyebrow="How buying works" title="From your first message to your first customer" />
-        <ol className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {STEPS.map((s, i) => (
-            <li key={s.t} className="rounded-xl bg-white p-6">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-extrabold text-white" style={{ backgroundColor: RED }}>{i + 1}</div>
-              <h3 className="mt-4 text-lg font-bold text-zinc-950">{s.t}</h3>
-              <p className="mt-1.5 leading-relaxed text-zinc-600">{s.d}</p>
-            </li>
-          ))}
-        </ol>
-      </Section>
-
-      {/* walkthrough */}
-      <Section id="walkthrough">
-        <Heading eyebrow="See it" title="Walk around the bike in six minutes" sub="Every compartment, the espresso machine, the batteries and how it rides." />
-        <div className="relative mt-8 aspect-video overflow-hidden rounded-xl bg-zinc-900">
-          <LiteYouTube videoId={WALKTHROUGH_ID} title="Coffee Bike full walkthrough" trackingName="coffee_bike_walkthrough_start_page" caption="Full walkthrough · 6:32" />
-        </div>
-      </Section>
+      <Numbers intent={intent} market={market} />
 
       {/* questions */}
       <Section id="faq" tone="soft">
         <Heading eyebrow="Questions" title="What buyers ask before ordering" />
         <div className="mt-8 divide-y divide-zinc-200 rounded-xl bg-white">
-          {FAQS.map((f) => (
-            <details key={f.q} className="group p-5" onToggle={(e) => e.currentTarget.open && track('faq_open', { q: f.q.slice(0, 60), intent })}>
+          {questions.map((f) => (
+            <details key={f.q} className="group p-5" onToggle={(e) => e.currentTarget.open && track('faq_open', { q: f.q.slice(0, 60), intent, market })}>
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-bold text-zinc-950">
                 {f.q}
                 <ChevronDown className="h-5 w-5 flex-none text-zinc-500 transition group-open:rotate-180" aria-hidden />
@@ -506,30 +496,41 @@ export default function StartPage({ intent = 'bike' }) {
         <div className="mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 sm:px-6 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-3xl font-extrabold md:text-4xl" style={{ ...DISPLAY, ...BALANCE }}>See what your Coffee Bike would cost</h2>
-            <p className="mt-2 text-zinc-400">Base from US$9,850 · CA$13,495. Reply within one business day.</p>
+            <p className="mt-2 text-zinc-400">{M.heroPrice} {M.heroPriceNote}. We reply within one business day.</p>
           </div>
-          <Cta where="footer" intent={intent}>Get my price <ArrowRight className="h-5 w-5" /></Cta>
+          <PriceButton where="footer" className="w-full md:w-auto">Get my price <ArrowRight className="h-5 w-5" /></PriceButton>
         </div>
       </section>
 
-      <footer className="bg-black pb-28 pt-6 text-sm text-zinc-500 md:pb-10">
-        <div className="mx-auto flex max-w-6xl flex-wrap gap-x-6 gap-y-2 border-t border-zinc-800 px-4 pt-6 sm:px-6">
-          <span>© {new Date().getFullYear()} Coffee Bike World · Vancouver, BC</span>
-          <a href="https://coffeebike.ca/privacy-policy/" className="hover:text-zinc-300">Privacy policy</a>
-          <a href="https://coffeebike.ca/buy-a-mobile-coffee-bike" className="hover:text-zinc-300">Configure a bike</a>
+      <footer className="bg-black pb-28 pt-6 text-sm text-zinc-400 md:pb-10">
+        <div className="mx-auto grid max-w-6xl gap-6 border-t border-zinc-800 px-4 pt-6 sm:px-6 md:grid-cols-[1fr_auto]">
+          <div className="space-y-2">
+            <div className="font-bold text-zinc-200">Coffee Bike World</div>
+            <div className="flex items-start gap-2"><MapPin className="mt-0.5 h-4 w-4 flex-none" aria-hidden />{ADDRESS}</div>
+            <div className="flex flex-wrap gap-x-5 gap-y-2">
+              <a href={`tel:${PHONE.tel}`} className="inline-flex items-center gap-2 hover:text-white"><Phone className="h-4 w-4" aria-hidden />{PHONE.label}</a>
+              <a href={`mailto:${EMAIL}`} className="inline-flex items-center gap-2 hover:text-white"><Mail className="h-4 w-4" aria-hidden />{EMAIL}</a>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-x-6 gap-y-2 md:justify-end">
+            <a href="https://coffeebike.ca" className="hover:text-white">coffeebike.ca</a>
+            <a href="https://coffeebike.ca/buy-a-mobile-coffee-bike" className="hover:text-white">Configure a bike</a>
+            <a href="https://coffeebike.ca/privacy-policy/" className="hover:text-white">Privacy policy</a>
+            <span>© {new Date().getFullYear()}</span>
+          </div>
         </div>
       </footer>
 
-      {/* phones: price button that follows the visitor */}
-      <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white/95 backdrop-blur transition-transform md:hidden ${sticky ? 'translate-y-0' : 'translate-y-full'}`} style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+      {/* phones: price bar that follows the visitor */}
+      <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white/95 backdrop-blur transition-transform md:hidden ${sticky && !q.open ? 'translate-y-0' : 'translate-y-full'}`} style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         <div className="flex items-center justify-between gap-3 px-4 py-3">
           <div className="leading-tight">
-            <div className="text-xs text-zinc-500">Base from</div>
-            <div className="font-extrabold text-zinc-950">US$9,850</div>
+            <div className="text-xs text-zinc-500">{M.sticky.k}</div>
+            <div className="font-extrabold text-zinc-950">{M.sticky.v}</div>
           </div>
-          <a href="#quote" onClick={() => track('cta_click', { where: 'sticky', intent })} className="flex-1 rounded-md px-4 py-3 text-center font-bold text-white" style={{ backgroundColor: RED }}>
-            Get my price
-          </a>
+          <button type="button" onClick={() => q.openQuote('sticky')} className="flex-1 rounded-xl px-4 py-3 text-center font-extrabold text-white" style={{ backgroundColor: RED }}>
+            {q.status === 'done' ? 'Request sent ✓' : q.step > 0 ? `Continue · step ${q.step + 1} of 5` : 'Get my price'}
+          </button>
         </div>
       </div>
     </div>
@@ -537,14 +538,61 @@ export default function StartPage({ intent = 'bike' }) {
 }
 
 /**
+ * Day-to-day running, what the bike can do and where owners sell (together 42% of the questions buyers send us).
+ * General advice only: the page never promises venues, events or customers (a business-opportunity claim).
+ */
+function DayAndWhere() {
+  const day = [
+    { icon: Clock, t: 'Open in minutes', d: 'Ride in, open the canopy and start the machine: propane outdoors, a standard outlet indoors.' },
+    { icon: Coffee, t: 'Keeps up with a line', d: 'About 60–100 drinks an hour, depending on your menu and your barista.' },
+    { icon: Droplets, t: 'Water on board', d: '50 L fresh and 60 L waste, hot and cold on demand. Refill and empty at your base.' },
+    { icon: BatteryCharging, t: 'Power for the day', d: 'Batteries with a 2,000 W inverter and a 200 W solar roof, or shore power where there is an outlet.' },
+    { icon: Warehouse, t: 'Stored overnight', d: 'A garage, storage unit or partner venue with a standard outlet for the smart chargers.' },
+  ];
+  const where = ['Farmers markets and street fairs', 'Weddings, parties and private events', 'Office lobbies, campuses and hospitals', 'Sports games and community events', 'Brand launches and corporate events', 'Partner spots: a gym, a grocery entrance, a café patio'];
+  return (
+    <Section id="day">
+      <div className="grid gap-12 lg:grid-cols-2">
+        <div>
+          <Heading eyebrow="Day to day" title="A day with a Coffee Bike" />
+          <div className="mt-8 grid gap-3">
+            {day.map(({ icon: Icon, t, d }) => (
+              <div key={t} className="flex gap-4 rounded-xl border border-zinc-200 p-4">
+                <Icon className="mt-0.5 h-6 w-6 flex-none" style={{ color: RED }} aria-hidden />
+                <div>
+                  <h3 className="font-bold text-zinc-950">{t}</h3>
+                  <p className="mt-0.5 text-[15px] leading-relaxed text-zinc-600">{d}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div>
+          <Heading eyebrow="Where owners sell" title="Take your coffee to the crowd" sub="Your permits decide where you can vend, so every city is different. Many owners start with private events and a partner venue, then add markets." />
+          <ul className="mt-8 grid gap-2.5 sm:grid-cols-2">
+            {where.map((x) => (
+              <li key={x} className="flex gap-2.5 rounded-lg bg-[#F4F4F3] px-3.5 py-3 text-[15px] font-semibold text-zinc-900"><MapPin className="mt-0.5 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
+            ))}
+          </ul>
+          <div className="relative mt-6 aspect-[4/3] overflow-hidden rounded-2xl bg-zinc-200">
+            <Image src={PHOTOS.ride.src} alt={PHOTOS.ride.alt} fill sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover object-[50%_60%]" />
+          </div>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+/**
  * Break-even in drinks, from the visitor's own price and cost per drink. Nothing about sales volume or income is
  * filled in: under FTC rules (16 CFR 437.1) any preset sales or profit figure is an earnings claim, and Google treats
- * them as unreliable claims. The only prefilled number is the bike's own price.
+ * them as unreliable claims. The only prefilled number is the typical build price for the visitor's market.
  */
-function Numbers({ intent }) {
+function Numbers({ intent, market }) {
+  const cur = market === 'ca' ? 'CA$' : 'US$';
   const [price, setPrice] = useState('');
   const [cogs, setCogs] = useState('');
-  const [build, setBuild] = useState('15850');
+  const [build, setBuild] = useState(market === 'ca' ? '25000' : '15850');
   const used = useRef(false);
   const r = useMemo(() => {
     const p = parseFloat(price);
@@ -557,7 +605,7 @@ function Numbers({ intent }) {
   const touch = () => {
     if (!used.current) {
       used.current = true;
-      track('calculator_use', { intent });
+      track('calculator_use', { intent, market });
     }
   };
   const field = (label, value, set, props) => (
@@ -582,13 +630,13 @@ function Numbers({ intent }) {
         <Heading dark eyebrow="Break-even" title="How many drinks cover the bike?" sub="Enter your own price and cost per drink. Nothing is filled in for you, because only you know your market." />
         <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_1fr]">
           <div className="grid grid-cols-2 gap-4">
-            {field('Your price per drink', price, setPrice, { min: 0, step: 0.25, id: 'calc-price', placeholder: 'Your price' })}
+            {field(`Your price per drink (${cur})`, price, setPrice, { min: 0, step: 0.25, id: 'calc-price', placeholder: 'Your price' })}
             {field('Cost of goods per drink (%)', cogs, setCogs, { min: 0, max: 99, step: 1, id: 'calc-cogs', placeholder: 'Your %' })}
-            <div className="col-span-2">{field('Your build cost', build, setBuild, { min: 0, step: 250, id: 'calc-build' })}</div>
+            <div className="col-span-2">{field(`Your build cost (${cur})`, build, setBuild, { min: 0, step: 250, id: 'calc-build' })}</div>
           </div>
           <div className="rounded-xl bg-zinc-900 p-6">
             <dl className="grid gap-5">
-              <div><dt className="text-sm text-zinc-400">Margin per drink</dt><dd className="text-3xl font-extrabold tabular-nums">{r ? `$${r.margin.toFixed(2)}` : '–'}</dd></div>
+              <div><dt className="text-sm text-zinc-400">Margin per drink</dt><dd className="text-3xl font-extrabold tabular-nums">{r ? `${cur}${r.margin.toFixed(2)}` : '–'}</dd></div>
               <div><dt className="text-sm text-zinc-400">Drinks to cover your build</dt><dd className="text-3xl font-extrabold tabular-nums">{r ? r.drinks.toLocaleString('en-US') : '–'}</dd></div>
             </dl>
             <p className="mt-6 text-xs leading-relaxed text-zinc-500">An illustration from the numbers you enter, not a prediction of sales or income. It leaves out permits, insurance, rent or event fees, staff, taxes and your time.</p>
