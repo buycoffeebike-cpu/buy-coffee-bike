@@ -7,8 +7,8 @@
  * show the same step. Steps change in the browser with no network call between them.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, Calendar, Check, FileText, Loader2, MessageSquare, Phone, PlayCircle, X } from 'lucide-react';
-import { ADS_CONVERSION, CALL_URL, DEPOSIT_URL, INCLUDED, LEAD_API, MARKETS, PHONE, QUOTE_FORM_URL, SPEC_SHEET } from './content';
+import { ArrowLeft, ArrowRight, Calendar, Check, FileText, Loader2, MessageCircle, PlayCircle, X } from 'lucide-react';
+import { ADS_CONVERSION, CALL_URL, DEPOSIT_URL, INCLUDED, LEAD_API, MARKETS, QUOTE_FORM_URL, SPEC_SHEET, whatsappLink } from './content';
 
 export const RED = '#E31E24';
 const STEP_KEYS = ['use', 'timeline', 'stage', 'fit', 'contact'];
@@ -204,7 +204,7 @@ export function QuoteProvider({ market, intent, children }) {
     } catch (e) {
       setFails((n) => n + 1);
       setStatus('error');
-      setError(e?.status === 429 ? 'We already have a few requests from this connection. Please call or text us instead, or try again in an hour.' : e?.status === 400 ? `Please check your details: ${String(e.message).replace(/^[a-z]+: /i, '')}` : 'That did not go through. Please try again.');
+      setError(e?.status === 429 ? 'We already have a few requests from this connection. Please message us on WhatsApp instead, or try again in an hour.' : e?.status === 400 ? `Please check your details: ${String(e.message).replace(/^[a-z]+: /i, '')}` : 'That did not go through. Please try again.');
       track('quote_error', { status: e?.status || 0, market, intent });
     }
   }, [answers, contact, intent, market, seasons]);
@@ -363,7 +363,7 @@ export function QuoteFlow({ where = 'inline' }) {
                 {q.error}
                 {q.fails >= 2 ? (
                   <span className="mt-2 block font-normal text-red-900">
-                    You can also call or text <a className="font-bold underline" href={`tel:${PHONE.tel}`}>{PHONE.label}</a>, email <a className="font-bold underline" href={`mailto:coffeebike@vladvik.com?subject=${encodeURIComponent('Coffee Bike price')}`}>coffeebike@vladvik.com</a>, or use <a className="font-bold underline" href={QUOTE_FORM_URL} target="_blank" rel="noopener">our backup form</a>.
+                    You can also <a className="font-bold underline" href={whatsappLink(q.market)} target="_blank" rel="noopener">message us on WhatsApp</a>, email <a className="font-bold underline" href={`mailto:coffeebike@vladvik.com?subject=${encodeURIComponent('Coffee Bike price')}`}>coffeebike@vladvik.com</a>, or use <a className="font-bold underline" href={QUOTE_FORM_URL} target="_blank" rel="noopener">our backup form</a>.
                   </span>
                 ) : null}
               </div>
@@ -373,7 +373,7 @@ export function QuoteFlow({ where = 'inline' }) {
               {q.status === 'sending' ? 'Sending…' : 'Get my price'}
             </button>
             <p className="text-center text-xs leading-relaxed text-zinc-500">
-              By sending, you agree Coffee Bike World may call or text you about your quote. Msg &amp; data rates may apply. Reply STOP to opt out. We never share your details.
+              By sending, you agree Coffee Bike World may call, text or WhatsApp you about your quote. Msg &amp; data rates may apply. Reply STOP to opt out. We never share your details.
             </p>
           </form>
         ) : null}
@@ -412,7 +412,7 @@ function Thanks() {
       <h3 className="mt-4 text-2xl font-extrabold leading-tight text-zinc-950" style={{ fontFamily: '"Roboto Condensed", Inter, system-ui, sans-serif' }}>
         Thank you{r.first ? `, ${r.first}` : ''}. Your request is in.
       </h3>
-      <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">We’ll reply within one business day with your price and build options, and we’ll text you if a quick question helps.</p>
+      <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">We’ll reply within one business day with your price and build options, and we’ll message you if a quick question helps.</p>
 
       <div className="mt-4 rounded-xl bg-zinc-100 p-4">
         <p className="text-sm font-bold uppercase tracking-wider text-zinc-500">Your starting point</p>
@@ -450,12 +450,9 @@ function Thanks() {
           <PlayCircle className="h-5 w-5 flex-none" /> Watch the 6-minute walkthrough
         </a>
       </div>
-      <p className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-zinc-600">
-        <span>Questions now?</span>
-        <a href={`tel:${PHONE.tel}`} className="inline-flex items-center gap-1 font-bold text-zinc-900 underline underline-offset-4"><Phone className="h-4 w-4" aria-hidden />Call</a>
-        <a href={`sms:${PHONE.tel}`} className="inline-flex items-center gap-1 font-bold text-zinc-900 underline underline-offset-4"><MessageSquare className="h-4 w-4" aria-hidden />Text</a>
-        <span>{PHONE.label}</span>
-      </p>
+      <a href={whatsappLink(q.market)} target="_blank" rel="noopener" onClick={() => track('whatsapp_click', { where: 'thanks', market: q.market, intent: q.intent })} className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-zinc-900 underline underline-offset-4">
+        <MessageCircle className="h-4 w-4" aria-hidden /> Questions now? Message us on WhatsApp
+      </a>
     </div>
   );
 }

@@ -2,11 +2,11 @@
 
 import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, BatteryCharging, Building2, Calendar, Check, ChevronDown, Clock, Coffee, CreditCard, Droplets, FileText, Mail, MapPin, MessageSquare, Phone, ShieldCheck, Snowflake, Sun, Users, Warehouse } from 'lucide-react';
+import { ArrowRight, BatteryCharging, Building2, Calendar, Check, ChevronDown, Clock, Coffee, CreditCard, Droplets, FileText, Mail, MapPin, ShieldCheck, Snowflake, Sun, Users, Warehouse } from 'lucide-react';
 import LiteYouTube from '../../components/LiteYouTube';
 import {
-  ADDRESS, ADS_TAG, CALL_URL, COMPARE_COLS, DEPOSIT_URL, EMAIL, FEATURES, FOUNDER, INCLUDED, INTENTS, LOGO, MARKETS, OWNERS, PHONE, PHOTOS, PRICING,
-  SPEC_SHEET, SPECS, STEPS, TRUST, WALKTHROUGH_ID, compareNote, compareRows, faqs,
+  ADDRESS, ADS_TAG, CALL_URL, COMPARE_COLS, DEPOSIT_URL, EMAIL, FEATURES, INCLUDED, INTENTS, LOGO, MARKETS, OWNERS, PHOTOS, PRICING,
+  SPEC_SHEET, SPECS, STEPS, TRUST, WALKTHROUGH_ID, compareNote, compareRows, faqs, whatsappLink,
 } from './content';
 import { HeroQuestion, QuoteFlow, QuoteModal, QuoteProvider, RED, useQuote } from './quote';
 
@@ -18,6 +18,15 @@ const track = (name, params) => {
     window.gtag?.('event', name, params);
   } catch {}
 };
+
+/** WhatsApp glyph (brand mark, used only to label the WhatsApp link). */
+function WhatsAppIcon({ className = '' }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+      <path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.08c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.69.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35zM12.05 21.5h-.01a9.4 9.4 0 0 1-4.8-1.31l-.34-.2-3.57.94.95-3.48-.22-.36a9.39 9.39 0 0 1-1.44-5.02c0-5.19 4.23-9.42 9.43-9.42 2.52 0 4.88.98 6.66 2.76a9.35 9.35 0 0 1 2.76 6.67c0 5.2-4.23 9.42-9.42 9.42zm8.02-17.44A11.26 11.26 0 0 0 12.05.74C5.8.74.72 5.82.72 12.07c0 2 .52 3.95 1.52 5.66L.62 23.26l5.66-1.48a11.3 11.3 0 0 0 5.77 1.47h.01c6.25 0 11.33-5.08 11.33-11.33 0-3.03-1.18-5.87-3.32-8.01z" />
+    </svg>
+  );
+}
 
 function Section({ id, tone = 'light', className = '', children }) {
   const bg = tone === 'dark' ? 'bg-zinc-950 text-white' : tone === 'soft' ? 'bg-[#F4F4F3] text-zinc-900' : 'bg-white text-zinc-900';
@@ -64,12 +73,22 @@ function Page({ intent, market }) {
   const P = PRICING[market];
   const q = useQuote();
   const [vs, setVs] = useState(I.compare);
-  const [allOwners, setAllOwners] = useState(false);
   const [sticky, setSticky] = useState(false);
   const quoteRef = useRef(null);
   const quoteInView = useRef(false);
   const rows = useMemo(() => compareRows(market), [market]);
-  const owners = useMemo(() => [...OWNERS].sort((a, b) => Number(!M.ownersFirst.includes(a.place)) - Number(!M.ownersFirst.includes(b.place))), [M]);
+  // local owners first: Canadian provinces on the Canadian page, US states on the US page
+  const owners = useMemo(() => {
+    const ca = (p) => /, (BC|AB|SK|MB|ON|QC|NB|NS|PE|NL|YT|NT|NU)$/.test(p);
+    const local = (p) => (market === 'ca' ? ca(p) : /, [A-Z]{2}$/.test(p) && !ca(p));
+    return [...OWNERS].sort((a, b) => Number(!local(a.place)) - Number(!local(b.place)));
+  }, [market]);
+  const ownersSeen = useRef(false);
+  const onOwnersScroll = () => {
+    if (ownersSeen.current) return;
+    ownersSeen.current = true;
+    track('owners_more', { intent, market });
+  };
   const questions = useMemo(() => faqs(market), [market]);
 
   // Google Ads tag on this page (the conversion itself fires from the quote form)
@@ -128,12 +147,9 @@ function Page({ intent, market }) {
             <img src={LOGO} alt="Coffee Bike" className="h-8 w-auto" />
           </a>
           <div className="flex items-center gap-1 sm:gap-5">
-            <a href={`tel:${PHONE.tel}`} onClick={() => track('cta_click', { where: 'header_phone', intent, market })} className="inline-flex items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold text-zinc-300 hover:text-white" aria-label={`Call ${PHONE.label}`}>
-              <Phone className="h-4 w-4" aria-hidden />
-              <span className="hidden md:inline">{PHONE.label}</span>
-            </a>
-            <a href={`sms:${PHONE.tel}`} onClick={() => track('cta_click', { where: 'header_text', intent, market })} className="inline-flex items-center rounded-md px-2 py-2 text-zinc-300 hover:text-white md:hidden" aria-label={`Text ${PHONE.label}`}>
-              <MessageSquare className="h-4 w-4" aria-hidden />
+            <a href={whatsappLink(market)} target="_blank" rel="noopener" onClick={() => track('whatsapp_click', { where: 'header', intent, market })} className="inline-flex items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold text-zinc-300 hover:text-white" aria-label="Message us on WhatsApp">
+              <WhatsAppIcon className="h-5 w-5" />
+              <span className="hidden md:inline">WhatsApp</span>
             </a>
             <a href="#price" className="hidden text-sm font-semibold text-zinc-300 hover:text-white sm:inline">Pricing</a>
             <a href="#owners" className="hidden text-sm font-semibold text-zinc-300 hover:text-white sm:inline">Owners</a>
@@ -153,8 +169,8 @@ function Page({ intent, market }) {
             <p className="mt-4 hidden max-w-xl text-lg leading-relaxed text-zinc-700 md:block">{I.sub}</p>
           </div>
           <div className="relative md:col-start-2 md:row-span-3 md:row-start-1 md:self-start">
-            <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-zinc-200 md:aspect-[4/5]">
-              <Image src={PHOTOS.queue.src} alt={PHOTOS.queue.alt} fill priority sizes="(min-width: 768px) 50vw, 100vw" className="object-cover object-[42%_50%]" />
+            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-zinc-200 md:aspect-[4/5]">
+              <Image src={PHOTOS.hero.src} alt={PHOTOS.hero.alt} fill priority sizes="(min-width: 768px) 50vw, 100vw" className="object-cover object-[50%_42%] md:object-[50%_50%]" />
             </div>
             <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
               <span className="rounded-md bg-white/95 px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-zinc-900 shadow-sm">As seen on Dragons’ Den</span>
@@ -196,25 +212,6 @@ function Page({ intent, market }) {
           </dl>
         </div>
       </section>
-
-      {/* permits */}
-      <Section id="permits">
-        <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-start">
-          <Heading eyebrow="Permits" title="Ask your health department before you buy" sub="Every city has its own rules, and approval is up to them. Our package gives them what they usually ask for, so you can check before you order." />
-          <div className="rounded-xl border border-zinc-200 p-6">
-            <h3 className="font-bold text-zinc-950">The free health inquiry package includes</h3>
-            <ul className="mt-3 space-y-2.5 text-[15px] leading-relaxed text-zinc-700">
-              {['Specifications, dimensions and blueprints', 'Sink, water tank, pump and hot water setup', 'A checklist of what to ask: sinks, water capacity, commissary, where you can vend', 'A sample letter to send your health department or city'].map((x) => (
-                <li key={x} className="flex gap-3"><Check className="mt-1 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
-              ))}
-            </ul>
-            <a href={SPEC_SHEET} target="_blank" rel="noopener" onClick={() => track('spec_sheet', { where: 'permits', intent, market })} className="mt-5 inline-flex items-center gap-2 rounded-md border border-zinc-300 px-4 py-3 font-bold text-zinc-900 hover:border-zinc-500">
-              <FileText className="h-5 w-5" /> Download the package (PDF)
-            </a>
-            <p className="mt-3 text-xs leading-relaxed text-zinc-500">A reference for your conversation with the authorities, not a guarantee of approval. Sink layout and tank sizes can be changed before your bike is built.</p>
-          </div>
-        </div>
-      </Section>
 
       {/* comparison */}
       <Section id="compare">
@@ -268,7 +265,17 @@ function Page({ intent, market }) {
       {/* what you get */}
       <Section id="build" tone="soft">
         <Heading eyebrow="What you get" title="A commercial espresso bar that rides" sub="Every part of it comes from 8+ years of serving at busy events and festivals with our own bikes." />
-        <div className="mt-8 grid gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+        <div className="mt-8 grid grid-cols-3 gap-2 sm:gap-4">
+          {[PHOTOS.customerSide, PHOTOS.baristaSide, PHOTOS.closed].map((p, i) => (
+            <figure key={p.src} className="overflow-hidden rounded-xl bg-white">
+              <div className="relative aspect-square">
+                <Image src={p.src} alt={p.alt} fill sizes="(min-width: 1024px) 380px, 33vw" className="object-cover" />
+              </div>
+              <figcaption className="px-2 py-2 text-center text-xs font-semibold text-zinc-600 sm:text-sm">{['Customer side', 'Barista side', 'Closed to ride'][i]}</figcaption>
+            </figure>
+          ))}
+        </div>
+        <div className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
           {FEATURES.map((f) => (
             <article key={f.title} className="grid grid-cols-[96px_1fr] overflow-hidden rounded-xl bg-white sm:block">
               <div className="relative h-full min-h-[96px] sm:aspect-[4/3] sm:h-auto">
@@ -334,7 +341,7 @@ function Page({ intent, market }) {
             </div>
           </div>
           <div className="relative aspect-square overflow-hidden rounded-2xl bg-zinc-200">
-            <Image src={PHOTOS.winter.src} alt={PHOTOS.winter.alt} fill sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover" />
+            <Image src={PHOTOS.indoors.src} alt={PHOTOS.indoors.alt} fill sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover object-[50%_60%]" />
           </div>
         </div>
       </Section>
@@ -342,34 +349,23 @@ function Page({ intent, market }) {
       {/* owners */}
       <Section id="owners" tone="dark">
         <Heading dark eyebrow="Owners" title="49 bikes. 36 owners. Here are some of them." sub="First businesses, second careers, cafés and roasteries adding a mobile bar, and brands that take their coffee to the crowd. Several owners run two or three bikes." />
-        <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-4">
-          {[PHOTOS.liudmyla, PHOTOS.fleet, PHOTOS.sanam, PHOTOS.levis].map((p) => (
-            <div key={p.src} className="relative aspect-[3/4] overflow-hidden rounded-xl bg-zinc-800">
-              <Image src={p.src} alt={p.alt} fill sizes="(min-width: 768px) 25vw, 50vw" className="object-cover" />
-            </div>
-          ))}
-        </div>
-        <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-          {(allOwners ? owners : owners.slice(0, 4)).map((o, i) => (
-            <figure key={o.name} className={`${!allOwners && i >= 2 ? 'hidden md:flex' : 'flex'} flex-col rounded-xl bg-zinc-900 p-5`}>
-              <blockquote className="flex-1 text-[15px] leading-relaxed text-zinc-200">“{o.quote}”</blockquote>
-              <figcaption className="mt-5 flex items-center gap-3">
-                <div className="relative h-12 w-12 flex-none overflow-hidden rounded-full bg-zinc-800">
-                  <Image src={o.img} alt={`${o.name}, ${o.biz}`} fill sizes="48px" className="object-cover" />
-                </div>
-                <div>
-                  <div className="font-bold text-white">{o.name} · {o.place}</div>
-                  <div className="text-sm text-zinc-400">{o.biz}</div>
-                </div>
+        {/* the reviews as the main sales page shows them: each owner's own photo, then their words */}
+        <div className="-mx-4 mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:px-6" onScroll={onOwnersScroll}>
+          {owners.map((o) => (
+            <figure key={o.name} className="flex w-[260px] flex-none snap-start flex-col overflow-hidden rounded-xl bg-zinc-900">
+              <div className="relative aspect-[4/5] bg-zinc-800">
+                <Image src={o.img} alt={`${o.name}, ${o.biz}`} fill sizes="260px" className="object-cover" />
+              </div>
+              <figcaption className="flex flex-1 flex-col p-4">
+                <div className="font-bold text-white">{o.name}</div>
+                <div className="text-sm text-zinc-400">{o.place} · {o.biz}</div>
+                <div className="mt-0.5 text-xs text-zinc-500">Owner for {o.months >= 12 ? `${Math.floor(o.months / 12)}+ year${o.months >= 24 ? 's' : ''}` : `${o.months} months`}</div>
+                <blockquote className="mt-3 text-[14px] italic leading-relaxed text-zinc-200">“{o.quote}”</blockquote>
               </figcaption>
             </figure>
           ))}
         </div>
-        {!allOwners ? (
-          <button onClick={() => { setAllOwners(true); track('owners_more', { intent, market }); }} className="mt-6 inline-flex items-center gap-2 rounded-md border border-zinc-700 px-4 py-3 font-semibold text-white hover:border-zinc-400">
-            Read more owner stories <ChevronDown className="h-4 w-4" />
-          </button>
-        ) : null}
+        <p className="mt-2 text-sm text-zinc-400">Swipe for more owners →</p>
       </Section>
 
       {/* price */}
@@ -441,9 +437,9 @@ function Page({ intent, market }) {
                 <div className="flex items-center gap-2 font-bold"><Calendar className="h-4 w-4" aria-hidden /> Prefer to talk first?</div>
                 <div className="mt-1 text-sm text-zinc-400">Book a discovery call →</div>
               </a>
-              <a href={`tel:${PHONE.tel}`} onClick={() => track('cta_click', { where: 'quote_phone', intent, market })} className="block rounded-xl border border-zinc-700 p-4 hover:border-zinc-400">
-                <div className="flex items-center gap-2 font-bold"><Phone className="h-4 w-4" aria-hidden /> Call or text</div>
-                <div className="mt-1 text-sm text-zinc-400">{PHONE.label}</div>
+              <a href={whatsappLink(market)} target="_blank" rel="noopener" onClick={() => track('whatsapp_click', { where: 'quote', intent, market })} className="block rounded-xl border border-zinc-700 p-4 hover:border-zinc-400">
+                <div className="flex items-center gap-2 font-bold"><WhatsAppIcon className="h-4 w-4" /> Message us on WhatsApp</div>
+                <div className="mt-1 text-sm text-zinc-400">Straight to our team →</div>
               </a>
             </div>
           </div>
@@ -471,7 +467,7 @@ function Page({ intent, market }) {
       <Section id="founder">
         <div className="grid items-center gap-10 md:grid-cols-[0.8fr_1fr]">
           <div className="relative mx-auto aspect-[4/3] w-full overflow-hidden rounded-xl md:aspect-[4/5] md:max-w-sm">
-            <Image src={FOUNDER} alt="Vlad Priadko, founder, next to a Coffee Bike serving in Vancouver" fill sizes="(min-width: 768px) 384px, 90vw" className="object-cover object-[50%_40%]" />
+            <Image src={PHOTOS.founder.src} alt={PHOTOS.founder.alt} fill sizes="(min-width: 768px) 384px, 90vw" className="object-cover object-[50%_40%]" />
           </div>
           <div>
             <Heading eyebrow="Built by people who run it" title="We’ve served 1.5 million cups from these bikes ourselves" />
@@ -519,7 +515,7 @@ function Page({ intent, market }) {
             <div className="font-bold text-zinc-200">Coffee Bike World</div>
             <div className="flex items-start gap-2"><MapPin className="mt-0.5 h-4 w-4 flex-none" aria-hidden />{ADDRESS}</div>
             <div className="flex flex-wrap gap-x-5 gap-y-2">
-              <a href={`tel:${PHONE.tel}`} className="inline-flex items-center gap-2 hover:text-white"><Phone className="h-4 w-4" aria-hidden />{PHONE.label}</a>
+              <a href={whatsappLink(market)} target="_blank" rel="noopener" onClick={() => track('whatsapp_click', { where: 'footer', intent, market })} className="inline-flex items-center gap-2 hover:text-white"><WhatsAppIcon className="h-4 w-4" />WhatsApp</a>
               <a href={`mailto:${EMAIL}`} className="inline-flex items-center gap-2 hover:text-white"><Mail className="h-4 w-4" aria-hidden />{EMAIL}</a>
             </div>
           </div>
@@ -586,7 +582,7 @@ function DayAndWhere() {
             ))}
           </ul>
           <div className="relative mt-6 aspect-[4/3] overflow-hidden rounded-2xl bg-zinc-200">
-            <Image src={PHOTOS.ride.src} alt={PHOTOS.ride.alt} fill sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover object-[50%_60%]" />
+            <Image src={PHOTOS.boardwalk.src} alt={PHOTOS.boardwalk.alt} fill sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover object-[50%_45%]" />
           </div>
         </div>
       </div>

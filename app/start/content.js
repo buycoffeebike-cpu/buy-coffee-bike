@@ -5,16 +5,16 @@ export const IMG = (p) => `https://coffeebike.ca/wp-content/uploads/${p}`;
 
 export const LOGO = IMG('2025/04/cofee_bike_logo_rwhite_transparent.png');
 export const HERO = IMG('2026/05/open-ready.jpg.jpg');
-// the bike at work: a sidewalk queue in Gastown, a branded fleet, owners with their own bikes, winter service
+// Coffee Bike Vol. 2 only (founder, 29 Sept 2026): the founder with the red bike, the bike in the city and indoors,
+// and the three studio sides
 export const PHOTOS = {
-  queue: { src: IMG('2025/05/Oak-scaled.jpg'), w: 2560, h: 1920, alt: 'A line of customers waiting at a Coffee Bike on a Gastown sidewalk in Vancouver' },
-  fleet: { src: IMG('2026/08/Coffee-Bike-14-scaled.jpg'), w: 1920, h: 2560, alt: 'Four branded Coffee Bikes and their baristas lined up in a city plaza' },
-  levis: { src: IMG('2025/05/Coffee-Bike-Levis-scaled.jpg'), w: 1920, h: 2560, alt: 'A Levi’s-branded Coffee Bike serving inside a store' },
-  liudmyla: { src: IMG('2025/05/Liudmyla-Alberta-Canada-scaled.jpg'), w: 1920, h: 2560, alt: 'Owner Liudmyla with her Coffee Bike espresso bar in Alberta' },
-  sanam: { src: IMG('2025/05/Sanam-Vancouver-Canada-scaled.jpg'), w: 1920, h: 2560, alt: 'A yellow Coffee Bike branded for a Vancouver muffin shop' },
-  mejuri: { src: IMG('2025/05/Mejuri-scaled.jpg'), w: 1920, h: 2560, alt: 'A Coffee Bike wrapped in Mejuri branding' },
-  winter: { src: IMG('2025/04/31460c_a30ce38454644023af6d930ff0e58c6emv2.avif'), w: 1056, h: 1056, alt: 'A Coffee Bike serving at a snowy holiday market' },
-  ride: { src: IMG('2025/05/20210714_100145-scaled.jpg'), w: 1920, h: 2560, alt: 'Riding a Coffee Bike along the Vancouver seawall' },
+  hero: { src: IMG("2025/05/Coffee-Bike-Vlad-Header-scaled.jpeg"), w: 1707, h: 2560, alt: "Vlad Priadko, founder of Coffee Bike World, with a red Coffee Bike espresso bar open for service" },
+  founder: { src: IMG("2025/05/Mobile-Coffee-Bar-scaled-e1783984904756.jpeg"), w: 1707, h: 1455, alt: "Vlad Priadko riding a red Coffee Bike" },
+  boardwalk: { src: IMG("2025/05/Coffee-Bike-Vol.-2-1-scaled.jpg"), w: 1920, h: 2560, alt: "A red Coffee Bike open for service on a waterfront boardwalk" },
+  indoors: { src: IMG("2025/05/IMG_3403-scaled.jpeg"), w: 1707, h: 2560, alt: "A red Coffee Bike riding indoors, closed for the move" },
+  customerSide: { src: IMG("2025/05/Coffee-Bike-Customer-Side-scaled.jpg"), w: 2560, h: 2499, alt: "Coffee Bike Vol. 2, customer side, canopy open" },
+  baristaSide: { src: IMG("2025/05/Coffee-Bike-Barista-Side-scaled.jpg"), w: 2560, h: 2415, alt: "Coffee Bike Vol. 2, barista side with the espresso machine and sinks" },
+  closed: { src: IMG("2025/05/Coffee-Bike-Closed-2-scaled.jpg"), w: 2560, h: 1905, alt: "Coffee Bike Vol. 2 closed for riding" },
 };
 export const FOUNDER = IMG('2025/05/Mobile-Espresso-Bar-scaled.jpeg');
 export const DRAGONS = IMG('2026/05/Dragons-Den-2.png');
@@ -33,7 +33,9 @@ export const ADS_CONVERSION = 'AW-369959194/fgpSCMzoj4kdEJrCtLAB';
 
 /** The Coffee Bike OS stores each request, then creates the GoHighLevel contact and Bike Sales opportunity. */
 export const LEAD_API = process.env.NEXT_PUBLIC_LEAD_API || 'https://coffee-bike-os.vercel.app/api/v1/web/bike-inquiry';
-export const PHONE = { tel: '+17786558631', label: '+1 778 655 8631' };
+/** WhatsApp Business number connected to GoHighLevel (messages land in the CRM). Offered as WhatsApp only, never as a number to call. */
+export const WHATSAPP = 'https://wa.me/17786558631';
+export const whatsappLink = (market) => `${WHATSAPP}?text=${encodeURIComponent(`Hi Coffee Bike World! I have a question about a Coffee Bike (${market === 'ca' ? 'Canada' : 'US'}).`)}`;
 export const EMAIL = 'coffeebike@vladvik.com';
 export const ADDRESS = '1356 Frances St, Vancouver, BC V5L 1Y9';
 
@@ -276,15 +278,23 @@ export const FEATURES = [
   { title: 'Ready to work on arrival', text: 'Delivered fully assembled, crated and insured, with a 20+ page barista manual and setup videos.', img: IMG('2026/05/fully-brandable-compact-build.jpg.jpg') },
 ];
 
+/**
+ * The owner reviews exactly as the main sales page shows them (same people, photos and words), except one sales figure
+ * left out of Andrew's quote (an earnings claim on an ads page needs a disclosure the page cannot carry).
+ */
 export const OWNERS = [
-  { name: 'Davina', place: 'Portland, OR', biz: 'Dibina Coffee', img: IMG('2026/05/Dibina.png'), quote: 'I already had a coffee cart, and the Coffee Bike became the next chapter… The mobility is what makes it. I can take my flavors to the events and neighborhoods where they resonate.' },
-  { name: 'Shaun', place: 'Barrie, ON', biz: 'Banana Cafe Bike', img: IMG('2026/05/Banana.png'), quote: 'Two bikes in and counting. We got nominated for a local entrepreneurial award this year, and we’re catering for clients like Tesla… the team behind the bike is responsive every time I need them.' },
-  { name: 'Tom', place: 'Lithia, FL', biz: 'Monkeynuts Cafe', img: IMG('2026/05/Monkeynuts.png'), quote: 'I’m retired and I wanted something that kept me moving, kept me social, and earned a little on the side. The Coffee Bike checks every box… Got a steady event circuit going now and the locals know me.' },
-  { name: 'Ludmila', place: 'Edmonton, AB', biz: 'SIP Espresso Bar', img: IMG('2026/05/SIP.png'), quote: 'I still keep my day job and run this on the side — it’s genuinely possible to do both if you’re organized. The bike makes it work.' },
-  { name: 'Chris', place: 'Lawndale, CA', biz: 'Ampelos Coffee', img: IMG('2026/05/Ampelos.png'), quote: 'I went all in — three bikes from day one. We’re building Ampelos Coffee as a brand, not a single cart… the build quality holds up to what we’re going for.' },
-  { name: 'Anais', place: 'Tempe, AZ', biz: 'Lucy’s Coffee Express', img: IMG('2026/05/Lucys.png'), quote: 'There were real challenges getting started — permits, location, building a customer base from zero. What kept me going was Vlad and the Coffee Bike team actually answering when I called.' },
-  { name: 'Jeremy', place: 'Swan River, MB', biz: 'Swan Valley Coffee Roasters', img: IMG('2026/05/Swan-river.png'), quote: 'Farmers markets, community events, the local hockey rink — people are excited about real coffee. The bike gives me a way to bring that to them without needing a downtown storefront.' },
-  { name: 'Colby', place: 'Vancouver, BC', biz: 'Cafe Racer Coffee Bike', img: IMG('2026/05/Racer.png'), quote: 'I have a corporate 9-to-5 and two boys in soccer, so a brick-and-mortar was never going to work for my life. The Coffee Bike fits perfectly — I run it at my sons’ Saturday games and farmers markets on Sundays.' },
+  { name: "Colby", place: "Vancouver, BC", biz: "Cafe Racer Coffee Bike", months: 14, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Racer.png", quote: "I have a corporate 9-to-5 and two boys in soccer, so a brick-and-mortar was never going to work for my life. The Coffee Bike fits perfectly — I run it at my sons' Saturday games and farmers markets on Sundays, then back to the office Monday. The kids think it's the coolest thing in the world. Honestly, it pays for itself and I get to be present at every game." },
+  { name: "Benjamin", place: "Lima, Peru", biz: "Edman Bonhus", months: 28, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Edman.png", quote: "My family moved from Sweden to Peru and I started by roasting my own beans here. The Coffee Bike was how I got those beans to actual customers — direct, mobile, with no lease. It worked so well that I've now opened a permanent retail shop on top of it, and I'm planning more Coffee Bike locations across Lima. It's the most flexible way to grow I've ever seen." },
+  { name: "Andrew", place: "Langford, BC", biz: "Aerobic Geisha", months: 20, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Aerobic-Geisha.png", quote: "I'm a coffee nerd first, business owner second — and the Coffee Bike let me lead with the coffee. Things grew faster than I expected. I just picked up my second bike… The dual-fuel setup keeps up with the volume and the build is genuinely commercial-grade. Worth every penny." },
+  { name: "Jeremy", place: "Swan River, MB", biz: "Swan Valley Coffee Roasters", months: 10, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Swan-river.png", quote: "Swan River is a small town and I wasn't sure how a specialty coffee setup would land here. Turns out my community has been showing up for it in a big way. Farmers markets, community events, the local hockey rink — people are excited about real coffee. The bike gives me a way to bring that to them without needing a downtown storefront we just don't have." },
+  { name: "Shaun", place: "Barrie, ON", biz: "Banana Cafe Bike", months: 24, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Banana.png", quote: "Two bikes in and counting. We got nominated for a local entrepreneurial award this year, and we're catering for clients like Tesla — stuff I genuinely couldn't have imagined when I started. My goal now is to put Banana Cafe Bikes across the entire county. The model is repeatable, the margins are real, and the team behind the bike is responsive every time I need them." },
+  { name: "Tom", place: "Lithia, FL", biz: "Monkeynuts Cafe", months: 16, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Monkeynuts.png", quote: "I'm retired and I wanted something that kept me moving, kept me social, and earned a little on the side. The Coffee Bike checks every box. I take great care of mine and it takes great care of me. Got a steady event circuit going now and the locals know me. Already talking with Vlad about a second one — apparently retirement is busier than I planned." },
+  { name: "Ludmila", place: "Edmonton, AB", biz: "SIP Espresso Bar", months: 12, img: "https://coffeebike.ca/wp-content/uploads/2026/05/SIP.png", quote: "I was already baking cupcakes and pastries on the side of my corporate job, and the Coffee Bike was the missing piece. Now I show up to events with fresh bakes AND mobile espresso, and the combination is unbeatable. I still keep my day job and run this on the side — it's genuinely possible to do both if you're organized. The bike makes it work." },
+  { name: "Anais", place: "Tempe, AZ", biz: "Lucy's Coffee Express", months: 8, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Lucys.png", quote: "This was a complete career change for me and I'm not going to pretend it was easy. There were real challenges getting started — permits, location, building a customer base from zero. What kept me going was Vlad and the Coffee Bike team actually answering when I called. I'm still building my name in Tempe but every week is better than the last. Not giving up." },
+  { name: "Davina", place: "Portland, OR", biz: "Dibina Coffee", months: 15, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Dibina.png", quote: "I already had a coffee cart, and the Coffee Bike became the next chapter — a way to bring my Guam heritage to more people through coffee and snacks you can't find anywhere else in Portland. The mobility is what makes it. I can take my flavors to the events and neighborhoods where they resonate. It's coffee, but it's also home." },
+  { name: "Ken", place: "Vancouver, BC", biz: "Blissful Chai", months: 11, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Blissful-Chai.png", quote: "Mine is technically a Chai Bike — same Coffee Bike build, my menu. I wanted to share traditional chai the way I grew up with it, and the bike gave me a way to do that on my own terms. The build handles everything I need and people are genuinely curious every time I open up. Brewing something from your culture and watching strangers fall in love with it never gets old." },
+  { name: "Jorge", place: "Vancouver, BC", biz: "Amor Cafe", months: 13, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Amor.png", quote: "Vlad and I talked for years before I finally pulled the trigger. I'm a husband, a dad, and now I'm living the coffee entrepreneur dream I'd been circling for so long. The Coffee Bike World community on Discord has been huge for me — owners actually help each other. I post almost daily because I want others to see it's possible. If you're on the fence, just go." },
+  { name: "Chris", place: "Lawndale, CA", biz: "Ampelos Coffee", months: 9, img: "https://coffeebike.ca/wp-content/uploads/2026/05/Ampelos.png", quote: "I went all in — three bikes from day one. We're building Ampelos Coffee as a brand, not a single cart, and the bikes let us scale that vision with consistency. The aesthetic and the detail matter to us, and the build quality holds up to what we're going for. None of this happens without my wife and kids putting in the work alongside me. Family business, family-built." },
 ];
 
 /** What a typical build includes (the base package plus the single-group espresso setup most owners choose). */
@@ -333,15 +343,15 @@ export const STEPS = [
   { t: 'Get your price and options', d: 'We reply within one business day with pricing for your build and answers to your questions.' },
   { t: 'Plan your build on a call', d: 'Setup, branding and add-ons, with someone who has run Coffee Bikes for years. No pressure.' },
   { t: 'Approve your invoice', d: 'Pay by bank transfer or card within 5 business days. Canadians can apply for financing through iFinance.' },
-  { t: 'Built for you', d: 'Made to order in about 6–8 weeks; a bike in stock ships right away.' },
-  { t: 'Delivered to your door', d: 'Crated, palletized and insured, typically 2–6 weeks in transit. Then launch with the manual, videos and owners’ community.' },
+  { t: 'Built for you', d: 'Made to order in about 4–6 weeks; a bike in stock ships right away.' },
+  { t: 'Delivered to your door', d: 'Crated, palletized and insured, typically 2–4 weeks in transit. Then launch with the manual, videos and owners’ community.' },
 ];
 
 /** Questions buyers ask, answered for the visitor’s market (money and financing differ between Canada and the US). */
 const FAQ_BASE = [
   { q: "Do I need permits?", a: { us: "Yes, and the rules differ by city. Most health departments review your setup (sinks, water, food-safe surfaces) and inspect it, and many ask for a commissary or approved base. Permits often take 60–90 days, so owners apply while their bike is being built. Owners usually trade on private property (a deal with a landlord, market or venue) or in public space with a mobile vending permit where the city offers one.", ca: "Yes, and the rules differ by city and province. Most health authorities review your setup (sinks, water, food-safe surfaces) and inspect it, and many ask for a commissary or approved base. Permits often take 60–90 days, so owners apply while their bike is being built. Owners usually trade on private property (a deal with a landlord, market or venue) or in public space with a mobile vending permit where the city offers one." } },
   { q: "What does a complete Coffee Bike cost?", a: { us: "Most US owners invest about US$15,850 for a ready-to-serve espresso build: the bike, branded body and canopy, sinks, fridge, batteries and a Fracino single-group espresso setup. A double-group setup, UL certification and add-ons change the price, and shipping is quoted for your address.", ca: "Most Canadian owners invest about CA$25,000, depending on the final build: the espresso setup, certification, branding, add-ons and training. We quote every build in Canadian dollars, shipping is quoted for your address, and Canadian residents can apply for financing through iFinance." } },
-  { q: "How soon can I open?", a: "A bike in stock ships right away. Made-to-order builds take about 6–8 weeks, and delivery typically adds 2–6 weeks depending on where you are. If you want to open for spring markets, ordering in winter gives you time to arrange permits and a spot." },
+  { q: "How soon can I open?", a: "A bike in stock ships right away. Made-to-order builds take about 4–6 weeks, and delivery typically adds 2–4 weeks depending on where you are. If you want to open for spring markets, ordering in winter gives you time to arrange permits and a spot." },
   { q: "What about winter and rain?", a: "Many owners move indoors in the cold months: office lobbies, hospitals, campuses, residential towers, grocery stores and gyms. The bike needs no build-out on the landlord’s side: it rolls in, plugs into a standard outlet and serves." },
   { q: "How far can it go, and can it handle hills?", a: "The electric motor climbs steep hills fully loaded, with twin hydraulic brakes and front and rear suspension. One battery pack covers about 10–15 km and two about 20–30 km, depending on the roads." },
   { q: "Is this a franchise?", a: "No. You buy the bike and own it outright. There are no royalties, no marketing fees and no monthly contracts, and you choose your own name, menu and prices." },
