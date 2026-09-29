@@ -4,6 +4,17 @@ import LiteYouTube from '../components/LiteYouTube';
 import SetupSeries from '../components/SetupSeries';
 import { ChevronDown, ChevronLeft, ChevronRight, Edit2, Check, Info, Lock, Search, Leaf, Globe, Clock, Award, Mail, MapPin, Play, TrendingUp, DollarSign, Calendar, Users, Zap, Coffee, Star, ArrowRight, Sparkles, ZoomIn, X, Eye } from 'lucide-react';
 
+/** WhatsApp Business number connected to GoHighLevel: chats land straight in the CRM. Offered as WhatsApp only. */
+const WHATSAPP_NUMBER = '17786558631';
+const WHATSAPP_GREEN = '#25D366';
+function WhatsAppIcon({ className = '', style }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} style={style} fill="currentColor">
+      <path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.64-2.05-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.87 1.21 3.07.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.75-.72 2-1.41.25-.69.25-1.28.17-1.41-.07-.13-.27-.2-.57-.35zM12.04 21.5h-.01a9.43 9.43 0 0 1-4.8-1.31l-.35-.2-3.57.94.95-3.48-.22-.36a9.42 9.42 0 0 1-1.45-5.03c0-5.2 4.24-9.44 9.46-9.44 2.52 0 4.9.99 6.68 2.77a9.37 9.37 0 0 1 2.77 6.68c0 5.21-4.24 9.45-9.46 9.45zm8.05-17.5A11.3 11.3 0 0 0 12.04.67C5.77.67.67 5.77.67 12.03c0 2 .52 3.96 1.52 5.68L.57 23.33l5.75-1.51a11.34 11.34 0 0 0 5.72 1.46h.01c6.26 0 11.36-5.1 11.36-11.36 0-3.03-1.18-5.89-3.32-8.03z"/>
+    </svg>
+  );
+}
+
 export default function CoffeeBikePage() {
   const [currency, setCurrency] = useState('USD');
   const [isGetInTouchOpen, setIsGetInTouchOpen] = useState(false);
@@ -353,6 +364,18 @@ export default function CoffeeBikePage() {
     return { subtotalCAD, tax, shipping, grandTotal };
   }, [total]);
 
+  // WhatsApp: the message carries the visitor's build when there is one, so the chat starts where they left off
+  const whatsappHref = useMemo(() => {
+    const text = total > 0 && buildSummary
+      ? `Hi Coffee Bike World! I have a question about this Coffee Bike build:\n\n${buildSummary}`
+      : 'Hi Coffee Bike World! I have a question about buying a Coffee Bike.';
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+  }, [total, buildSummary]);
+  const trackWhatsApp = (where) => {
+    try { window.gtag && window.gtag('event', 'whatsapp_click', { where, has_build: total > 0 }); } catch (e) {}
+    try { window.fbq && window.fbq('track', 'Contact', { content_name: 'whatsapp', content_category: where }); } catch (e) {}
+  };
+
   const openInquiry = () => setInquiryModalOpen(true);
   const openSchedule = () => setScheduleModalOpen(true);
   const openDeposit = () => { setBuildCopied(false); setPaymentStarted(false); setDepositModalOpen(true); };
@@ -619,7 +642,7 @@ export default function CoffeeBikePage() {
     { q: 'How long does it take to get my Coffee Bike?',
       sections: [
         { label: 'In-Stock Units', text: 'If we have units in stock at the time your payment is received, we dispatch your Coffee Bike right away.' },
-        { label: 'Made-to-Order', text: 'For built-to-order configurations, manufacturing takes 3–4 weeks from payment confirmation. Please get in touch directly for the most accurate ETA based on current production load.' },
+        { label: 'Made-to-Order', text: 'Built-to-order Coffee Bikes take about 4–6 weeks to build from payment confirmation, then about 2–4 weeks for delivery depending on your location. Get in touch for the most accurate ETA based on current production load.' },
         { label: 'Production Capacity', text: 'Our current facility is capable of producing up to 50 Coffee Bikes per month, so lead times stay predictable even during peak demand.' },
       ],
     },
@@ -677,7 +700,9 @@ export default function CoffeeBikePage() {
     },
     { q: 'How much does a Coffee Bike cost?', sections: [{ label: 'Starting Price', text: 'Coffee Bike packages start at $9,850 USD with the Classic configuration. Final pricing depends on equipment options, custom branding, and shipping destination.' }, { label: 'Total Investment Range', text: 'Most owners invest between $10,000 and $20,000 USD all-in, including full custom branding, premium add-ons, and white-glove shipping. Compare that to $80,000 to $500,000 for a brick-and-mortar cafe.' }, { label: 'Financing Available', text: 'Canadian buyers can apply for financing through our partner iFinance. International buyers can use their own bank or third-party equipment financing.' }] },
     { q: 'Coffee Bike vs. a coffee cart for sale: what is the difference?', sections: [{ label: 'Built for Real Mobility', text: 'A Coffee Bike is a fully electric mobile coffee business on a real e-bike frame, not a stationary cart with wheels. The motor handles steep hills even fully loaded, so you can actually move locations during the day instead of being stuck where you parked.' }, { label: 'Commercial-Grade Build', text: 'Coffee Bikes ship with a dual-fuel commercial espresso machine, full plumbing, refrigeration, and a 1-year manufacturer warranty. Refined by 8+ years of real operations and over 1.5 million cups served.' }, { label: 'Lower Total Cost', text: 'Coffee Bikes start at $9,850 USD turnkey. Comparable equipped coffee carts often range from $5,000 to $40,000 with hidden costs in equipment, branding, and shipping.' }] },
-    { q: 'Do you ship Coffee Bikes worldwide?', sections: [{ label: 'Yes, Worldwide Shipping', text: 'We ship Coffee Bikes anywhere in the world with insured, crated, and tracked white-glove freight. Owners are operating in Canada, the United States, Peru, and other countries.' }, { label: 'Delivery Timeline', text: 'Production takes about 4 to 8 weeks from order to dispatch. International shipping typically adds 2 to 6 weeks depending on destination port and customs clearance.' }, { label: 'Shipping Cost', text: 'Shipping is not included in the base $9,850 USD price. We provide a final freight quote closer to dispatch date when fuel and shipping rates are locked in.' }] },
+    { q: 'Is a Coffee Bike a coffee trike, an espresso cart or a mobile coffee cart?', sections: [{ label: 'All Three in One', text: 'In a way, yes. A Coffee Bike is a three-wheeled electric coffee trike with a complete espresso bar built in, so it works like a mobile coffee cart you can actually ride between locations. Buyers search for it as an espresso cart, coffee trike, coffee bicycle or mobile coffee cart, and all of those describe the same idea.' }, { label: 'Why the Electric Motor Matters', text: 'A push cart stays where you parked it. The Coffee Bike moves a fully loaded bar across town and up hills, so one bike can serve a morning market, a lunch crowd and an evening event in the same day.' }] },
+    { q: 'Do you sell and ship Coffee Bikes in the USA?', sections: [{ label: 'Yes, Across the United States', text: 'Coffee Bikes are shipped to buyers across the US, crated, insured and tracked to your door. Owners already run Coffee Bikes in Florida, Arizona, Oregon and California.' }, { label: 'Pricing in USD', text: 'Prices on this page are shown in USD by default, and shipping is quoted for your city before you confirm your order.' }, { label: 'Timeline', text: 'Building takes about 4–6 weeks, then delivery takes about 2–4 weeks depending on your location.' }] },
+    { q: 'Do you ship Coffee Bikes worldwide?', sections: [{ label: 'Yes, Worldwide Shipping', text: 'We ship Coffee Bikes anywhere in the world with insured, crated, and tracked white-glove freight. Owners are operating in Canada, the United States, Peru, and other countries.' }, { label: 'Delivery Timeline', text: 'Building takes about 4 to 6 weeks from order confirmation, and delivery about 2 to 4 weeks depending on your destination and customs clearance.' }, { label: 'Shipping Cost', text: 'Shipping is not included in the base $9,850 USD price. We provide a final freight quote closer to dispatch date when fuel and shipping rates are locked in.' }] },
     { q: 'How much can I realistically earn with a Coffee Bike?', sections: [{ label: 'Real Owner Numbers', text: 'Coffee Bike owners reporting back to us average $4,000 to $8,000 USD in net monthly profit, with top performers crossing $12,000 in busy months.' }, { label: 'Investment Payback', text: 'Most owners recoup their full Coffee Bike investment within 6 to 12 months of consistent operation, based on industry-standard margins of 25 percent cost of goods on specialty coffee retail.' }, { label: 'Plan Your Numbers', text: 'Use the ROI calculator on this page to plug in your local cup price, daily volume, and working days to project monthly revenue and annual profit for your specific market.' }] },
   ];
 
@@ -1095,6 +1120,23 @@ export default function CoffeeBikePage() {
         </div>
       )}
 
+      {/* WhatsApp on tablets and desktops (phones get it in the sticky bar below); inside the Builder the order
+          summary carries its own "Ask About This Build" button, so the floating one steps aside there */}
+      {!inConfigurator && (
+        <a
+          href={whatsappHref}
+          target="_blank"
+          rel="noopener"
+          onClick={() => trackWhatsApp('floating')}
+          aria-label="Message us on WhatsApp"
+          className="hidden sm:flex fixed bottom-6 right-6 z-40 items-center gap-2 rounded-full pl-3.5 pr-5 py-3 text-white font-bold text-sm shadow-2xl hover:scale-105 transition-transform"
+          style={{ backgroundColor: WHATSAPP_GREEN }}
+        >
+          <WhatsAppIcon className="w-6 h-6" />
+          <span>WhatsApp Us</span>
+        </a>
+      )}
+
       {/* Mobile sticky CTA */}
       {!inConfigurator && (
         <div className="fixed bottom-0 left-0 right-0 z-40 sm:hidden bg-black/95 backdrop-blur-md border-t border-white/10 px-4 py-2.5 flex items-center justify-between gap-3 shadow-2xl">
@@ -1114,6 +1156,9 @@ export default function CoffeeBikePage() {
               </>
             )}
           </div>
+          <a href={whatsappHref} target="_blank" rel="noopener" onClick={() => trackWhatsApp('sticky_bar')} aria-label="Message us on WhatsApp" className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-md text-white" style={{ backgroundColor: WHATSAPP_GREEN }}>
+            <WhatsAppIcon className="w-[22px] h-[22px]" />
+          </a>
           <button onClick={() => document.getElementById('configurator-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="text-white font-bold px-4 py-2.5 rounded text-xs uppercase tracking-wide whitespace-nowrap flex items-center gap-1.5 shadow-md" style={{ backgroundColor: RED }}>
             {total > 0 ? 'Continue Build' : 'Build Your Bike'} <ArrowRight className="w-3.5 h-3.5" />
           </button>
@@ -1249,6 +1294,9 @@ export default function CoffeeBikePage() {
                   Send My Build & Get Quote <ArrowRight className="w-4 h-4" />
                   </button>
                   <button onClick={() => { setMobileSummaryOpen(false); openSchedule(); }} className="w-full bg-black text-white font-bold py-2.5 rounded text-sm">Schedule a Call</button>
+                  <a href={whatsappHref} target="_blank" rel="noopener" onClick={() => trackWhatsApp('build_summary_mobile')} className="mt-2 w-full border-2 font-bold py-2 rounded text-sm flex items-center justify-center gap-2" style={{ borderColor: WHATSAPP_GREEN, color: '#128C4A' }}>
+                    <WhatsAppIcon className="w-4 h-4" /> Ask About This Build on WhatsApp
+                  </a>
                   <div className="mt-3 pt-3 border-t border-zinc-100 space-y-2">
                     <button onClick={() => { setMobileSummaryOpen(false); openDeposit(); }} className="block w-full text-center text-xs font-medium py-1.5 px-3 rounded hover:bg-zinc-50 transition group" style={{ color: RED }}>
                       <span className="border-b border-dashed group-hover:border-solid" style={{ borderColor: RED }}>Or reserve your spot with $250 deposit →</span>
@@ -1352,6 +1400,7 @@ export default function CoffeeBikePage() {
       >
 
 
+
         <a
           href="https://coffeebike.ca/contact/"
           className="bg-[#e31e24] px-[28px] py-[27px] hover:bg-[#c9181d] transition"
@@ -1391,6 +1440,10 @@ export default function CoffeeBikePage() {
 
         <a href="https://coffeebike.ca/coffee-bike-videos/" className="px-4 py-3 hover:text-[#ff1f1f] transition">
           Coffee Bike Videos
+        </a>
+
+        <a href={whatsappHref} target="_blank" rel="noopener" onClick={() => trackWhatsApp('menu')} className="px-4 py-3 hover:text-[#25D366] transition flex items-center gap-2">
+          <WhatsAppIcon className="w-5 h-5" style={{ color: WHATSAPP_GREEN }} /> WhatsApp Us
         </a>
 
 
@@ -1501,7 +1554,7 @@ export default function CoffeeBikePage() {
           <div className="text-center mb-8">
             <EyebrowBadge className="mb-3">What You Get</EyebrowBadge>
             <h2 className="text-3xl lg:text-4xl font-bold mb-3">Built for Mobility, Quality & Profitability</h2>
-            <p className="text-zinc-600 max-w-2xl mx-auto">Every Coffee Bike is built on 8+ years of hands-on experience — fully equipped and ready to operate from day one.</p>
+            <p className="text-zinc-600 max-w-2xl mx-auto">Part espresso bar, part coffee cart, fully electric: every Coffee Bike is built on 8+ years of hands-on experience and ready to operate from day one.</p>
           </div>
           <Carousel red={RED} itemWidth={220}>
             {features.map((f, i) => (
@@ -1946,7 +1999,10 @@ export default function CoffeeBikePage() {
                 <button onClick={openInquiry} className="w-full text-white font-bold py-3 rounded mb-2 hover:opacity-90 flex items-center justify-center gap-2 text-sm" style={{ backgroundColor: RED }}>
                 Send My Build & Get Quote <ArrowRight className="w-4 h-4" />
                 </button>
-                <button onClick={openSchedule} className="w-full bg-black hover:bg-zinc-800 text-white font-bold py-3 rounded mb-4 text-sm">Schedule a Call With Our Team</button>
+                <button onClick={openSchedule} className="w-full bg-black hover:bg-zinc-800 text-white font-bold py-3 rounded mb-2 text-sm">Schedule a Call With Our Team</button>
+                <a href={whatsappHref} target="_blank" rel="noopener" onClick={() => trackWhatsApp('build_summary')} className="w-full border-2 font-bold py-2.5 rounded mb-4 text-sm flex items-center justify-center gap-2 hover:bg-green-50 transition" style={{ borderColor: WHATSAPP_GREEN, color: '#128C4A' }}>
+                  <WhatsAppIcon className="w-4 h-4" /> Ask About This Build on WhatsApp
+                </a>
                 <div className="border-t border-zinc-200 pt-3 mb-3">
                   <button onClick={openDeposit} className="block w-full text-center text-sm font-semibold py-1.5 px-3 rounded hover:bg-zinc-50 transition group" style={{ color: RED }}>
                     <span className="border-b border-dashed group-hover:border-solid" style={{ borderColor: RED }}>Or reserve your spot with $250 deposit →</span>
@@ -2455,6 +2511,19 @@ export default function CoffeeBikePage() {
 </a>
           </div>
 
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'FAQPage',
+              '@id': 'https://coffeebike.ca/buy-a-mobile-coffee-bike/#faq',
+              mainEntity: faqs.map((f) => ({
+                '@type': 'Question',
+                name: f.q,
+                acceptedAnswer: { '@type': 'Answer', text: [f.a, ...(f.sections || []).map((s) => `${s.label}: ${s.text}`)].filter(Boolean).join(' ') },
+              })),
+            }) }}
+          />
           <h3 id="faq-section" className="text-2xl font-bold mb-1 text-center scroll-mt-32">Frequently Asked Questions</h3>
           <p className="text-sm text-zinc-600 mb-5 text-center">Tap a question to see the answer.</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-12 max-w-5xl mx-auto">
@@ -2571,6 +2640,9 @@ export default function CoffeeBikePage() {
               </button>
               <button onClick={openSchedule} className="bg-white text-black font-bold px-6 py-3 rounded text-sm hover:bg-zinc-100 whitespace-nowrap">Schedule a Call</button>
               <button onClick={openDeposit} className="border border-white/40 hover:border-white text-white font-bold px-6 py-3 rounded text-sm whitespace-nowrap transition">Reserve with $250</button>
+              <a href={whatsappHref} target="_blank" rel="noopener" onClick={() => trackWhatsApp('final_cta')} className="text-white font-bold px-6 py-3 rounded text-sm whitespace-nowrap flex items-center gap-2 hover:opacity-90 transition" style={{ backgroundColor: WHATSAPP_GREEN }}>
+                <WhatsAppIcon className="w-4 h-4" /> WhatsApp Us
+              </a>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-zinc-400 pt-2 border-t border-white/10 mt-2 pt-5">
               <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5" style={{ color: RED }} /> No Franchise Fees</span>
