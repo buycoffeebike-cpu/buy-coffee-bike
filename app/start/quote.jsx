@@ -236,7 +236,8 @@ export function QuoteProvider({ market, intent, children }) {
       const user = { email: body.email.toLowerCase(), address: { first_name: first, last_name: rest.join(' ') || undefined, country: market === 'ca' ? 'CA' : 'US' } };
       const ph = e164(body.phone);
       if (ph) user.phone_number = ph;
-      try {
+      // live site only: previews and local builds must not count as conversions (the layout sets __cbwLive)
+      if (window.__cbwLive) try {
         window.gtag?.('set', 'user_data', user);
         window.gtag?.('event', 'conversion', { send_to: ADS_CONVERSION, value: 100, currency: 'CAD', transaction_id: j.data?.id });
         window.gtag?.('event', 'generate_lead', { form: 'quote_flow', market, intent, use: answers.use, timeline: answers.timeline, stage: answers.stage, fit: answers.fit });

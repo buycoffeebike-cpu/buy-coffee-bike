@@ -125,6 +125,8 @@ function Page({ intent, market }) {
 
   // Google Ads tag on this page (the conversion itself fires from the quote form)
   useEffect(() => {
+    // live site only: previews and local builds must not send Google Ads hits (the layout sets __cbwLive)
+    if (!window.__cbwLive) return;
     window.gtag?.('config', ADS_TAG, { allow_enhanced_conversions: true });
   }, []);
 
