@@ -681,7 +681,7 @@ function Numbers({ intent, market }) {
   const cents = (n) => `${cur}${n.toFixed(2)}`;
   return (
     <Section id="numbers" tone="soft">
-      <Heading eyebrow="Run the numbers" title="What could you earn?" sub="Adjust the sliders for your local market. We’ve pre-filled industry-average numbers from real Coffee Bike owners." />
+      <Heading eyebrow="Run the numbers" title="Coffee cart business calculator" sub="Move the sliders to match your market. The starting values are examples, not typical owner results." />
       <div className="mt-8 overflow-hidden rounded-2xl border border-zinc-200 bg-white">
         <div className="grid grid-cols-2 border-b border-zinc-200" role="tablist" aria-label="Estimate from">
           {[
@@ -697,36 +697,41 @@ function Numbers({ intent, market }) {
           <div className="grid flex-1 content-start gap-6 p-5 sm:p-8">
             {mode === 'retail' ? (
               <>
-                <Slider label="Cups sold per day" value={cups} onChange={set(setCups)} min={20} max={250} format={(v) => `${v} cups`} hint="Industry average: 60–120 cups a day at high-traffic spots" />
-                <Slider label="Average price per cup" value={cupPrice} onChange={set(setCupPrice)} min={3} max={10} step={0.5} format={cents} hint={`Specialty coffee average: ${cur}5–7`} />
-                <Slider label="Working days per month" value={days} onChange={set(setDays)} min={8} max={28} format={(v) => `${v} days`} hint="Most owners work 18–22 days a month" />
+                <Slider label="Cups sold per day" value={cups} onChange={set(setCups)} min={20} max={250} format={(v) => `${v} cups`} hint="Example: 60–120 cups a day at a busy spot" />
+                <Slider label="Average price per cup" value={cupPrice} onChange={set(setCupPrice)} min={3} max={10} step={0.5} format={cents} hint={`Example: ${cur}5–7 for specialty coffee`} />
+                <Slider label="Working days per month" value={days} onChange={set(setDays)} min={8} max={28} format={(v) => `${v} days`} hint="Example: 18–22 days a month for a full-time schedule" />
               </>
             ) : (
               <>
-                <Slider label="Catering events per month" value={events} onChange={set(setEvents)} min={1} max={20} format={(v) => `${v} event${v === 1 ? '' : 's'}`} hint="Most owners do 4–10 events a month" />
-                <Slider label="Average fee per event (pre-paid)" value={fee} onChange={set(setFee)} min={300} max={3500} step={50} format={money} hint={`Industry average: ${cur}800–1,800 per event (2–3 hours)`} />
+                <Slider label="Catering events per month" value={events} onChange={set(setEvents)} min={1} max={20} format={(v) => `${v} event${v === 1 ? '' : 's'}`} hint="Example: 4–10 events a month" />
+                <Slider label="Average fee per event (pre-paid)" value={fee} onChange={set(setFee)} min={300} max={3500} step={50} format={money} hint={`Example: ${cur}800–1,800 for a 2–3-hour event`} />
               </>
             )}
             <p className="flex gap-3 rounded-xl bg-red-50 p-4 text-xs leading-relaxed text-zinc-700">
               <Info className="h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />
               <span>
-                <strong className="text-zinc-950">Estimates only.</strong> Actual revenue depends on location, permits, weather, weekday and weekend mix, and your effort. Profit here is after cost of goods only (industry-standard {mode === 'retail' ? '25% for specialty coffee retail' : '15% for premium catering'}), before permits, insurance, event fees, staff and taxes.
+                <strong className="text-zinc-950">Estimates only, based on the numbers you enter.</strong> Not typical owner results or a promise of income. The amounts leave out your pay, staff, permits, insurance, site or event fees, maintenance and taxes; cost of goods is assumed at {mode === 'retail' ? '25% for specialty coffee retail' : '15% for pre-paid catering'}.
               </span>
             </p>
           </div>
           <div className="bg-zinc-950 p-6 text-white sm:p-8 lg:w-[40%]">
-            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>Your estimated earnings</p>
-            <h3 className="mt-1 text-2xl font-extrabold" style={DISPLAY}>Projected performance</h3>
+            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>Your estimate</p>
+            <h3 className="mt-1 text-2xl font-extrabold" style={DISPLAY}>Based on your numbers</h3>
             <dl className="mt-5">
               <Result label="Monthly revenue" value={money(r.revenue)} />
-              <Result label="Cost of goods" value={`− ${money(r.cogs)}`} muted />
-              <Result label="Net monthly profit" value={money(r.net)} big className="mt-2 border-t border-zinc-700 pt-4" />
-              <Result label="Annual net profit" value={money(r.annual)} />
+              <Result label="Assumed cost of goods" value={`− ${money(r.cogs)}`} muted />
+              <Result label="Left after cost of goods, per month" value={money(r.net)} big className="mt-2 border-t border-zinc-700 pt-4" />
+              <Result label={mode === 'retail' ? 'Over a year (11 selling months)' : 'Over a year (12 months)'} value={money(r.annual)} />
             </dl>
             <div className="mt-6 rounded-xl border p-4" style={{ borderColor: RED, backgroundColor: 'rgba(227,30,36,0.15)' }}>
-              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: RED }}>Investment payback</p>
+              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: RED }}>Build cost comparison</p>
               <p className="mt-1 text-3xl font-extrabold tabular-nums" style={DISPLAY}>{r.payback < 1 ? '< 1' : Math.ceil(r.payback)} months</p>
-              <p className="text-xs text-zinc-400">to recoup a typical {money(build)} build</p>
+              <p className="text-xs text-zinc-400">of this monthly amount to equal a typical {money(build)} build (your quote may differ), before your other costs</p>
+            </div>
+            <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4">
+              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: RED }}>Check your numbers with the founder</p>
+              <p className="mt-1 text-xs leading-snug text-zinc-300">Walk through equipment, pricing and your assumptions on a 15-minute call.</p>
+              <a href={CALL_URL} target="_blank" rel="noopener" onClick={() => track('cta_click', { where: 'calculator_call', intent, market })} className="mt-3 block rounded-lg px-4 py-2.5 text-center text-xs font-extrabold uppercase tracking-wide text-white hover:brightness-110" style={{ backgroundColor: RED }}>Book a 15-minute call</a>
             </div>
           </div>
         </div>

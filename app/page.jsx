@@ -521,7 +521,7 @@ export default function CoffeeBikePage() {
       biz: 'Cafe Racer Coffee Bike',
       months: 14,
       img: 'https://coffeebike.ca/wp-content/uploads/2026/05/Racer.png',
-      quote: "I have a corporate 9-to-5 and two boys in soccer, so a brick-and-mortar was never going to work for my life. The Coffee Bike fits perfectly — I run it at my sons' Saturday games and farmers markets on Sundays, then back to the office Monday. The kids think it's the coolest thing in the world. Honestly, it pays for itself and I get to be present at every game.",
+      quote: "I have a corporate 9-to-5 and two boys in soccer, so a brick-and-mortar was never going to work for my life. The Coffee Bike fits perfectly — I run it at my sons' Saturday games and farmers markets on Sundays, then back to the office Monday. The kids think it's the coolest thing in the world.",
     },
     {
       name: 'Benjamin',
@@ -537,7 +537,7 @@ export default function CoffeeBikePage() {
       biz: 'Aerobic Geisha',
       months: 20,
       img: 'https://coffeebike.ca/wp-content/uploads/2026/05/Aerobic-Geisha.png',
-      quote: "I'm a coffee nerd first, business owner second — and the Coffee Bike let me lead with the coffee. Things grew faster than I expected. I just picked up my second bike, and I've already had event days that crossed $5,000+. The dual-fuel setup keeps up with the volume and the build is genuinely commercial-grade. Worth every penny.",
+      quote: "I'm a coffee nerd first, business owner second — and the Coffee Bike let me lead with the coffee. Things grew faster than I expected. I just picked up my second bike… The dual-fuel setup keeps up with the volume and the build is genuinely commercial-grade. Worth every penny.",
     },
     {
       name: 'Jeremy',
@@ -553,7 +553,7 @@ export default function CoffeeBikePage() {
       biz: 'Banana Cafe Bike',
       months: 24,
       img: 'https://coffeebike.ca/wp-content/uploads/2026/05/Banana.png',
-      quote: "Two bikes in and counting. We got nominated for a local entrepreneurial award this year, and we're catering for clients like Tesla — stuff I genuinely couldn't have imagined when I started. My goal now is to put Banana Cafe Bikes across the entire county. The model is repeatable, the margins are real, and the team behind the bike is responsive every time I need them.",
+      quote: "Two bikes in and counting. We got nominated for a local entrepreneurial award this year, and we're catering for clients like Tesla — stuff I genuinely couldn't have imagined when I started. My goal now is to put Banana Cafe Bikes across the entire county. The model is repeatable… and the team behind the bike is responsive every time I need them.",
     },
     {
       name: 'Tom',
@@ -561,7 +561,7 @@ export default function CoffeeBikePage() {
       biz: 'Monkeynuts Cafe',
       months: 16,
       img: 'https://coffeebike.ca/wp-content/uploads/2026/05/Monkeynuts.png',
-      quote: "I'm retired and I wanted something that kept me moving, kept me social, and earned a little on the side. The Coffee Bike checks every box. I take great care of mine and it takes great care of me. Got a steady event circuit going now and the locals know me. Already talking with Vlad about a second one — apparently retirement is busier than I planned.",
+      quote: "I'm retired and I wanted something that kept me moving and kept me social… The Coffee Bike checks every box. I take great care of mine and it takes great care of me. Got a steady event circuit going now and the locals know me. Already talking with Vlad about a second one — apparently retirement is busier than I planned.",
     },
     {
       name: 'Ludmila',
@@ -675,7 +675,7 @@ export default function CoffeeBikePage() {
         { label: 'Yes — Coffee Bike Was Built for Year-Round Operation', text: 'The single biggest misconception about a mobile coffee business is that it only works in summer. The reality: our most successful owners operate 12 months a year by moving indoors during cold seasons. The Coffee Bike\'s compact footprint and full electric-mode operation are designed exactly for this.' },
         { label: 'Indoor Partnerships Are Everywhere', text: 'Hospitals, airports, residential towers, office buildings, grocery stores, gyms, universities, corporate campuses, hotel lobbies — these all want premium coffee service for their tenants, employees, and customers, especially in winter. We have helped owners land partnerships across every category.' },
         { label: 'Why Property Managers Love It', text: 'Landlords and property managers are often eager to collaborate because the Coffee Bike requires zero buildout, no plumbing changes, no electrical upgrades, no permits on their end, and no long-term infrastructure commitment. You roll in, plug into a standard outlet, and start serving. They get a premium amenity their tenants love without any of the usual headaches.' },
-        { label: 'A True 4-Season Business', text: 'Outdoor events and farmers markets in spring, summer, and fall. Indoor partnerships and corporate catering in winter. Many of our top earners actually report higher winter revenue because indoor traffic is consistent, weather-protected, and tenant-funded. The Coffee Bike fits almost anywhere — stay indoors, stay profitable, and operate all year long.' },
+        { label: 'A True 4-Season Business', text: 'Outdoor events and farmers markets in spring, summer, and fall. Indoor partnerships and corporate catering in winter. Indoors, the bike rolls into office lobbies, hospitals, campuses and residential towers, where foot traffic is steady and out of the weather (with the venue\'s permission). It plugs into a standard outlet, so you can operate all year round.' },
       ],
     },
     { q: 'Do you provide any training?',
@@ -703,7 +703,7 @@ export default function CoffeeBikePage() {
     { q: 'Is a Coffee Bike a coffee trike, an espresso cart or a mobile coffee cart?', sections: [{ label: 'All Three in One', text: 'In a way, yes. A Coffee Bike is a three-wheeled electric coffee trike with a complete espresso bar built in, so it works like a mobile coffee cart you can actually ride between locations. Buyers search for it as an espresso cart, coffee trike, coffee bicycle or mobile coffee cart, and all of those describe the same idea.' }, { label: 'Why the Electric Motor Matters', text: 'A push cart stays where you parked it. The Coffee Bike moves a fully loaded bar across town and up hills, so one bike can serve a morning market, a lunch crowd and an evening event in the same day.' }] },
     { q: 'Do you sell and ship Coffee Bikes in the USA?', sections: [{ label: 'Yes, Across the United States', text: 'Coffee Bikes are shipped to buyers across the US, crated, insured and tracked to your door. Owners already run Coffee Bikes in Florida, Arizona, Oregon and California.' }, { label: 'Pricing in USD', text: 'Prices on this page are shown in USD by default, and shipping is quoted for your city before you confirm your order.' }, { label: 'Timeline', text: 'Building takes about 4–6 weeks, then delivery takes about 2–4 weeks depending on your location.' }] },
     { q: 'Do you ship Coffee Bikes worldwide?', sections: [{ label: 'Yes, Worldwide Shipping', text: 'We ship Coffee Bikes anywhere in the world with insured, crated, and tracked white-glove freight. Owners are operating in Canada, the United States, Peru, and other countries.' }, { label: 'Delivery Timeline', text: 'Building takes about 4 to 6 weeks from order confirmation, and delivery about 2 to 4 weeks depending on your destination and customs clearance.' }, { label: 'Shipping Cost', text: 'Shipping is not included in the base $9,850 USD price. We provide a final freight quote closer to dispatch date when fuel and shipping rates are locked in.' }] },
-    { q: 'How much can I realistically earn with a Coffee Bike?', sections: [{ label: 'Real Owner Numbers', text: 'Coffee Bike owners reporting back to us average $4,000 to $8,000 USD in net monthly profit, with top performers crossing $12,000 in busy months.' }, { label: 'Investment Payback', text: 'Most owners recoup their full Coffee Bike investment within 6 to 12 months of consistent operation, based on industry-standard margins of 25 percent cost of goods on specialty coffee retail.' }, { label: 'Plan Your Numbers', text: 'Use the ROI calculator on this page to plug in your local cup price, daily volume, and working days to project monthly revenue and annual profit for your specific market.' }] },
+    { q: 'How much can I realistically earn with a Coffee Bike?', sections: [{ label: 'It Depends on Your Market', text: 'Earnings vary with where you sell, your prices, how many days you work and your costs, so we don\'t publish an average or promise an income.' }, { label: 'How to Estimate It', text: 'Cups per day × price per cup × days per month (or events × fee), minus cost of goods (commonly cited at about 25% for specialty coffee and about 15% for pre-paid catering), then minus permits, insurance, site or event fees, staff, taxes and your own pay. A Coffee Bike can serve up to 60–100 drinks an hour at a busy spot; that is capacity, not expected demand.' }, { label: 'Plan Your Numbers', text: 'Use the calculator on this page with your local prices, then book a call and we\'ll walk through operating days, events and costs where you plan to sell.' }] },
   ];
 
   const pressArticles = [
@@ -1464,7 +1464,7 @@ export default function CoffeeBikePage() {
             <div className="md:w-1/2">
               <EyebrowBadge className="mb-4">Welcome to Coffee Bike World</EyebrowBadge>
               <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold leading-[1.05] mb-4 sm:mb-5">Buy a Mobile Coffee Bike — Your Own Electric Coffee Business, Built, Branded & Shipped Worldwide</h1>
-              <p className="text-zinc-300 text-base sm:text-lg mb-5 sm:mb-6 max-w-xl leading-relaxed">Launch your turnkey, eco-friendly business with a low entry cost and fast return on investment. No franchise fees. You own everything.</p>
+              <p className="text-zinc-300 text-base sm:text-lg mb-5 sm:mb-6 max-w-xl leading-relaxed">Launch a turnkey electric coffee cart business for a fraction of what a coffee truck or kiosk costs to start. No franchise fees. You own everything.</p>
               <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch gap-0 mb-6 sm:mb-7 rounded-lg border-2 overflow-hidden" style={{ borderColor: RED, backgroundColor: 'rgba(227,30,36,0.08)' }}>
 <div className="px-5 py-3 flex items-center gap-4 flex-shrink-0">
   <Zap className="w-5 h-5 text-red-500 flex-shrink-0" />
@@ -1479,8 +1479,8 @@ export default function CoffeeBikePage() {
 </div>
                 <div className="h-px sm:w-px sm:h-auto bg-white/15" />
                 <div className="px-5 py-3 flex items-center gap-2 flex-1 sm:min-w-[200px]">
-                  <TrendingUp className="w-5 h-5 flex-shrink-0" style={{ color: RED }} />
-                  <div className="text-sm text-zinc-300">Most owners <strong className="text-white">recoup their investment in 6–12 months</strong></div>
+                  <Users className="w-5 h-5 flex-shrink-0" style={{ color: RED }} />
+                  <div className="text-sm text-zinc-300"><strong className="text-white">49 bikes sold</strong> to 36 owners</div>
                 </div>
                 <div className="h-px sm:w-px sm:h-auto bg-white/15" />
                 <div className="px-5 py-3 flex items-center gap-2 flex-1 sm:min-w-[180px]">
@@ -1531,16 +1531,16 @@ export default function CoffeeBikePage() {
           <div className="text-center mb-8">
             <EyebrowBadge className="mb-3">Be Your Own Boss</EyebrowBadge>
             <h2 className="text-3xl lg:text-4xl font-bold mb-3">Why Entrepreneurs Choose Coffee Bike</h2>
-            <p className="text-zinc-600 max-w-2xl mx-auto">A turnkey mobile coffee business with low overhead, fast ROI, and full ownership. No franchise, no royalties, no obligations.</p>
+            <p className="text-zinc-600 max-w-2xl mx-auto">A turnkey mobile coffee business with low overhead, a lower startup cost than a coffee truck or kiosk, and full ownership. No franchise fees, no royalties.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10 max-w-7xl mx-auto">
             <ValueCard icon={<DollarSign />} title="Low Entry Cost" desc={`From $13,495 CAD ($9,850 USD) — a fraction of a brick-and-mortar café. Financing available in Canada.`} red={RED} tint={RED_TINT} />
-            <ValueCard icon={<TrendingUp />} title="Fast ROI" desc="Most owners break even in 6–12 months" red={RED} tint={RED_TINT} />
+            <ValueCard icon={<Zap />} title="Low Running Costs" desc="No fuel, no engine maintenance, no storefront lease. Charging costs about a dollar a day (our estimate), and the bike rolls indoors in winter." red={RED} tint={RED_TINT} />
             <ValueCard icon={<Award />} title="No Franchise Fees or Obligations" desc="No royalties, no contracts, no strings attached. You own 100% of your brand and your profits — forever." red={RED} tint={RED_TINT} />
             <ValueCard icon={<Users />} title="Non-Obligatory Global Community" desc="Join a growing global network of Coffee Bike owners — all connected and supporting each other daily. New to coffee? We provide all the training you need to get started." red={RED} tint={RED_TINT} />
-            <ValueCard icon={<Star />} title="Proven Business Model" desc="Battle-tested by a growing network of owners worldwide. We know what works — operating since 2018 and over 1.5 million cups served." red={RED} tint={RED_TINT} />
+            <ValueCard icon={<Star />} title="Tested on the Street" desc="Refined by running our own bikes at markets, festivals and events since 2018: over 1.5 million cups served." red={RED} tint={RED_TINT} />
             <ValueCard icon={<Sparkles />} title="Turnkey, Electric & Ready to Roll" desc="Fully equipped, fully tested, fully assembled — and powered by a real e-bike motor that conquers hills, even fully loaded. Brew espresso the day it arrives, anywhere you can ride." red={RED} tint={RED_TINT} />
-            <ValueCard icon={<Calendar />} title="Multiple Revenue Streams" desc="Catering, weddings, corporate events, daily retail, festivals — one bike, dozens of income opportunities." red={RED} tint={RED_TINT} />
+            <ValueCard icon={<Calendar />} title="Many Ways to Sell" desc="Catering, weddings, corporate events, daily retail, festivals: one bike, many places to serve." red={RED} tint={RED_TINT} />
             <ValueCard icon={<Check />} title="Built for Health Compliance" desc="Various sink configurations, food-safe surfaces, and commercial-grade equipment — customizable to meet your local health code requirements." red={RED} tint={RED_TINT} />
             <ValueCard icon={<Globe />} title="Fully Brandable, Shipped Worldwide" desc="Custom Pantone colors, your logo, your vibe. We deliver fully branded Coffee Bikes anywhere in the world with white-glove shipping." red={RED} tint={RED_TINT} />
             <ValueCard icon={<Lock />} title="1-Year Manufacturer Warranty" desc="Every Coffee Bike is fully covered — frame, equipment, electronics. We stand behind every build so you can launch with confidence." red={RED} tint={RED_TINT} />
@@ -1553,7 +1553,7 @@ export default function CoffeeBikePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
             <EyebrowBadge className="mb-3">What You Get</EyebrowBadge>
-            <h2 className="text-3xl lg:text-4xl font-bold mb-3">Built for Mobility, Quality & Profitability</h2>
+            <h2 className="text-3xl lg:text-4xl font-bold mb-3">Built for Mobility, Quality & Low Running Costs</h2>
             <p className="text-zinc-600 max-w-2xl mx-auto">Part espresso bar, part coffee cart, fully electric: every Coffee Bike is built on 8+ years of hands-on experience and ready to operate from day one.</p>
           </div>
           <Carousel red={RED} itemWidth={220}>
@@ -2064,8 +2064,8 @@ export default function CoffeeBikePage() {
         <div className="max-w-[1400px] mx-auto">
           <div className="text-center mb-8">
             <EyebrowBadge className="mb-3">Run The Numbers</EyebrowBadge>
-            <h2 className="text-3xl lg:text-4xl font-bold mb-3">What Could You Earn?</h2>
-            <p className="text-zinc-600 max-w-2xl mx-auto">Adjust the sliders based on your local market. We've pre-filled industry-average numbers from real Coffee Bike owners.</p>
+            <h2 className="text-3xl lg:text-4xl font-bold mb-3">Coffee Cart Business Calculator</h2>
+            <p className="text-zinc-600 max-w-2xl mx-auto">Move the sliders to match your market. The starting values are examples, not typical owner results.</p>
           </div>
           <div className="max-w-5xl mx-auto bg-gradient-to-br from-zinc-50 to-white rounded-2xl border-2 border-zinc-200 overflow-hidden">
             <div className="grid grid-cols-2 border-b border-zinc-200">
@@ -2080,41 +2080,40 @@ export default function CoffeeBikePage() {
               <div className="flex-1 p-6 lg:p-8 lg:border-r border-zinc-200">
                 {calcMode === 'retail' ? (
                   <>
-                    <SliderInput label="Cups sold per day" value={retailCups} setValue={setRetailCups} min={20} max={250} suffix="cups" hint="Industry average: 60–120 cups/day at high-traffic spots" red={RED} />
-                    <SliderInput label="Average price per cup" value={retailPrice} setValue={setRetailPrice} min={3} max={10} step={0.5} prefix="$" hint="Specialty coffee average: $5–$7" red={RED} />
-                    <SliderInput label="Working days per month" value={retailDays} setValue={setRetailDays} min={8} max={28} suffix="days" hint="Most owners work 18–22 days/month" red={RED} />
+                    <SliderInput label="Cups sold per day" value={retailCups} setValue={setRetailCups} min={20} max={250} suffix="cups" hint="Example: 60–120 cups a day at a busy spot" red={RED} />
+                    <SliderInput label="Average price per cup" value={retailPrice} setValue={setRetailPrice} min={3} max={10} step={0.5} prefix="$" hint="Example: $5–$7 for specialty coffee" red={RED} />
+                    <SliderInput label="Working days per month" value={retailDays} setValue={setRetailDays} min={8} max={28} suffix="days" hint="Example: 18–22 days a month for a full-time schedule" red={RED} />
                   </>
                 ) : (
                   <>
-                    <SliderInput label="Catering events per month" value={cateringEvents} setValue={setCateringEvents} min={1} max={20} suffix="events" hint="Most owners do 4–10 events/month" red={RED} />
-                    <SliderInput label="Average fee per event (pre-paid)" value={cateringFee} setValue={setCateringFee} min={300} max={3500} step={50} prefix="$" hint="Industry average: $800–$1,800 per event (2–3 hours)" red={RED} />
+                    <SliderInput label="Catering events per month" value={cateringEvents} setValue={setCateringEvents} min={1} max={20} suffix="events" hint="Example: 4–10 events a month" red={RED} />
+                    <SliderInput label="Average fee per event (pre-paid)" value={cateringFee} setValue={setCateringFee} min={300} max={3500} step={50} prefix="$" hint="Example: $800–$1,800 for a 2–3-hour event" red={RED} />
                   </>
                 )}
                 <div className="mt-6 p-4 rounded-lg flex gap-3 items-start" style={{ backgroundColor: RED_TINT }}>
                   <Info className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: RED }} />
                   <div className="text-xs text-zinc-700 leading-relaxed">
-                    <strong>Estimates only.</strong> Actual revenue depends on location, permits, weather, weekday/weekend mix, and operator effort. Calculations use industry-standard {calcMode === 'retail' ? '25% COGS for specialty coffee retail' : '15% COGS for premium catering'}.
+                    <strong>Estimates only, based on the numbers you enter.</strong> Not typical owner results or a promise of income. The amounts leave out your pay, staff, permits, insurance, site or event fees, maintenance and taxes; cost of goods is assumed at {calcMode === 'retail' ? '25% for specialty coffee retail' : '15% for pre-paid catering'}.
                   </div>
                 </div>
               </div>
               <div className="lg:w-2/5 p-6 lg:p-8 text-white" style={{ backgroundColor: '#0a0a0a' }}>
-                <div className="text-xs uppercase tracking-widest font-bold mb-1" style={{ color: RED }}>Your Estimated Earnings</div>
-                <h3 className="text-2xl font-bold mb-6">Projected Performance</h3>
+                <div className="text-xs uppercase tracking-widest font-bold mb-1" style={{ color: RED }}>Your Estimate</div>
+                <h3 className="text-2xl font-bold mb-6">Based on Your Numbers</h3>
                 <ResultRow label="Monthly Revenue" value={fmtMoney(calc.monthlyRevenue)} />
-                <ResultRow label="Cost of Goods" value={`− ${fmtMoney(calc.cogs)}`} muted />
+                <ResultRow label="Assumed Cost of Goods" value={`− ${fmtMoney(calc.cogs)}`} muted />
                 <div className="border-t border-zinc-700 my-3" />
-                <ResultRow label="Net Monthly Profit" value={fmtMoney(calc.netMonthly)} highlight />
-                <ResultRow label="Annual Net Profit" value={fmtMoney(calc.annualNet)} />
+                <ResultRow label="Left After Cost of Goods, per Month" value={fmtMoney(calc.netMonthly)} highlight />
+                <ResultRow label={calcMode === 'retail' ? 'Over a Year (11 Selling Months)' : 'Over a Year (12 Months)'} value={fmtMoney(calc.annualNet)} />
                 <div className="mt-6 p-4 rounded-lg" style={{ backgroundColor: 'rgba(227,30,36,0.15)', border: `1px solid ${RED}` }}>
-                  <div className="text-xs uppercase tracking-wider mb-1" style={{ color: RED }}>Investment Payback</div>
+                  <div className="text-xs uppercase tracking-wider mb-1" style={{ color: RED }}>Build Cost Comparison</div>
                   <div className="text-3xl font-bold mb-1">{calc.monthsToRecoup < 1 ? '< 1' : Math.ceil(calc.monthsToRecoup)} months</div>
-                  <div className="text-xs text-zinc-400">to recoup full Coffee Bike investment</div>
+                  <div className="text-xs text-zinc-400">of this monthly amount to equal a {fmt(19775)} fully equipped build (your quote may differ), before your other costs</div>
                 </div>
-                <div className="mt-4 p-3 rounded-lg bg-white/5 border border-white/10">
-                  <div className="text-[10px] uppercase tracking-wider font-semibold mb-1" style={{ color: RED }}>Real Owner Data</div>
-                  <div className="text-xs text-zinc-300 leading-snug">
-                    Owners reporting to us average <strong className="text-white">$4K–$8K/month</strong> in net profit, with top performers reaching <strong className="text-white">$12K+</strong>.
-                  </div>
+                <div className="mt-4 p-4 rounded-lg bg-white/5 border border-white/10">
+                  <div className="text-[10px] uppercase tracking-wider font-semibold mb-1" style={{ color: RED }}>Check Your Numbers With the Founder</div>
+                  <div className="text-xs text-zinc-300 leading-snug mb-3">Walk through equipment, pricing and your assumptions on a 15-minute call.</div>
+                  <button type="button" onClick={() => setScheduleModalOpen(true)} className="w-full rounded text-white text-xs font-bold uppercase tracking-wide px-4 py-2.5 hover:opacity-90" style={{ backgroundColor: RED }}>Book a 15-Minute Call</button>
                 </div>
               </div>
             </div>
@@ -2125,9 +2124,9 @@ export default function CoffeeBikePage() {
       <div className="py-12 px-6 bg-zinc-50">
         <div className="max-w-[1400px] mx-auto">
           <div className="text-center mb-8">
-            <EyebrowBadge className="mb-3">Real Owners. Real Results.</EyebrowBadge>
+            <EyebrowBadge className="mb-3">Real Owners. Real Stories.</EyebrowBadge>
             <h2 className="text-3xl lg:text-4xl font-bold mb-3">Coffee Bike Owners Worldwide</h2>
-            <p className="text-zinc-600 max-w-2xl mx-auto">Hear from entrepreneurs running profitable Coffee Bike businesses around the globe.</p>
+            <p className="text-zinc-600 max-w-2xl mx-auto">Hear from owners running Coffee Bike businesses around the world.</p>
           </div>
           <Carousel red={RED} itemWidth={260} gap={16} autoScroll={false}>
             {testimonials.map((t, i) => (
@@ -2196,14 +2195,14 @@ export default function CoffeeBikePage() {
         <tbody>
           {[
             { row: 'Startup Cost', cb: '$10K – $20K', others: '$5K – $40K+', cafe: '$80K – $500K', truck: '$50K – $175K', highlight: true },
-            { row: 'Time to Launch', cb: '4–8 weeks', others: '2–6 months', cafe: '6–18 months', truck: '3–12 months' },
+            { row: 'Time to Launch', cb: '6–10 weeks (built + delivered)', others: '2–6 months', cafe: '6–18 months', truck: '3–12 months' },
             { row: 'Build Quality', cb: '✓ Brand new, commercial-grade, refined by 8+ years of hands-on operations and 1.5M+ cups served', others: '~ Varies widely — often based on theoretical knowledge with no hands-on experience', cafe: 'Custom-built by expensive contractors', truck: 'Most often used truck/trailer, custom-built' },
             { row: 'Espresso Capability', cb: '✓ Dual-fuel commercial machine — 60–100 cups/hr proven productivity', others: '~ Often looks good in photos but untested in real-world busy operations', cafe: 'Commercial setup', truck: 'Similar efficiency to ours, but much bulkier footprint' },
             { row: 'Permits & Setup', cb: 'Mobile vendor permit', others: 'Mobile vendor permit', cafe: 'Lease + buildout + multiple licenses', truck: 'Commercial kitchen + DOT' },
             { row: 'Move Locations', cb: '✓ Anytime, anywhere — powerful e-bike motor conquers hills fully loaded', others: '~ Has wheels in photos, but often cannot handle even a slight uphill in real life', cafe: '✕ Locked into one location — a gamble', truck: '~ Limited to curbsides and parking lots' },
             { row: 'Indoor / Cold-Season Service', cb: '✓ Fits indoors with full electric mode — easily test different locations year-round', others: '~ Varies, but rarely works as advertised', cafe: '✕ Locked to one location', truck: '✕ Not possible — outdoor-only, limited operations' },
             { row: 'Custom Branding', cb: '✓ Complimentary full vinyl wrap + custom color', others: '✓ Complimentary full vinyl wrap + custom color', cafe: 'Full control — high extra cost', truck: 'Full control — high extra cost' },
-            { row: 'Eco-Friendly', cb: '✓ Zero-emission electric', others: '~ Varies', cafe: '~ High overhead footprint', truck: '✕ Diesel/gas heavy' },
+            { row: 'Fuel to Move', cb: '✓ None: electric motor and pedals', others: '~ Varies', cafe: '— It doesn’t move', truck: '✕ Diesel or gas' },
             { row: 'Warranty & Support', cb: '✓ 1-year warranty + owner network', others: '~ Limited or none', cafe: 'You’re on your own', truck: 'You’re on your own' },
             { row: 'Franchise Fees', cb: '✓ None — you own it', others: '~ Some require royalties', cafe: '~ Some require royalties', truck: '~ Varies' },
             { row: 'Worldwide Shipping', cb: '✓ Yes — white-glove delivery', others: '~ Limited to home country', cafe: 'N/A', truck: '~ Limited' },
@@ -2252,7 +2251,7 @@ export default function CoffeeBikePage() {
         {
           icon: <Clock className="w-4 h-4" />,
           category: 'Time to Launch',
-          coffeeBike: '4–8 weeks',
+          coffeeBike: '6–10 weeks (built + delivered)',
           otherBikes: '2–6 months',
           cafe: '6–18 months',
           truck: '3–12 months',
@@ -2307,11 +2306,11 @@ export default function CoffeeBikePage() {
         },
         {
           icon: <Leaf className="w-4 h-4" />,
-          category: 'Eco-Friendly',
-          coffeeBike: '✓ Zero-emission electric',
+          category: 'Fuel to Move',
+          coffeeBike: '✓ None: electric motor and pedals',
           otherBikes: '~ Varies',
-          cafe: '~ High overhead footprint',
-          truck: '✕ Diesel/gas heavy',
+          cafe: '— It doesn’t move',
+          truck: '✕ Diesel or gas',
         },
         {
           icon: <Lock className="w-4 h-4" />,
@@ -2646,7 +2645,7 @@ export default function CoffeeBikePage() {
             </div>
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-zinc-400 pt-2 border-t border-white/10 mt-2 pt-5">
               <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5" style={{ color: RED }} /> No Franchise Fees</span>
-              <span className="flex items-center gap-1.5"><Leaf className="w-3.5 h-3.5" style={{ color: RED }} /> Eco-Friendly</span>
+              <span className="flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" style={{ color: RED }} /> Electric-Powered</span>
               <span className="flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" style={{ color: RED }} /> Worldwide Shipping</span>
               <span className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5" style={{ color: RED }} /> Secure & Encrypted</span>
             </div>
