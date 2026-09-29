@@ -94,7 +94,7 @@ export const MARKETS = {
 /**
  * One headline per search intent, so the page answers what the visitor typed (message match). The ad group's final
  * URL picks the intent: /start (coffee bike), /start/cart, /start/truck, /start/van, /start/trailer, /start/start,
- * /start/franchise, /start/compare.
+ * /start/franchise, /start/compare. /start/own is the Meta ads version: it opens with the reel's own line.
  */
 export const INTENTS = {
   bike: {
@@ -153,8 +153,17 @@ export const INTENTS = {
     compare: 'truck',
     title: 'Coffee Bike: what’s inside, what it costs',
   },
+  // Meta ads (the "build something of your own" reel, caption "Make 2027 the year you open your own coffee business")
+  own: {
+    eyebrow: 'Make 2027 the year',
+    h1: 'Open your own coffee business in 2027',
+    sub: 'A complete mobile coffee shop on an electric bike: custom-branded, delivered to your door and 100% yours. No franchise, no royalties, no lease. Owners opening for spring 2027 are ordering now.',
+    compare: 'cafe',
+    title: 'Open your own coffee business in 2027 with a Coffee Bike',
+  },
 };
 export const INTENT_KEYS = Object.keys(INTENTS);
+export const BASE_PATH = '/buy-a-mobile-coffee-bike';
 
 /** Title, description and canonical for one market × intent page; every one stays out of organic search. */
 export function pageMeta(market, intent) {

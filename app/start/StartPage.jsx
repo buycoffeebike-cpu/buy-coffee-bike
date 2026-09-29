@@ -5,7 +5,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ArrowRight, BatteryCharging, Calendar, Check, ChevronDown, Clock, Coffee, CreditCard, Droplets, FileText, Info, Mail, MapPin, ShieldCheck, Snowflake, Sun, Users } from 'lucide-react';
 import LiteYouTube from '../../components/LiteYouTube';
 import {
-  ADDRESS, ADS_TAG, CALL_URL, COMPARE_COLS, DEPOSIT_URL, EMAIL, FEATURES, INCLUDED, INTENTS, LOGO, MARKETS, OWNERS, PHOTOS, PRICING,
+  ADDRESS, ADS_TAG, BASE_PATH, CALL_URL, COMPARE_COLS, DEPOSIT_URL, EMAIL, FEATURES, INCLUDED, INTENTS, LOGO, MARKETS, OWNERS, PHOTOS, PRICING,
   SPEC_SHEET, SPECS, TRUST, WALKTHROUGH_ID, compareRows, faqs, steps, whatsappLink,
 } from './content';
 import { HeroQuestion, QuoteFlow, QuoteModal, QuoteProvider, RED, useQuote } from './quote';
@@ -18,6 +18,21 @@ const track = (name, params) => {
     window.gtag?.('event', name, params);
   } catch {}
 };
+
+/**
+ * The visitor's country from the device's time zone (set by the phone's location), or null when it says neither.
+ * Ads send each country to its own page; this catches the few who land on the other one.
+ */
+const CA_TZ = /^America\/(Toronto|Vancouver|Edmonton|Winnipeg|Halifax|St_Johns|Regina|Montreal|Moncton|Glace_Bay|Goose_Bay|Whitehorse|Dawson|Dawson_Creek|Fort_Nelson|Creston|Yellowknife|Inuvik|Iqaluit|Rankin_Inlet|Resolute|Cambridge_Bay|Swift_Current|Atikokan|Blanc-Sablon|Nipigon|Thunder_Bay|Rainy_River|Pangnirtung)$/;
+const US_TZ = /^America\/(New_York|Chicago|Denver|Los_Angeles|Phoenix|Anchorage|Adak|Boise|Detroit|Juneau|Sitka|Metlakatla|Yakutat|Nome|Menominee|Indiana\/.+|Kentucky\/.+|North_Dakota\/.+)$|^Pacific\/Honolulu$/;
+function deviceCountry() {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+    return CA_TZ.test(tz) ? 'ca' : US_TZ.test(tz) ? 'us' : null;
+  } catch {
+    return null;
+  }
+}
 
 /** WhatsApp glyph (brand mark, used only to label the WhatsApp link). */
 function WhatsAppIcon({ className = '' }) {
@@ -77,6 +92,14 @@ function Page({ intent, market }) {
   const [allRows, setAllRows] = useState(false);
   const [allFaq, setAllFaq] = useState(false);
   const [sticky, setSticky] = useState(false);
+  // a visitor from the other country: one tap to their own prices, with the ad's tracking kept in the link
+  const [elsewhere, setElsewhere] = useState(null);
+  useEffect(() => {
+    const c = deviceCountry();
+    if (!c || c === market) return;
+    setElsewhere({ market: c, href: `${BASE_PATH}${MARKETS[c].base}${intent === 'bike' ? '' : `/${intent}`}${window.location.search}` });
+    track('market_mismatch', { page: market, device: c, intent });
+  }, [market, intent]);
   const quoteRef = useRef(null);
   const quoteInView = useRef(false);
   const rows = useMemo(() => compareRows(market), [market]);
@@ -168,6 +191,12 @@ function Page({ intent, market }) {
           </div>
         </div>
       </header>
+
+      {elsewhere ? (
+        <a href={elsewhere.href} onClick={() => track('market_switch', { from: market, to: elsewhere.market, intent })} className="block bg-zinc-900 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-zinc-800">
+          {elsewhere.market === 'ca' ? 'In Canada? See Canadian prices in CA$ →' : 'In the US? See US prices in US$ →'}
+        </a>
+      ) : null}
 
       {/* hero */}
       <section className="bg-[#F4F4F3]">

@@ -44,6 +44,18 @@ export default function CoffeeBikePage() {
   const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
   const [inConfigurator, setInConfigurator] = useState(false);
 
+  // Prices in the visitor's currency: ?currency=CAD|USD|EUR in the link wins (each Meta ad set links with its
+  // country's currency); otherwise a device set to a Canadian time zone sees Canadian dollars, everyone else US dollars.
+  useEffect(() => {
+    try {
+      const want = (new URLSearchParams(window.location.search).get('currency') || '').toUpperCase();
+      if (want === 'CAD' || want === 'USD') return setCurrency(want);
+      if (want === 'EUR' || want === 'EURO') return setCurrency('EURO');
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      if (/^America\/(Toronto|Vancouver|Edmonton|Winnipeg|Halifax|St_Johns|Regina|Montreal|Moncton|Glace_Bay|Goose_Bay|Whitehorse|Dawson|Dawson_Creek|Fort_Nelson|Creston|Yellowknife|Inuvik|Iqaluit|Rankin_Inlet|Resolute|Cambridge_Bay|Swift_Current|Atikokan|Blanc-Sablon|Nipigon|Thunder_Bay|Rainy_River|Pangnirtung)$/.test(tz)) setCurrency('CAD');
+    } catch {}
+  }, []);
+
   const advancedRef = useRef({ step1: false, step2: false, step3: false, step4: false });
 
   const toggleStep = (step) => setStepOpen(s => ({ ...s, [step]: !s[step] }));

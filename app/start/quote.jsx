@@ -61,23 +61,58 @@ const Ctx = createContext(null);
 
 const clean = (o) => Object.fromEntries(Object.entries(o || {}).filter(([, v]) => typeof v === 'string' && v.trim()).map(([k, v]) => [k, v.trim().slice(0, 290)]));
 
-/** utm_* and Google/Meta click ids from the ad click, kept for the session so a reload does not lose them. */
-function readAttribution() {
+/**
+ * The ad click behind this visit: utm_*, Meta's campaign / ad set / ad ids and the Google and Meta click ids. Kept in
+ * this browser for 90 days, so someone who clicks an ad today and sends the form next week still counts for that ad;
+ * a newer ad click replaces an older one (last click wins). Read on every page view, so the click is saved on arrival.
+ */
+const ATTR_KEY = 'cbw_attr';
+const ATTR_MS = 90 * 86400000;
+export function readAttribution() {
+  const none = { utm: {}, click: {}, ids: {}, at: 0 };
   try {
     const p = new URLSearchParams(window.location.search);
     const fresh = {
       utm: clean({ source: p.get('utm_source'), medium: p.get('utm_medium'), campaign: p.get('utm_campaign'), content: p.get('utm_content'), term: p.get('utm_term') }),
       click: clean({ gclid: p.get('gclid'), gbraid: p.get('gbraid'), wbraid: p.get('wbraid'), fbclid: p.get('fbclid') }),
+      ids: clean({ utmId: p.get('utm_id'), fbCampaign: p.get('fb_campaign_id'), fbAdset: p.get('fb_adset_id'), fbAd: p.get('fb_ad_id') }),
     };
-    const saved = JSON.parse(sessionStorage.getItem('cbw_attr') || 'null');
-    const hasFresh = Object.keys(fresh.utm).length || Object.keys(fresh.click).length;
-    const attr = hasFresh || !saved ? fresh : saved;
-    sessionStorage.setItem('cbw_attr', JSON.stringify(attr));
-    return attr;
+    if ([fresh.utm, fresh.click, fresh.ids].some((o) => Object.keys(o).length)) {
+      const attr = { ...fresh, at: Date.now() };
+      try {
+        localStorage.setItem(ATTR_KEY, JSON.stringify(attr));
+      } catch {}
+      return attr;
+    }
+    const saved = JSON.parse(localStorage.getItem(ATTR_KEY) || 'null');
+    return saved && saved.at > Date.now() - ATTR_MS ? { utm: saved.utm || {}, click: saved.click || {}, ids: saved.ids || {}, at: saved.at } : none;
   } catch {
-    return { utm: {}, click: {} };
+    return none;
   }
 }
+
+const cookie = (name) => {
+  try {
+    return decodeURIComponent((document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`)) || [])[1] || '');
+  } catch {
+    return '';
+  }
+};
+
+/** Meta's browser cookie and click cookie, so the server copy of the event matches the ad click. */
+function metaCookies(attr) {
+  const fbp = cookie('_fbp');
+  const fbc = cookie('_fbc') || (attr.click.fbclid ? `fb.1.${attr.at || Date.now()}.${attr.click.fbclid}` : '');
+  return clean({ fbp, fbc });
+}
+
+/** One id for the browser and server copies of the form event, so Meta counts the lead once. */
+const newEventId = () => {
+  try {
+    if (crypto?.randomUUID) return `web-${crypto.randomUUID()}`;
+  } catch {}
+  return `web-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+};
 
 const track = (name, params) => {
   try {
@@ -115,6 +150,11 @@ export function QuoteProvider({ market, intent, children }) {
 
   // the page is built ahead of time: work the seasons out from the visitor's own date
   useEffect(() => setSeasons(seasonOptions(new Date())), []);
+
+  // remember the ad click on arrival, not only at sending, so a visitor who comes back later still counts for it
+  useEffect(() => {
+    readAttribution();
+  }, []);
 
   // pick up where the visitor left off (same tab), never across markets
   useEffect(() => {
@@ -159,6 +199,7 @@ export function QuoteProvider({ market, intent, children }) {
     setError('');
     const attr = readAttribution();
     const season = seasons.find((o) => o.v === answers.timeline);
+    const eventId = newEventId();
     const body = {
       name: contact.name.trim(),
       email: contact.email.trim(),
@@ -176,7 +217,9 @@ export function QuoteProvider({ market, intent, children }) {
       page: window.location.href.slice(0, 600),
       referrer: document.referrer ? document.referrer.slice(0, 600) : undefined,
       utm: attr.utm,
-      click: attr.click,
+      click: { ...attr.click, ...metaCookies(attr) },
+      ids: Object.keys(attr.ids).length ? attr.ids : undefined,
+      eventId,
       hp: contact.hp || undefined,
       ms: started.current ? Date.now() - started.current : undefined,
     };
@@ -197,7 +240,8 @@ export function QuoteProvider({ market, intent, children }) {
         window.gtag?.('set', 'user_data', user);
         window.gtag?.('event', 'conversion', { send_to: ADS_CONVERSION, value: 100, currency: 'CAD', transaction_id: j.data?.id });
         window.gtag?.('event', 'generate_lead', { form: 'quote_flow', market, intent, use: answers.use, timeline: answers.timeline, stage: answers.stage, fit: answers.fit });
-        window.fbq?.('track', 'Lead', { content_name: 'Coffee Bike quote', content_category: market });
+        // the event every Coffee Bike Sales ad set optimises for; the OS sends the server copy with the same id
+        window.fbq?.('track', 'SubmitApplication', { content_name: 'Coffee Bike quote', content_category: market }, { eventID: eventId });
       } catch {}
       setResult({ first, last: rest.join(' '), email: body.email, phone: body.phone, id: j.data?.id });
       setStatus('done');
