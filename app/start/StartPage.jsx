@@ -1,12 +1,12 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, BatteryCharging, Calendar, Check, ChevronDown, Clock, Coffee, CreditCard, Droplets, FileText, Mail, MapPin, ShieldCheck, Snowflake, Sun, Users } from 'lucide-react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { ArrowRight, BatteryCharging, Calendar, Check, ChevronDown, Clock, Coffee, CreditCard, Droplets, FileText, Info, Mail, MapPin, ShieldCheck, Snowflake, Sun, Users } from 'lucide-react';
 import LiteYouTube from '../../components/LiteYouTube';
 import {
   ADDRESS, ADS_TAG, CALL_URL, COMPARE_COLS, DEPOSIT_URL, EMAIL, FEATURES, INCLUDED, INTENTS, LOGO, MARKETS, OWNERS, PHOTOS, PRICING,
-  SPEC_SHEET, SPECS, TRUST, WALKTHROUGH_ID, compareNote, compareRows, faqs, steps, whatsappLink,
+  SPEC_SHEET, SPECS, TRUST, WALKTHROUGH_ID, compareRows, faqs, steps, whatsappLink,
 } from './content';
 import { HeroQuestion, QuoteFlow, QuoteModal, QuoteProvider, RED, useQuote } from './quote';
 
@@ -91,6 +91,12 @@ function Page({ intent, market }) {
     if (ownersSeen.current) return;
     ownersSeen.current = true;
     track('owners_more', { intent, market });
+  };
+  const featuresSeen = useRef(false);
+  const onFeaturesScroll = () => {
+    if (featuresSeen.current) return;
+    featuresSeen.current = true;
+    track('features_more', { intent, market });
   };
   const questions = useMemo(() => faqs(market), [market]);
 
@@ -272,28 +278,29 @@ function Page({ intent, market }) {
             </tbody>
           </table>
         </div>
-        <p className="mt-4 max-w-3xl text-xs leading-relaxed text-zinc-500">{compareNote(market)}</p>
         <PriceButton where="compare" className="mt-8 w-full sm:w-auto">Get my price <ArrowRight className="h-5 w-5" /></PriceButton>
       </Section>
 
       {/* what you get */}
       <Section id="build" tone="soft">
         <Heading eyebrow="What you get" title="A commercial espresso bar that rides" sub="Every part of it comes from 8+ years of serving at busy events and festivals with our own bikes." />
-        <div className="mt-8 grid grid-cols-3 gap-2 sm:gap-4">
+        {/* the three studio sides in one row at one height, each photo at its own shape so nothing is cropped */}
+        <div className="mt-8 flex gap-2 sm:gap-4">
           {[PHOTOS.customerSide, PHOTOS.baristaSide, PHOTOS.closed].map((p, i) => (
-            <figure key={p.src} className="overflow-hidden rounded-xl bg-white">
-              <div className="relative aspect-square">
-                <Image src={p.src} alt={p.alt} fill sizes="(min-width: 1024px) 380px, 33vw" className="object-cover" />
+            <figure key={p.src} className="min-w-0 overflow-hidden rounded-xl bg-white" style={{ flex: `${p.w / p.h} 1 0%` }}>
+              <div className="relative" style={{ aspectRatio: `${p.w} / ${p.h}` }}>
+                <Image src={p.src} alt={p.alt} fill sizes="(min-width: 1152px) 440px, 40vw" className="object-cover" />
               </div>
               <figcaption className="px-2 py-2 text-center text-xs font-semibold text-zinc-600 sm:text-sm">{['Customer side', 'Barista side', 'Closed to ride'][i]}</figcaption>
             </figure>
           ))}
         </div>
-        <div className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+        {/* phones swipe through the whole 4:3 photos; larger screens get a grid */}
+        <div className="-mx-4 mt-6 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:mt-8 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3" onScroll={onFeaturesScroll}>
           {FEATURES.map((f) => (
-            <article key={f.title} className="grid grid-cols-[96px_1fr] overflow-hidden rounded-xl bg-white sm:block">
-              <div className="relative h-full min-h-[96px] sm:aspect-[4/3] sm:h-auto">
-                <Image src={f.img} alt={f.title} fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 96px" className="object-cover" />
+            <article key={f.title} className="w-[82%] max-w-[340px] flex-none snap-start overflow-hidden rounded-xl bg-white sm:w-auto sm:max-w-none">
+              <div className="relative aspect-[4/3] bg-zinc-100">
+                <Image src={f.img} alt={f.title} fill sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 82vw" className="object-cover" />
               </div>
               <div className="p-4 sm:p-5">
                 <h3 className="font-bold text-zinc-950 sm:text-lg">{f.title}</h3>
@@ -302,6 +309,7 @@ function Page({ intent, market }) {
             </article>
           ))}
         </div>
+        <p className="mt-2 text-sm text-zinc-500 sm:hidden">Swipe to see all six →</p>
         <dl className="mt-8 grid gap-x-8 gap-y-3 rounded-xl bg-white p-5 sm:grid-cols-2 sm:p-6">
           {SPECS.map((s) => (
             <div key={s.k} className="grid grid-cols-[88px_1fr] gap-3 text-[15px]">
@@ -358,7 +366,7 @@ function Page({ intent, market }) {
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {[
-                { icon: CreditCard, ...P.financing },
+                { icon: CreditCard, ...P.payment },
                 { icon: Calendar, t: 'Reserve with US$250', d: 'Holds a production spot and is applied in full to your order. Invoiced by Coffee Bike World, Vancouver, BC.', href: DEPOSIT_URL, cta: 'Reserve' },
               ].map(({ icon: Icon, t, d, href, cta }) => (
                 <div key={t} className="rounded-xl border border-zinc-200 p-4">
@@ -408,7 +416,7 @@ function Page({ intent, market }) {
       <Section id="owners" tone="dark">
         <Heading dark eyebrow="Owners" title="49 bikes. 36 owners. Here are some of them." sub="First businesses, second careers, cafés and roasteries adding a mobile bar, and brands that take their coffee to the crowd. Several owners run two or three bikes." />
         {/* the reviews as the main sales page shows them: each owner's own photo, then their words */}
-        <div className="-mx-4 mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:px-6" onScroll={onOwnersScroll}>
+        <div className="-mx-4 mt-8 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:scroll-px-6 sm:px-6" onScroll={onOwnersScroll}>
           {owners.map((o) => (
             <figure key={o.name} className="flex w-[260px] flex-none snap-start flex-col overflow-hidden rounded-xl bg-zinc-900">
               <div className="relative aspect-[4/5] bg-zinc-800">
@@ -478,9 +486,10 @@ function Page({ intent, market }) {
 
       {/* founder */}
       <Section id="founder">
-        <div className="grid items-center gap-10 md:grid-cols-[0.8fr_1fr]">
-          <div className="relative mx-auto aspect-[4/3] w-full overflow-hidden rounded-xl md:aspect-[4/5] md:max-w-sm">
-            <Image src={PHOTOS.founder.src} alt={PHOTOS.founder.alt} fill sizes="(min-width: 768px) 384px, 90vw" className="object-cover object-[50%_40%]" />
+        <div className="grid items-center gap-10 md:grid-cols-[1.1fr_1fr]">
+          {/* the whole 3:2 photo: the founder and the open bike side by side */}
+          <div className="relative aspect-[3/2] w-full overflow-hidden rounded-xl bg-zinc-200">
+            <Image src={PHOTOS.founder.src} alt={PHOTOS.founder.alt} fill sizes="(min-width: 1152px) 580px, (min-width: 768px) 52vw, 100vw" className="object-cover" />
           </div>
           <div>
             <Heading eyebrow="Built by people who run it" title="We’ve served 1.5 million cups from these bikes ourselves" />
@@ -496,9 +505,9 @@ function Page({ intent, market }) {
       <Numbers intent={intent} market={market} />
 
       {/* questions */}
-      <Section id="faq" tone="soft">
+      <Section id="faq">
         <Heading eyebrow="Questions" title="What buyers ask before ordering" />
-        <div className="mt-8 divide-y divide-zinc-200 rounded-xl bg-white">
+        <div className="mt-8 divide-y divide-zinc-200 rounded-xl border border-zinc-200 bg-white">
           {(allFaq ? questions : questions.slice(0, 8)).map((f) => (
             <details key={f.q} className="group p-5" onToggle={(e) => e.currentTarget.open && track('faq_open', { q: f.q.slice(0, 60), intent, market })}>
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-bold text-zinc-950">
@@ -606,65 +615,117 @@ function DayAndWhere() {
 }
 
 /**
- * Break-even in drinks, from the visitor's own price and cost per drink. Nothing about sales volume or income is
- * filled in: under FTC rules (16 CFR 437.1) any preset sales or profit figure is an earnings claim, and Google treats
- * them as unreliable claims. The only prefilled number is the typical build price for the visitor's market.
+ * The main sales page's earnings calculator (the founder prefers it, 29 Sept 2026): the same sliders, starting values,
+ * cost-of-goods rates and results, in the visitor's currency, with payback against the typical build for their market.
+ * The sales page's owner-earnings box stays off this page (an income claim); the fine print says what the estimate
+ * leaves out.
  */
 function Numbers({ intent, market }) {
   const cur = market === 'ca' ? 'CA$' : 'US$';
-  const [price, setPrice] = useState('');
-  const [cogs, setCogs] = useState('');
-  const [build, setBuild] = useState(market === 'ca' ? '25000' : '15850');
+  const build = market === 'ca' ? 25000 : 15850;
+  const [mode, setMode] = useState('retail');
+  const [cups, setCups] = useState(50);
+  const [cupPrice, setCupPrice] = useState(5.5);
+  const [days, setDays] = useState(18);
+  const [events, setEvents] = useState(4);
+  const [fee, setFee] = useState(900);
   const used = useRef(false);
-  const r = useMemo(() => {
-    const p = parseFloat(price);
-    const c = parseFloat(cogs);
-    const b = parseFloat(build);
-    if (!(p > 0) || !(c >= 0 && c < 100) || !(b > 0)) return null;
-    const margin = p * (1 - c / 100);
-    return { margin, drinks: Math.ceil(b / margin) };
-  }, [price, cogs, build]);
   const touch = () => {
     if (!used.current) {
       used.current = true;
       track('calculator_use', { intent, market });
     }
   };
-  const field = (label, value, set, props) => (
-    <label className="block">
-      <span className="text-sm text-zinc-400">{label}</span>
-      <input
-        type="number"
-        inputMode="decimal"
-        value={value}
-        onChange={(e) => {
-          touch();
-          set(e.target.value);
-        }}
-        className="mt-1 w-full rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-lg font-bold text-white tabular-nums placeholder:font-normal placeholder:text-zinc-600 focus:border-zinc-400 focus:outline-none"
-        {...props}
-      />
-    </label>
-  );
+  const set = (fn) => (v) => {
+    touch();
+    fn(v);
+  };
+  const r = useMemo(() => {
+    const retail = mode === 'retail';
+    const revenue = retail ? cups * cupPrice * days : events * fee;
+    const cogs = revenue * (retail ? 0.25 : 0.15);
+    const net = revenue - cogs;
+    // as on the sales page: 11 selling months a year for daily sales, 12 for catering
+    return { revenue, cogs, net, annual: net * (retail ? 11 : 12), payback: build / net };
+  }, [mode, cups, cupPrice, days, events, fee, build]);
+  const money = (n) => `${cur}${Math.round(n).toLocaleString('en-US')}`;
+  const cents = (n) => `${cur}${n.toFixed(2)}`;
   return (
-    <section id="numbers" className="scroll-mt-16 bg-zinc-950 py-14 text-white md:py-20">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <Heading dark eyebrow="Break-even" title="How many drinks cover the bike?" sub="Enter your own price and cost per drink. Only the typical build price is filled in; change it to yours. Nothing else is assumed, because only you know your market." />
-        <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_1fr]">
-          <div className="grid grid-cols-2 gap-4">
-            {field(`Your price per drink (${cur})`, price, setPrice, { min: 0, step: 0.25, id: 'calc-price', placeholder: 'Your price' })}
-            {field('Cost of goods per drink (%)', cogs, setCogs, { min: 0, max: 99, step: 1, id: 'calc-cogs', placeholder: 'Your %' })}
-            <div className="col-span-2">{field(`Your build cost (${cur})`, build, setBuild, { min: 0, step: 250, id: 'calc-build' })}</div>
+    <Section id="numbers" tone="soft">
+      <Heading eyebrow="Run the numbers" title="What could you earn?" sub="Adjust the sliders for your local market. We’ve pre-filled industry-average numbers from real Coffee Bike owners." />
+      <div className="mt-8 overflow-hidden rounded-2xl border border-zinc-200 bg-white">
+        <div className="grid grid-cols-2 border-b border-zinc-200" role="tablist" aria-label="Estimate from">
+          {[
+            { k: 'retail', icon: Coffee, t: 'Daily cup sales' },
+            { k: 'catering', icon: Calendar, t: 'Catering & events' },
+          ].map(({ k, icon: Icon, t }) => (
+            <button key={k} type="button" role="tab" aria-selected={mode === k} onClick={() => { touch(); setMode(k); }} className={`flex items-center justify-center gap-2 px-2 py-4 text-[13px] font-extrabold uppercase tracking-wide transition sm:text-sm ${mode === k ? 'text-white' : 'bg-white text-zinc-600 hover:bg-zinc-50'}`} style={mode === k ? { backgroundColor: RED } : undefined}>
+              <Icon className="hidden h-4 w-4 flex-none sm:block" aria-hidden /> {t}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-col lg:flex-row">
+          <div className="grid flex-1 content-start gap-6 p-5 sm:p-8">
+            {mode === 'retail' ? (
+              <>
+                <Slider label="Cups sold per day" value={cups} onChange={set(setCups)} min={20} max={250} format={(v) => `${v} cups`} hint="Industry average: 60–120 cups a day at high-traffic spots" />
+                <Slider label="Average price per cup" value={cupPrice} onChange={set(setCupPrice)} min={3} max={10} step={0.5} format={cents} hint={`Specialty coffee average: ${cur}5–7`} />
+                <Slider label="Working days per month" value={days} onChange={set(setDays)} min={8} max={28} format={(v) => `${v} days`} hint="Most owners work 18–22 days a month" />
+              </>
+            ) : (
+              <>
+                <Slider label="Catering events per month" value={events} onChange={set(setEvents)} min={1} max={20} format={(v) => `${v} event${v === 1 ? '' : 's'}`} hint="Most owners do 4–10 events a month" />
+                <Slider label="Average fee per event (pre-paid)" value={fee} onChange={set(setFee)} min={300} max={3500} step={50} format={money} hint={`Industry average: ${cur}800–1,800 per event (2–3 hours)`} />
+              </>
+            )}
+            <p className="flex gap-3 rounded-xl bg-red-50 p-4 text-xs leading-relaxed text-zinc-700">
+              <Info className="h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />
+              <span>
+                <strong className="text-zinc-950">Estimates only.</strong> Actual revenue depends on location, permits, weather, weekday and weekend mix, and your effort. Profit here is after cost of goods only (industry-standard {mode === 'retail' ? '25% for specialty coffee retail' : '15% for premium catering'}), before permits, insurance, event fees, staff and taxes.
+              </span>
+            </p>
           </div>
-          <div className="rounded-xl bg-zinc-900 p-6">
-            <dl className="grid gap-5">
-              <div><dt className="text-sm text-zinc-400">Margin per drink</dt><dd className="text-3xl font-extrabold tabular-nums">{r ? `${cur}${r.margin.toFixed(2)}` : '–'}</dd></div>
-              <div><dt className="text-sm text-zinc-400">Drinks to cover your build</dt><dd className="text-3xl font-extrabold tabular-nums">{r ? r.drinks.toLocaleString('en-US') : '–'}</dd></div>
+          <div className="bg-zinc-950 p-6 text-white sm:p-8 lg:w-[40%]">
+            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>Your estimated earnings</p>
+            <h3 className="mt-1 text-2xl font-extrabold" style={DISPLAY}>Projected performance</h3>
+            <dl className="mt-5">
+              <Result label="Monthly revenue" value={money(r.revenue)} />
+              <Result label="Cost of goods" value={`− ${money(r.cogs)}`} muted />
+              <Result label="Net monthly profit" value={money(r.net)} big className="mt-2 border-t border-zinc-700 pt-4" />
+              <Result label="Annual net profit" value={money(r.annual)} />
             </dl>
-            <p className="mt-6 text-xs leading-relaxed text-zinc-500">An illustration from the numbers you enter, not a prediction of sales or income. It leaves out permits, insurance, rent or event fees, staff, taxes and your time.</p>
+            <div className="mt-6 rounded-xl border p-4" style={{ borderColor: RED, backgroundColor: 'rgba(227,30,36,0.15)' }}>
+              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: RED }}>Investment payback</p>
+              <p className="mt-1 text-3xl font-extrabold tabular-nums" style={DISPLAY}>{r.payback < 1 ? '< 1' : Math.ceil(r.payback)} months</p>
+              <p className="text-xs text-zinc-400">to recoup a typical {money(build)} build</p>
+            </div>
           </div>
         </div>
       </div>
-    </section>
+    </Section>
+  );
+}
+
+function Slider({ label, value, onChange, min, max, step = 1, format, hint }) {
+  const id = useId();
+  return (
+    <div>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+        <label htmlFor={id} className="text-[15px] font-semibold text-zinc-800">{label}</label>
+        <output htmlFor={id} className="text-lg font-extrabold tabular-nums" style={{ color: RED }}>{format(value)}</output>
+      </div>
+      <input id={id} type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} className="mt-1 h-8 w-full cursor-pointer" style={{ accentColor: RED }} />
+      <div className="flex justify-between text-[11px] text-zinc-400"><span>{format(min)}</span><span>{format(max)}</span></div>
+      {hint ? <p className="mt-1 text-xs text-zinc-500">{hint}</p> : null}
+    </div>
+  );
+}
+
+function Result({ label, value, big = false, muted = false, className = '' }) {
+  return (
+    <div className={`flex items-baseline justify-between gap-3 py-2 ${className}`}>
+      <dt className={`text-sm ${muted ? 'text-zinc-500' : 'text-zinc-300'}`}>{label}</dt>
+      <dd className={`font-extrabold tabular-nums ${big ? 'text-2xl' : 'text-base'} ${muted ? 'text-zinc-500' : 'text-white'}`}>{value}</dd>
+    </div>
   );
 }

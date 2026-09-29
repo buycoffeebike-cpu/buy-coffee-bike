@@ -1,15 +1,16 @@
 // Content for the Google Ads landing page (/start and /start/<intent>). Every claim here is either on the main
-// sales page already (prices, warranty, testimonials, process) or sourced in COMPARE_SOURCES. No income claims.
+// sales page already (prices, warranty, testimonials, process, the earnings calculator) or sourced beside
+// MONEY_ROWS. No income claims in the copy; the calculator shows the visitor's own estimate.
 
 export const IMG = (p) => `https://coffeebike.ca/wp-content/uploads/${p}`;
 
 export const LOGO = IMG('2025/04/cofee_bike_logo_rwhite_transparent.png');
 export const HERO = IMG('2026/05/open-ready.jpg.jpg');
 // Coffee Bike Vol. 2 only (founder, 29 Sept 2026): the founder with the red bike, the bike in the city and indoors,
-// and the three studio sides
+// and the three studio sides. Every photo appears once (the founder photo was the indoor shot reframed).
 export const PHOTOS = {
   hero: { src: IMG("2025/05/Coffee-Bike-Vlad-Header-scaled.jpeg"), w: 1707, h: 2560, alt: "Vlad Priadko, founder of Coffee Bike World, with a red Coffee Bike espresso bar open for service" },
-  founder: { src: IMG("2025/05/Mobile-Coffee-Bar-scaled-e1783984904756.jpeg"), w: 1707, h: 1455, alt: "Vlad Priadko riding a red Coffee Bike" },
+  founder: { src: IMG("2025/05/IMG_3409-scaled.jpeg"), w: 2560, h: 1707, alt: "Vlad Priadko, founder of Coffee Bike World, beside an open red Coffee Bike in downtown Vancouver" },
   boardwalk: { src: IMG("2025/05/Coffee-Bike-Vol.-2-1-scaled.jpg"), w: 1920, h: 2560, alt: "A red Coffee Bike open for service on a waterfront boardwalk" },
   indoors: { src: IMG("2025/05/IMG_3403-scaled.jpeg"), w: 1707, h: 2560, alt: "A red Coffee Bike riding indoors, closed for the move" },
   customerSide: { src: IMG("2025/05/Coffee-Bike-Customer-Side-scaled.jpg"), w: 2560, h: 2499, alt: "Coffee Bike Vol. 2, customer side, canopy open" },
@@ -54,9 +55,9 @@ export const MARKETS = {
     heroPriceNote: "for a ready-to-serve espresso build, before tax. Shipping quoted to your address",
     sticky: { k: "Typical build", v: "US$15,850" },
     fitLine: "Most US owners invest about US$15,850 for a ready-to-serve espresso build, before tax and shipping. Your final price depends on your build.",
+    // no financing answer: there is no US financing partner yet (founder, 29 Sept 2026)
     fit: [
       { v: "fits", t: "Yes, I can plan around that" },
-      { v: "finance", t: "Yes, with financing", d: "We’ll send you US financing options" },
       { v: "smaller", t: "I need a simpler, lower-cost build" },
       { v: "unsure", t: "Not sure yet" },
     ],
@@ -185,8 +186,11 @@ export const SPECS = [
 ];
 
 /**
- * Coffee Bike against what visitors searched for. Ranges are typical new prices in North America; the sources are
- * listed under the table. `pick` highlights the column matching the visitor's intent.
+ * Coffee Bike against what visitors searched for. Ranges are typical North American prices, September 2026 (kept here
+ * for the record; the page no longer prints them, founder's call 29 Sept 2026): new trucks from Zion Food Trucks and
+ * Square (2025); used trucks and trailers are median asking prices on UsedVending; new trailers from Cedar Trailer and
+ * Hudson Trailer Co.; carts from Klassy Kart and Coffee Machine Depot; kiosks from StartCosts; running costs from Square
+ * and Insureon. Bike charging is our estimate at typical electricity rates.
  */
 export const COMPARE_COLS = [
   { key: 'bike', label: 'Coffee Bike' },
@@ -269,9 +273,6 @@ export const COMPARE_ROWS = [
     cafe: 'Always open, always paying rent',
   },
 ];
-export const COMPARE_NOTE =
-  'Typical North American prices, September 2026: new trucks from Zion Food Trucks and Square (2025); used trucks and trailers are median asking prices on UsedVending; new trailers from Cedar Trailer and Hudson Trailer Co.; carts from Klassy Kart and Coffee Machine Depot; kiosks from StartCosts; running costs from Square and Insureon. Every option needs local permits. Bike charging is our estimate at typical electricity rates.';
-export const compareNote = (market) => (market === 'ca' ? `${COMPARE_NOTE} Other options converted from US prices at about 1.37 Canadian dollars to the US dollar.` : COMPARE_NOTE);
 
 export const FEATURES = [
   { title: 'Commercial espresso, dual fuel', text: 'Fracino UK espresso machine that runs on propane outside and on a standard outlet indoors. Single or double group.', img: IMG('2026/05/dual-fuel-commercial-espresso.jpg.jpg') },
@@ -325,7 +326,7 @@ export const PRICING = {
       { item: '2-day barista training', price: 'US$850', note: 'In Vancouver or by video call' },
       { item: 'Shipping', price: 'Quoted', note: 'Crated, palletized and insured to your door' },
     ],
-    financing: { t: 'Paying for it', d: 'Bank transfer or card. Need financing? Pick “Yes, with financing” in the form and we’ll send you US financing options.' },
+    payment: { t: 'Paying for it', d: 'Bank transfer or card, once you approve your invoice. Nothing is charged before that.' },
   },
   ca: {
     big: 'CA$25,000',
@@ -338,7 +339,7 @@ export const PRICING = {
       { item: 'Training', note: 'A 2-day barista training in Vancouver or by video call' },
       { item: 'Shipping', note: 'Crated, palletized and insured to your door anywhere in Canada' },
     ],
-    financing: { t: 'Financing for Canadians', d: 'Canadian residents can apply through iFinance, on approved credit. Bank transfer (CAD or USD) and card also work.', href: 'https://apply.ifinancecanada.com/23545', cta: 'Apply' },
+    payment: { t: 'Financing for Canadians', d: 'Canadian residents can apply through iFinance, on approved credit. Bank transfer (CAD or USD) and card also work.', href: 'https://apply.ifinancecanada.com/23545', cta: 'Apply' },
   },
 };
 
@@ -361,14 +362,15 @@ const FAQ_BASE = [
   { q: "Is this a franchise?", a: "No. You buy the bike and own it outright. There are no royalties, no marketing fees and no monthly contracts, and you choose your own name, menu and prices." },
   { q: "What training and support do I get?", a: { us: "Every bike comes with a 20+ page barista manual, setup videos and access to our private owners’ community. Optional: a 2-day training in Vancouver or by video call (US$850) and an online barista course (US$275). Parts are available through the owners’ portal, and the bike has a 1-year manufacturer warranty.", ca: "Every bike comes with a 20+ page barista manual, setup videos and access to our private owners’ community. Optional: a 2-day training in Vancouver or by video call and an online barista course. Parts are available through the owners’ portal, and the bike has a 1-year manufacturer warranty." } },
   { q: "Do you deliver to my door?", a: { us: "Yes, anywhere in the US. Every Coffee Bike is crated, palletized, insured and delivered to your door. We quote shipping before you confirm your order.", ca: "Yes, anywhere in Canada. Every Coffee Bike is crated, palletized, insured and delivered to your door. We quote shipping before you confirm your order." } },
-  { q: "How do I pay, and is there financing?", a: { us: "You receive an invoice within one business day of confirming your build and pay by bank transfer or card. Our financing partner serves Canadian residents only, so US buyers usually pay by transfer or card or arrange their own bank or equipment financing; tell us and we’ll share what other US owners did. You can reserve a production spot with a US$250 deposit, applied in full to your order.", ca: "You receive an invoice within one business day of confirming your build and pay by bank transfer (CAD or USD) or card. Canadian residents can apply for financing through iFinance. You can reserve a production spot with a US$250 deposit, applied in full to your order." } },
+  { q: { us: "How do I pay?", ca: "How do I pay, and is there financing?" }, a: { us: "You receive an invoice within one business day of confirming your build and pay by bank transfer or card. You can reserve a production spot with a US$250 deposit, applied in full to your order.", ca: "You receive an invoice within one business day of confirming your build and pay by bank transfer (CAD or USD) or card. Canadian residents can apply for financing through iFinance. You can reserve a production spot with a US$250 deposit, applied in full to your order." } },
   { q: "Can I sell more than coffee?", a: "Yes. It’s your business and your menu: specialty coffee, tea, matcha, hot chocolate and more. The Iced Express package suits ice cream and bottled drinks, and a multi-grill option adds hot food." },
   { q: "What is the difference between builds?", a: { us: "The espresso setup (none, single group or double group), certification, branding and add-ons. Most owners choose a ready-to-serve espresso build at about US$15,850. Working with a smaller budget? Ask about a simpler build you can upgrade later.", ca: "The espresso setup (none, single group or double group), certification, branding and add-ons. Most Canadian owners invest about CA$25,000. Working with a smaller budget? Ask about a simpler build you can upgrade later, or apply for financing through iFinance." } },
   { q: "Can I brand it and choose the colours?", a: "Yes. Your name, logo and colours on the body and canopy, a wrap if you want one, and a custom LED sign. Owners also add a nitro cold brew tap, an LED screen or a latte art printer." },
   { q: "How big is it, and will it fit in a van or through a door?", a: "The body is 120 × 90 cm (47 × 35 in) and 151 cm tall closed, on a cargo bike frame. Tell us your doorway, elevator or van measurements and we’ll check before you order." },
-  { q: "How much can I make?", a: "It depends on your prices, costs, location and hours, so we don’t promise income. Use the break-even calculator with your own numbers, and we’ll walk through your plan on a call." },
+  { q: "How much can I make?", a: "It depends on your prices, costs, location and hours, so we don’t promise income. Try the calculator on this page with your own numbers, and we’ll walk through your plan on a call." },
   { q: "Where is Coffee Bike World based?", a: "Vancouver, British Columbia, at 1356 Frances St. We have run our own Coffee Bikes here for more than eight years and ship to owners across Canada and the US." },
   { q: "Can I see one before I buy?", a: "Start with the 6-minute walkthrough on this page, then book a discovery call and ask us anything, down to the portafilter size. If you are near Vancouver, ask about seeing one in person." },
   { q: "Where do I store and charge it overnight?", a: "Most owners keep it in a garage, storage unit or partner venue with a standard outlet. Smart chargers are included, and the 200 W solar roof tops the batteries up outdoors." },
 ];
-export const faqs = (market) => FAQ_BASE.map((f) => ({ q: f.q, a: typeof f.a === "string" ? f.a : f.a[market] })).filter((f) => f.a);
+const byMarket = (x, market) => (typeof x === "string" ? x : x[market]);
+export const faqs = (market) => FAQ_BASE.map((f) => ({ q: byMarket(f.q, market), a: byMarket(f.a, market) })).filter((f) => f.a);
