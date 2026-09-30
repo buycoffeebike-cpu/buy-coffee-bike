@@ -10,10 +10,10 @@ import {
 } from './content';
 import { HeroQuestion, QuoteFlow, QuoteModal, QuoteProvider, RED, useQuote } from './quote';
 
-const DISPLAY = { fontFamily: '"Roboto Condensed", Inter, system-ui, sans-serif' };
-const BALANCE = { textWrap: 'balance' };
+export const DISPLAY = { fontFamily: '"Roboto Condensed", Inter, system-ui, sans-serif' };
+export const BALANCE = { textWrap: 'balance' };
 
-const track = (name, params) => {
+export const track = (name, params) => {
   try {
     window.gtag?.('event', name, params);
   } catch {}
@@ -25,7 +25,7 @@ const track = (name, params) => {
  */
 const CA_TZ = /^America\/(Toronto|Vancouver|Edmonton|Winnipeg|Halifax|St_Johns|Regina|Montreal|Moncton|Glace_Bay|Goose_Bay|Whitehorse|Dawson|Dawson_Creek|Fort_Nelson|Creston|Yellowknife|Inuvik|Iqaluit|Rankin_Inlet|Resolute|Cambridge_Bay|Swift_Current|Atikokan|Blanc-Sablon|Nipigon|Thunder_Bay|Rainy_River|Pangnirtung)$/;
 const US_TZ = /^America\/(New_York|Chicago|Denver|Los_Angeles|Phoenix|Anchorage|Adak|Boise|Detroit|Juneau|Sitka|Metlakatla|Yakutat|Nome|Menominee|Indiana\/.+|Kentucky\/.+|North_Dakota\/.+)$|^Pacific\/Honolulu$/;
-function deviceCountry() {
+export function deviceCountry() {
   try {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
     return CA_TZ.test(tz) ? 'ca' : US_TZ.test(tz) ? 'us' : null;
@@ -35,7 +35,7 @@ function deviceCountry() {
 }
 
 /** WhatsApp glyph (brand mark, used only to label the WhatsApp link). */
-function WhatsAppIcon({ className = '' }) {
+export function WhatsAppIcon({ className = '' }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
       <path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.08c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.69.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35zM12.05 21.5h-.01a9.4 9.4 0 0 1-4.8-1.31l-.34-.2-3.57.94.95-3.48-.22-.36a9.39 9.39 0 0 1-1.44-5.02c0-5.19 4.23-9.42 9.43-9.42 2.52 0 4.88.98 6.66 2.76a9.35 9.35 0 0 1 2.76 6.67c0 5.2-4.23 9.42-9.42 9.42zm8.02-17.44A11.26 11.26 0 0 0 12.05.74C5.8.74.72 5.82.72 12.07c0 2 .52 3.95 1.52 5.66L.62 23.26l5.66-1.48a11.3 11.3 0 0 0 5.77 1.47h.01c6.25 0 11.33-5.08 11.33-11.33 0-3.03-1.18-5.87-3.32-8.01z" />
@@ -43,7 +43,7 @@ function WhatsAppIcon({ className = '' }) {
   );
 }
 
-function Section({ id, tone = 'light', className = '', children }) {
+export function Section({ id, tone = 'light', className = '', children }) {
   const bg = tone === 'dark' ? 'bg-zinc-950 text-white' : tone === 'soft' ? 'bg-[#F4F4F3] text-zinc-900' : 'bg-white text-zinc-900';
   return (
     <section id={id} className={`${bg} scroll-mt-16 py-14 md:py-20 ${className}`}>
@@ -52,7 +52,7 @@ function Section({ id, tone = 'light', className = '', children }) {
   );
 }
 
-function Heading({ eyebrow, title, sub, dark = false, center = false }) {
+export function Heading({ eyebrow, title, sub, dark = false, center = false }) {
   return (
     <div className={`max-w-3xl ${center ? 'mx-auto text-center' : ''}`}>
       {eyebrow ? <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{eyebrow}</p> : null}
@@ -63,7 +63,7 @@ function Heading({ eyebrow, title, sub, dark = false, center = false }) {
 }
 
 /** Every "get my price" button: opens the quote pop-up at the visitor's current step. */
-function PriceButton({ where, children, className = '', variant = 'primary' }) {
+export function PriceButton({ where, children, className = '', variant = 'primary' }) {
   const q = useQuote();
   const look = variant === 'primary' ? 'text-white shadow-sm hover:brightness-110' : variant === 'light' ? 'bg-white text-zinc-950 hover:bg-zinc-100' : 'border border-zinc-300 bg-white text-zinc-900 hover:border-zinc-500';
   return (
@@ -605,7 +605,7 @@ function Page({ intent, market }) {
  * Day-to-day running, what the bike can do and where owners sell (together 42% of the questions buyers send us).
  * General advice only: the page never promises venues, events or customers (a business-opportunity claim).
  */
-function DayAndWhere() {
+export function DayAndWhere() {
   const day = [
     { icon: Clock, t: 'Open in minutes', d: 'Ride in, open the canopy, start the machine: propane outdoors, a standard outlet indoors.' },
     { icon: Coffee, t: 'Keeps up with a line', d: 'About 60–100 drinks an hour, depending on your menu and barista.' },
@@ -651,7 +651,7 @@ function DayAndWhere() {
  * The sales page's owner-earnings box stays off this page (an income claim); the fine print says what the estimate
  * leaves out.
  */
-function Numbers({ intent, market }) {
+export function Numbers({ intent, market }) {
   const cur = market === 'ca' ? 'CA$' : 'US$';
   const build = market === 'ca' ? 25000 : 15850;
   const [mode, setMode] = useState('retail');
