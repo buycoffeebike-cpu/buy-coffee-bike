@@ -2,10 +2,12 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import BuyPageSchema from '../components/BuyPageSchema';
+// the sales page and its US version point at each other (hreflang) once the US page is public
+import { HREFLANG } from './mobile-coffee-cart/seo';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata = { robots: { index: true, follow: true }, metadataBase: new URL('https://coffeebike.ca'), alternates: { canonical: 'https://coffeebike.ca/buy-a-mobile-coffee-bike' },
+export const metadata = { robots: { index: true, follow: true }, metadataBase: new URL('https://coffeebike.ca'), alternates: { canonical: 'https://coffeebike.ca/buy-a-mobile-coffee-bike', ...(HREFLANG ? { languages: HREFLANG } : {}) },
   title: 'Buy a Coffee Bike | Electric Coffee Cart for Sale, Worldwide',
   description:
     'Electric Coffee Bike for sale from $9,850 USD: a custom-branded coffee cart and espresso bar. No franchise fees. Ships to the USA, Canada and worldwide.',
