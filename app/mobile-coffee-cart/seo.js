@@ -5,7 +5,7 @@
  * people instead of treating them as duplicates. LIVE switches it from a hidden review copy (noindex, out of the sitemap,
  * no hreflang) to a public page.
  */
-export const LIVE = false;
+export const LIVE = true;
 
 export const URL = 'https://coffeebike.ca/buy-a-mobile-coffee-bike/mobile-coffee-cart';
 export const SALES_PAGE = 'https://coffeebike.ca/buy-a-mobile-coffee-bike';
