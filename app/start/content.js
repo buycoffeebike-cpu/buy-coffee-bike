@@ -105,7 +105,7 @@ export const INTENTS = {
     title: 'Buy a Coffee Bike: your own mobile espresso bar',
   },
   cart: {
-    eyebrow: 'Looking at coffee carts?',
+    eyebrow: 'Looking for a mobile coffee cart?',
     h1: 'The coffee cart you can ride to the crowd',
     sub: 'A commercial espresso bar on an electric bike. Set up in minutes, move when the crowd moves, and roll indoors when the weather turns. Branded as yours and delivered to your door.',
     compare: 'cart',
@@ -126,7 +126,7 @@ export const INTENTS = {
     title: 'The coffee van alternative: the Coffee Bike',
   },
   trailer: {
-    eyebrow: 'Comparing coffee trailers?',
+    eyebrow: 'Looking for a mobile coffee trailer?',
     h1: 'No trailer to tow. Just ride in and open.',
     sub: 'A commercial espresso bar on an electric bike that needs no tow vehicle and fits where trailers don’t: sidewalks, plazas, markets and lobbies. Branded as yours and delivered to your door.',
     compare: 'trailer',
