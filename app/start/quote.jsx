@@ -8,7 +8,7 @@
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Calendar, Check, FileText, Loader2, MessageCircle, PlayCircle, X } from 'lucide-react';
-import { ADS_CONVERSION, CALL_URL, DEPOSIT_URL, INCLUDED, LEAD_API, MARKETS, QUOTE_FORM_URL, SPEC_SHEET, whatsappLink } from './content';
+import { ADS_CONVERSION, CALL_URL, DEPOSIT_URL, FINANCING_URL, INCLUDED, LEAD_API, MARKETS, QUOTE_FORM_URL, SPEC_SHEET, whatsappLink } from './content';
 
 export const RED = '#E31E24';
 const STEP_KEYS = ['use', 'timeline', 'stage', 'fit', 'contact'];
@@ -138,7 +138,7 @@ function emailFix(email) {
 export function QuoteProvider({ market, intent, children }) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({});
-  const [contact, setContact] = useState({ name: '', email: '', phone: '', location: '', question: '', consent: false, hp: '' });
+  const [contact, setContact] = useState({ name: '', email: '', phone: '', location: '', question: '', hp: '' });
   const [status, setStatus] = useState('idle'); // idle | sending | done | error
   const [error, setError] = useState('');
   const [fails, setFails] = useState(0);
@@ -212,7 +212,8 @@ export function QuoteProvider({ market, intent, children }) {
       stage: answers.stage,
       fit: answers.fit,
       question: contact.question.trim() || undefined,
-      consent: contact.consent,
+      // the line under the button: sending = agreeing to hear from us, unsubscribe anytime (founder, 1 Oct 2026)
+      consent: true,
       intent,
       page: window.location.href.slice(0, 600),
       referrer: document.referrer ? document.referrer.slice(0, 600) : undefined,
@@ -399,10 +400,6 @@ export function QuoteFlow({ where = 'inline' }) {
                 <input tabIndex={-1} autoComplete="off" value={q.contact.hp} onChange={set('hp')} />
               </label>
             </div>
-            <label className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-zinc-700">
-              <input type="checkbox" checked={q.contact.consent} onChange={set('consent')} className="mt-0.5 h-4 w-4 flex-none accent-[#E31E24]" />
-              <span>Also send me owner stories and offers. Unsubscribe anytime.</span>
-            </label>
             {q.status === 'error' ? (
               <div role="alert" className="rounded-lg bg-red-50 p-3 text-sm font-semibold text-red-800">
                 {q.error}
@@ -418,7 +415,7 @@ export function QuoteFlow({ where = 'inline' }) {
               {q.status === 'sending' ? 'Sending…' : 'Get my price'}
             </button>
             <p className="text-center text-xs leading-relaxed text-zinc-500">
-              By sending, you agree Coffee Bike World may call, text or WhatsApp you about your quote. Msg &amp; data rates may apply. Reply STOP to opt out. We never share your details.
+              By sending, you agree Coffee Bike World may email, call, text or WhatsApp you about your quote, plus owner stories and offers by email. Unsubscribe anytime. Msg &amp; data rates may apply; reply STOP to opt out of texts. We never share your details.
             </p>
           </form>
         ) : null}
@@ -441,8 +438,11 @@ function Thanks() {
     if (r.phone) p.set('phone', r.phone);
     return `${CALL_URL}?${p.toString()}`;
   }, [r.first, r.last, r.email, r.phone]);
+  // a Canadian who asked to apply for financing gets the iFinance application first (founder, 1 Oct 2026)
   const next =
-    stage === 'invoice'
+    q.market === 'ca' && q.answers.fit === 'finance'
+      ? { t: 'Ready to apply for financing?', d: 'Canadian residents apply through iFinance, on approved credit.', href: FINANCING_URL, cta: 'Apply with iFinance', where: 'thanks_financing' }
+      : stage === 'invoice'
       ? { t: 'Want your spot now?', d: 'A US$250 deposit reserves a production spot and is applied in full to your order.', href: DEPOSIT_URL, cta: 'Reserve my spot', where: 'thanks_deposit' }
       : stage === 'comparing'
         ? { t: 'Comparing options?', d: 'See the bike next to a truck, trailer, cart and storefront, side by side.', href: '#compare', cta: 'Open the comparison', where: 'thanks_compare', close: true }

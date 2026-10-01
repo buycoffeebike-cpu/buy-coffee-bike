@@ -55,10 +55,11 @@ export const MARKETS = {
     heroPriceNote: "for a ready-to-serve espresso build, before tax. Shipping quoted to your address",
     sticky: { k: "Typical build", v: "US$15,850" },
     fitLine: "Most US owners invest about US$15,850 for a ready-to-serve espresso build, before tax and shipping. Your final price depends on your build.",
-    // no financing answer: there is no US financing partner yet (founder, 29 Sept 2026)
+    // no financing answer: there is no US financing partner yet (founder, 29 Sept 2026); no lower-cost answer either,
+    // there is little to offer below a typical build (founder, 1 Oct 2026), so a stretched budget goes to the call
     fit: [
       { v: "fits", t: "Yes, I can plan around that" },
-      { v: "smaller", t: "I need a simpler, lower-cost build" },
+      { v: "talk", t: "Close, I'd like to talk it through" },
       { v: "unsure", t: "Not sure yet" },
     ],
     thanksPrice: "A ready-to-serve espresso build is about US$15,850.",
@@ -79,8 +80,7 @@ export const MARKETS = {
     fitLine: "Most Canadian owners invest about CA$25,000, depending on the final build. Taxes are extra and shipping is quoted for your address.",
     fit: [
       { v: "fits", t: "Yes, I can plan around that" },
-      { v: "finance", t: "Yes, with financing", d: "Through iFinance, on approved credit" },
-      { v: "smaller", t: "I need a simpler, lower-cost build" },
+      { v: "finance", t: "I'd like to apply for financing", d: "Through iFinance, on approved credit" },
       { v: "unsure", t: "Not sure yet" },
     ],
     thanksPrice: "Most Canadian owners invest about CA$25,000, depending on the final build.",
