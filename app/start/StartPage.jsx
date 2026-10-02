@@ -8,7 +8,7 @@ import {
   ADDRESS, ADS_TAG, BASE_PATH, CALL_URL, COMPARE_COLS, DEPOSIT_URL, EMAIL, FEATURES, INCLUDED, INTENTS, LOGO, MARKETS, OWNERS, PHOTOS, PRICING,
   SPEC_SHEET, SPECS, TRUST, WALKTHROUGH_ID, compareRows, faqs, steps, whatsappLink,
 } from './content';
-import { HeroQuestion, QuoteFlow, QuoteModal, QuoteProvider, RED, useQuote } from './quote';
+import { HeroQuestion, QuoteFullForm, QuoteModal, QuoteProvider, RED, useQuote } from './quote';
 
 const DISPLAY = { fontFamily: '"Roboto Condensed", Inter, system-ui, sans-serif' };
 const BALANCE = { textWrap: 'balance' };
@@ -153,7 +153,8 @@ function Page({ intent, market }) {
         quoteInView.current = v;
         if (v && !seen) {
           seen = true;
-          track('quote_form_view', { intent, market });
+          // the full form's views, against its submissions (generate_lead with form_variant "full")
+          track('full_form_view', { intent, market });
         }
       },
       { threshold: 0.15 },
@@ -392,9 +393,6 @@ function Page({ intent, market }) {
                 </div>
               ))}
             </div>
-            <p className="mt-3 rounded-xl bg-[#F4F4F3] p-4 text-[15px] leading-relaxed text-zinc-700">
-              <strong className="text-zinc-950">Working with a smaller budget?</strong> Ask about a simpler build you can upgrade later: pick “I need a smaller build” in the form.
-            </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {[
                 { icon: CreditCard, ...P.payment },
@@ -414,13 +412,13 @@ function Page({ intent, market }) {
         </div>
       </Section>
 
-      {/* quote form, in the page */}
+      {/* the full form, every question visible (the price buttons open the step-by-step pop-up) */}
       <section id="quote" ref={quoteRef} className="scroll-mt-14 bg-zinc-950 py-14 text-white md:py-20">
-        <div className="mx-auto grid max-w-6xl items-start gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_minmax(0,520px)]">
-          <div className="lg:pt-6">
+        <div className="mx-auto grid max-w-6xl items-start gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_minmax(0,600px)]">
+          <div className="lg:sticky lg:top-24 lg:pt-6">
             <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>Your price</p>
             <h2 className="mt-2 text-3xl font-extrabold leading-tight md:text-5xl" style={{ ...DISPLAY, ...BALANCE }}>Get your price and build options</h2>
-            <p className="mt-3 text-lg text-zinc-300">Four one-tap questions, then where to send your price. We reply within one business day with pricing for your build.</p>
+            <p className="mt-3 text-lg text-zinc-300">Four quick questions and where to send your price, all in one form. We reply within one business day with pricing for your build.</p>
             <ul className="mt-6 space-y-3 text-[15px] leading-relaxed text-zinc-300">
               {['A short call to plan your setup, branding and add-ons. No pressure.', 'Nothing is charged until you approve an invoice.', 'Opening for spring? Permits often take 60–90 days, so owners order in winter and apply while the bike is built.'].map((x) => (
                 <li key={x} className="flex gap-3"><Check className="mt-1 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
@@ -438,7 +436,7 @@ function Page({ intent, market }) {
             </div>
           </div>
           <div className="w-full rounded-2xl bg-white p-5 text-zinc-900 shadow-xl sm:p-7">
-            <QuoteFlow where="inline" />
+            <QuoteFullForm />
           </div>
         </div>
       </section>

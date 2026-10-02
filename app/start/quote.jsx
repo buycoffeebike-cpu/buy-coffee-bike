@@ -145,6 +145,8 @@ export function QuoteProvider({ market, intent, children }) {
   const [open, setOpen] = useState(false);
   const [result, setResult] = useState(null);
   const [seasons, setSeasons] = useState(() => seasonOptions());
+  // which form sent (or last tried to send) the request: the step-by-step widget or the full form in the page
+  const [lastForm, setLastForm] = useState('steps');
   const started = useRef(0);
   const restored = useRef(false);
 
@@ -194,7 +196,15 @@ export function QuoteProvider({ market, intent, children }) {
     [intent, market],
   );
 
-  const submit = useCallback(async () => {
+  // the full form starts the "time to answer" clock on its first touch, as the widget does on its first answer
+  const begin = useCallback(() => {
+    if (!started.current) started.current = Date.now();
+  }, []);
+
+  // form: 'steps' (the widget in the hero and the pop-up) or 'full' (every question on screen), so the two can be
+  // compared in the CRM, the lead email and GA4 (founder, 2 Oct 2026)
+  const submit = useCallback(async (form = 'steps') => {
+    setLastForm(form);
     setStatus('sending');
     setError('');
     const attr = readAttribution();
@@ -215,6 +225,7 @@ export function QuoteProvider({ market, intent, children }) {
       // the line under the button: sending = agreeing to hear from us, unsubscribe anytime (founder, 1 Oct 2026)
       consent: true,
       intent,
+      form,
       page: window.location.href.slice(0, 600),
       referrer: document.referrer ? document.referrer.slice(0, 600) : undefined,
       utm: attr.utm,
@@ -241,9 +252,9 @@ export function QuoteProvider({ market, intent, children }) {
       if (window.__cbwLive) try {
         window.gtag?.('set', 'user_data', user);
         window.gtag?.('event', 'conversion', { send_to: ADS_CONVERSION, value: 100, currency: 'CAD', transaction_id: j.data?.id });
-        window.gtag?.('event', 'generate_lead', { form: 'quote_flow', market, intent, use: answers.use, timeline: answers.timeline, stage: answers.stage, fit: answers.fit });
+        window.gtag?.('event', 'generate_lead', { form: 'quote_flow', form_variant: form, market, intent, use: answers.use, timeline: answers.timeline, stage: answers.stage, fit: answers.fit });
         // the event every Coffee Bike Sales ad set optimises for; the OS sends the server copy with the same id
-        window.fbq?.('track', 'SubmitApplication', { content_name: 'Coffee Bike quote', content_category: market }, { eventID: eventId });
+        window.fbq?.('track', 'SubmitApplication', { content_name: 'Coffee Bike quote', content_category: market, form_variant: form }, { eventID: eventId });
       } catch {}
       setResult({ first, last: rest.join(' '), email: body.email, phone: body.phone, id: j.data?.id });
       setStatus('done');
@@ -251,22 +262,22 @@ export function QuoteProvider({ market, intent, children }) {
       setFails((n) => n + 1);
       setStatus('error');
       setError(e?.status === 429 ? 'We already have a few requests from this connection. Please message us on WhatsApp instead, or try again in an hour.' : e?.status === 400 ? `Please check your details: ${String(e.message).replace(/^[a-z]+: /i, '')}` : 'That did not go through. Please try again.');
-      track('quote_error', { status: e?.status || 0, market, intent });
+      track('quote_error', { status: e?.status || 0, market, intent, form_variant: form });
     }
   }, [answers, contact, intent, market, seasons]);
 
   const value = useMemo(
-    () => ({ market, intent, step, setStep, answers, setAnswers, answer, contact, setContact, status, error, fails, submit, open, setOpen, openQuote, result, seasons }),
-    [market, intent, step, answers, answer, contact, status, error, fails, submit, open, openQuote, result, seasons],
+    () => ({ market, intent, step, setStep, answers, setAnswers, answer, contact, setContact, status, error, fails, submit, open, setOpen, openQuote, result, seasons, lastForm, begin }),
+    [market, intent, step, answers, answer, contact, status, error, fails, submit, open, openQuote, result, seasons, lastForm, begin],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
 export const useQuote = () => useContext(Ctx);
 
-function Tiles({ name, options, value, onPick }) {
+function Tiles({ name, options, value, onPick, cols = 1 }) {
   return (
-    <div className="grid gap-2.5" role="radiogroup" aria-label={name}>
+    <div className={`grid gap-2.5 ${cols === 2 ? 'sm:grid-cols-2' : ''}`} role="radiogroup" aria-label={name}>
       {options.map((o) => {
         const on = value === o.v;
         return (
@@ -389,10 +400,10 @@ export function QuoteFlow({ where = 'inline' }) {
             <Field label="City and province or state" hint="For your delivery cost and local permit rules." error={show('location')}>
               <input className={input} value={q.contact.location} onChange={set('location')} onBlur={blur('location')} autoComplete="address-level2" placeholder={M.cityPlaceholder} />
             </Field>
-            <details className="group rounded-lg">
-              <summary className="cursor-pointer list-none text-sm font-bold text-zinc-800 underline underline-offset-4">Add a question (optional)</summary>
-              <textarea className={`${input} mt-2 min-h-[90px]`} value={q.contact.question} onChange={set('question')} maxLength={2000} placeholder="Anything you want answered in our reply" />
-            </details>
+            {/* open, not folded away: people missed it, and what they write tells us the most (founder, 2 Oct 2026) */}
+            <Field label="Questions or comments (optional)">
+              <textarea className={`${input} min-h-[90px]`} value={q.contact.question} onChange={set('question')} maxLength={2000} placeholder="Your plans, where you'd serve, anything you want answered in our reply" />
+            </Field>
             {/* people never see this field; bots fill it */}
             <div aria-hidden className="absolute -left-[9999px] h-px w-px overflow-hidden">
               <label>
@@ -400,27 +411,173 @@ export function QuoteFlow({ where = 'inline' }) {
                 <input tabIndex={-1} autoComplete="off" value={q.contact.hp} onChange={set('hp')} />
               </label>
             </div>
-            {q.status === 'error' ? (
-              <div role="alert" className="rounded-lg bg-red-50 p-3 text-sm font-semibold text-red-800">
-                {q.error}
-                {q.fails >= 2 ? (
-                  <span className="mt-2 block font-normal text-red-900">
-                    You can also <a className="font-bold underline" href={whatsappLink(q.market)} target="_blank" rel="noopener">message us on WhatsApp</a>, email <a className="font-bold underline" href={`mailto:coffeebike@vladvik.com?subject=${encodeURIComponent('Coffee Bike price')}`}>coffeebike@vladvik.com</a>, or use <a className="font-bold underline" href={QUOTE_FORM_URL} target="_blank" rel="noopener">our backup form</a>.
-                  </span>
-                ) : null}
-              </div>
-            ) : null}
-            <button type="submit" disabled={q.status === 'sending'} className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-4 text-lg font-extrabold text-white shadow-sm transition hover:brightness-110 disabled:opacity-70" style={{ backgroundColor: RED }}>
-              {q.status === 'sending' ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
-              {q.status === 'sending' ? 'Sending…' : 'Get my price'}
-            </button>
-            <p className="text-center text-xs leading-relaxed text-zinc-500">
-              By sending, you agree Coffee Bike World may email, call, text or WhatsApp you about your quote, plus owner stories and offers by email. Unsubscribe anytime. Msg &amp; data rates may apply; reply STOP to opt out of texts. We never share your details.
-            </p>
+            {q.status === 'error' && q.lastForm === 'steps' ? <SendError /> : null}
+            <SendButton />
+            <Consent />
           </form>
         ) : null}
       </div>
     </div>
+  );
+}
+
+function SendError() {
+  const q = useQuote();
+  return (
+    <div role="alert" className="rounded-lg bg-red-50 p-3 text-sm font-semibold text-red-800">
+      {q.error}
+      {q.fails >= 2 ? (
+        <span className="mt-2 block font-normal text-red-900">
+          You can also <a className="font-bold underline" href={whatsappLink(q.market)} target="_blank" rel="noopener">message us on WhatsApp</a>, email <a className="font-bold underline" href={`mailto:coffeebike@vladvik.com?subject=${encodeURIComponent('Coffee Bike price')}`}>coffeebike@vladvik.com</a>, or use <a className="font-bold underline" href={QUOTE_FORM_URL} target="_blank" rel="noopener">our backup form</a>.
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+function SendButton() {
+  const q = useQuote();
+  return (
+    <button type="submit" disabled={q.status === 'sending'} className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-4 text-lg font-extrabold text-white shadow-sm transition hover:brightness-110 disabled:opacity-70" style={{ backgroundColor: RED }}>
+      {q.status === 'sending' ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
+      {q.status === 'sending' ? 'Sending…' : 'Get my price'}
+    </button>
+  );
+}
+
+function Consent() {
+  return (
+    <p className="text-center text-xs leading-relaxed text-zinc-500">
+      By sending, you agree Coffee Bike World may email, call, text or WhatsApp you about your quote, plus owner stories and offers by email. Unsubscribe anytime. Msg &amp; data rates may apply; reply STOP to opt out of texts. We never share your details.
+    </p>
+  );
+}
+
+/** One numbered question of the full form. Top level on purpose: a component made inside the form would be a new
+ * component on every keystroke and the field being typed in would lose focus. */
+function Question({ n, title, error, innerRef, children }) {
+  return (
+    <fieldset ref={innerRef} className="scroll-mt-24">
+      <legend className="flex items-baseline gap-2 text-[18px] font-extrabold leading-snug text-zinc-950" style={{ fontFamily: '"Roboto Condensed", Inter, system-ui, sans-serif' }}>
+        <span className="text-sm font-bold" style={{ color: RED }}>{n}.</span> {title}
+      </legend>
+      <div className="mt-3">{children}</div>
+      {error ? <p className="mt-2 text-sm font-semibold text-red-700">{error}</p> : null}
+    </fieldset>
+  );
+}
+
+/**
+ * The same questions as the step-by-step widget, every one on screen at once, sent to the same endpoint as form
+ * "full" (founder, 2 Oct 2026: "all the same questions and exact same webhook ... but now fully visible"). The answers
+ * are shared with the widget, so whatever a visitor already picked in one shows in the other; the tracking (Google Ads
+ * conversion, GA4 generate_lead, Meta SubmitApplication + the OS server copy) is the same call as the widget's.
+ */
+export function QuoteFullForm() {
+  const q = useQuote();
+  const M = MARKETS[q.market];
+  const [tried, setTried] = useState(false);
+  const [blurred, setBlurred] = useState({});
+  const startedRef = useRef(false);
+  const refs = { use: useRef(null), timeline: useRef(null), stage: useRef(null), fit: useRef(null), contact: useRef(null) };
+
+  if (q.status === 'done') return <Thanks />;
+
+  const touch = (what) => {
+    q.begin();
+    if (startedRef.current) return;
+    startedRef.current = true;
+    track('full_form_start', { first: what, market: q.market, intent: q.intent });
+  };
+  const pick = (key, v) => {
+    touch(key);
+    q.setAnswers((a) => ({ ...a, [key]: v }));
+  };
+  const missing = ['use', 'timeline', 'stage', 'fit'].filter((k) => !q.answers[k]);
+  const errs = {
+    name: q.contact.name.trim().length < 2 ? 'Please enter your name.' : '',
+    email: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(q.contact.email.trim()) ? '' : 'Please enter a valid email.',
+    phone: q.contact.phone.replace(/\D/g, '').length >= 7 && /^[+()\d\s.-]+$/.test(q.contact.phone.trim()) ? '' : 'Please enter a mobile number we can reach you on.',
+    location: q.contact.location.trim().length < 2 ? 'Tell us the city where you want to run it.' : '',
+  };
+  const show = (k) => (tried || blurred[k]) && errs[k];
+  const contactOk = !errs.name && !errs.email && !errs.phone && !errs.location;
+  const set = (k) => (e) => {
+    touch(k);
+    q.setContact((c) => ({ ...c, [k]: e.target.value }));
+  };
+  const blur = (k) => () => setBlurred((b) => ({ ...b, [k]: true }));
+  const suggestion = emailFix(q.contact.email);
+  const pickError = (k) => (tried && !q.answers[k] ? 'Please pick one.' : '');
+
+  const onSubmit = (e) => {
+    e.preventDefault();
+    setTried(true);
+    if (q.status === 'sending') return;
+    if (missing.length || !contactOk) {
+      const first = missing[0] ?? 'contact';
+      refs[first].current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      track('full_form_incomplete', { missing: missing.join(',') || 'contact', market: q.market, intent: q.intent });
+      return;
+    }
+    q.submit('full');
+  };
+
+  return (
+    <form noValidate onSubmit={onSubmit} className="grid gap-7 text-left" aria-label="Get your Coffee Bike price">
+      <Question n={1} innerRef={refs.use} title={QUESTIONS.use.title} error={pickError('use')}>
+        <Tiles name={QUESTIONS.use.title} options={QUESTIONS.use.options} value={q.answers.use} onPick={(v) => pick('use', v)} cols={2} />
+      </Question>
+      <Question n={2} innerRef={refs.timeline} title={QUESTIONS.timeline.title} error={pickError('timeline')}>
+        <Tiles name={QUESTIONS.timeline.title} options={q.seasons} value={q.answers.timeline} onPick={(v) => pick('timeline', v)} cols={2} />
+      </Question>
+      <Question n={3} innerRef={refs.stage} title={QUESTIONS.stage.title} error={pickError('stage')}>
+        <Tiles name={QUESTIONS.stage.title} options={QUESTIONS.stage.options} value={q.answers.stage} onPick={(v) => pick('stage', v)} cols={2} />
+      </Question>
+      <Question n={4} innerRef={refs.fit} title={M.fitQuestion} error={pickError('fit')}>
+        <p className="mb-3 rounded-xl bg-zinc-100 p-4 text-[15px] leading-relaxed text-zinc-800">{M.fitLine}</p>
+        <Tiles name={M.fitQuestion} options={M.fit} value={q.answers.fit} onPick={(v) => pick('fit', v)} />
+      </Question>
+      <Question n={5} innerRef={refs.contact} title="Where should we send your price?">
+        <div className="grid gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Full name" error={show('name')}>
+              <input className={input} value={q.contact.name} onChange={set('name')} onBlur={blur('name')} autoComplete="name" placeholder="First and last name" />
+            </Field>
+            <Field label="Mobile number" hint="So we can text or call you back fast." error={show('phone')}>
+              <input className={input} type="tel" inputMode="tel" value={q.contact.phone} onChange={set('phone')} onBlur={blur('phone')} autoComplete="tel" placeholder={M.phonePlaceholder} />
+            </Field>
+          </div>
+          <Field label="Email" error={show('email')}>
+            <input className={input} type="email" inputMode="email" value={q.contact.email} onChange={set('email')} onBlur={blur('email')} autoComplete="email" placeholder="you@example.com" />
+            {suggestion ? (
+              <button type="button" onClick={() => q.setContact((c) => ({ ...c, email: suggestion }))} className="mt-1 text-sm font-semibold text-zinc-700 underline underline-offset-2">
+                Did you mean {suggestion}?
+              </button>
+            ) : null}
+          </Field>
+          <Field label="City and province or state" hint="For your delivery cost and local permit rules." error={show('location')}>
+            <input className={input} value={q.contact.location} onChange={set('location')} onBlur={blur('location')} autoComplete="address-level2" placeholder={M.cityPlaceholder} />
+          </Field>
+          <Field label="Questions or comments (optional)">
+            <textarea className={`${input} min-h-[90px]`} value={q.contact.question} onChange={set('question')} maxLength={2000} placeholder="Your plans, where you'd serve, anything you want answered in our reply" />
+          </Field>
+          {/* people never see this field; bots fill it */}
+          <div aria-hidden className="absolute -left-[9999px] h-px w-px overflow-hidden">
+            <label>
+              Company website
+              <input tabIndex={-1} autoComplete="off" value={q.contact.hp} onChange={(e) => q.setContact((c) => ({ ...c, hp: e.target.value }))} />
+            </label>
+          </div>
+        </div>
+      </Question>
+      {tried && (missing.length || !contactOk) ? <p role="alert" className="text-sm font-semibold text-red-700">A few answers are missing above. Please complete them and send again.</p> : null}
+      {q.status === 'error' && q.lastForm === 'full' ? <SendError /> : null}
+      <div className="grid gap-3">
+        <SendButton />
+        <Consent />
+      </div>
+    </form>
   );
 }
 
