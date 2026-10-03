@@ -248,8 +248,9 @@ export function QuoteProvider({ market, intent, children }) {
       const user = { email: body.email.toLowerCase(), address: { first_name: first, last_name: rest.join(' ') || undefined, country: market === 'ca' ? 'CA' : 'US' } };
       const ph = e164(body.phone);
       if (ph) user.phone_number = ph;
-      // live site only: previews and local builds must not count as conversions (the layout sets __cbwLive)
-      if (window.__cbwLive) try {
+      // live site only: previews and local builds must not count as conversions (the layout sets __cbwLive); and only a
+      // NEW lead counts: the OS answers fresh: false for a repeat within a day or a dropped bot (Meta showed 18 for 16, 3 Oct 2026)
+      if (window.__cbwLive && j.data?.fresh !== false) try {
         window.gtag?.('set', 'user_data', user);
         window.gtag?.('event', 'conversion', { send_to: ADS_CONVERSION, value: 100, currency: 'CAD', transaction_id: j.data?.id });
         window.gtag?.('event', 'generate_lead', { form: 'quote_flow', form_variant: form, market, intent, use: answers.use, timeline: answers.timeline, stage: answers.stage, fit: answers.fit });
@@ -407,8 +408,8 @@ export function QuoteFlow({ where = 'inline' }) {
             {/* people never see this field; bots fill it */}
             <div aria-hidden className="absolute -left-[9999px] h-px w-px overflow-hidden">
               <label>
-                Company website
-                <input tabIndex={-1} autoComplete="off" value={q.contact.hp} onChange={set('hp')} />
+                Leave this empty
+                <input name="cbw_check" tabIndex={-1} autoComplete="off" data-1p-ignore data-lpignore="true" value={q.contact.hp} onChange={set('hp')} />
               </label>
             </div>
             {q.status === 'error' && q.lastForm === 'steps' ? <SendError /> : null}
@@ -565,8 +566,8 @@ export function QuoteFullForm() {
           {/* people never see this field; bots fill it */}
           <div aria-hidden className="absolute -left-[9999px] h-px w-px overflow-hidden">
             <label>
-              Company website
-              <input tabIndex={-1} autoComplete="off" value={q.contact.hp} onChange={(e) => q.setContact((c) => ({ ...c, hp: e.target.value }))} />
+              Leave this empty
+              <input name="cbw_check" tabIndex={-1} autoComplete="off" data-1p-ignore data-lpignore="true" value={q.contact.hp} onChange={(e) => q.setContact((c) => ({ ...c, hp: e.target.value }))} />
             </label>
           </div>
         </div>
