@@ -147,6 +147,8 @@ export function QuoteProvider({ market, intent, children }) {
   const [seasons, setSeasons] = useState(() => seasonOptions());
   // which form sent (or last tried to send) the request: the step-by-step widget or the full form in the page
   const [lastForm, setLastForm] = useState('steps');
+  // opened from a "book a call" button: the same questions, then the calendar (founder, 3 Oct 2026: a booking is a lead too)
+  const [wantsCall, setWantsCall] = useState(false);
   const started = useRef(0);
   const restored = useRef(false);
 
@@ -166,6 +168,7 @@ export function QuoteProvider({ market, intent, children }) {
         setAnswers(s.answers || {});
         setContact((c) => ({ ...c, ...(s.contact || {}), hp: '' }));
         setStep(Math.min(s.step || 0, STEP_KEYS.length - 1));
+        if (s.wantsCall) setWantsCall(true);
       }
     } catch {}
     restored.current = true;
@@ -174,9 +177,9 @@ export function QuoteProvider({ market, intent, children }) {
     if (!restored.current) return;
     try {
       const { hp, ...keep } = contact;
-      sessionStorage.setItem(STORE, JSON.stringify({ market, step, answers, contact: keep, status }));
+      sessionStorage.setItem(STORE, JSON.stringify({ market, step, answers, contact: keep, status, wantsCall }));
     } catch {}
-  }, [market, step, answers, contact, status]);
+  }, [market, step, answers, contact, status, wantsCall]);
 
   const answer = useCallback(
     (key, v) => {
@@ -189,9 +192,10 @@ export function QuoteProvider({ market, intent, children }) {
   );
 
   const openQuote = useCallback(
-    (where) => {
+    (where, opts) => {
       setOpen(true);
-      track('cta_click', { where, intent, market });
+      if (opts?.call) setWantsCall(true);
+      track('cta_click', { where, intent, market, next_step: opts?.call ? 'call' : 'quote' });
     },
     [intent, market],
   );
@@ -232,6 +236,7 @@ export function QuoteProvider({ market, intent, children }) {
       click: { ...attr.click, ...metaCookies(attr) },
       ids: Object.keys(attr.ids).length ? attr.ids : undefined,
       eventId,
+      wantsCall: wantsCall || undefined,
       hp: contact.hp || undefined,
       ms: started.current ? Date.now() - started.current : undefined,
     };
@@ -253,9 +258,9 @@ export function QuoteProvider({ market, intent, children }) {
       if (window.__cbwLive && j.data?.fresh !== false) try {
         window.gtag?.('set', 'user_data', user);
         window.gtag?.('event', 'conversion', { send_to: ADS_CONVERSION, value: 100, currency: 'CAD', transaction_id: j.data?.id });
-        window.gtag?.('event', 'generate_lead', { form: 'quote_flow', form_variant: form, market, intent, use: answers.use, timeline: answers.timeline, stage: answers.stage, fit: answers.fit });
+        window.gtag?.('event', 'generate_lead', { form: 'quote_flow', form_variant: form, market, intent, use: answers.use, timeline: answers.timeline, stage: answers.stage, fit: answers.fit, next_step: wantsCall ? 'call' : 'quote' });
         // the event every Coffee Bike Sales ad set optimises for; the OS sends the server copy with the same id
-        window.fbq?.('track', 'SubmitApplication', { content_name: 'Coffee Bike quote', content_category: market, form_variant: form }, { eventID: eventId });
+        window.fbq?.('track', 'SubmitApplication', { content_name: 'Coffee Bike quote', content_category: market, form_variant: form, next_step: wantsCall ? 'call' : 'quote' }, { eventID: eventId });
       } catch {}
       setResult({ first, last: rest.join(' '), email: body.email, phone: body.phone, id: j.data?.id });
       setStatus('done');
@@ -265,11 +270,11 @@ export function QuoteProvider({ market, intent, children }) {
       setError(e?.status === 429 ? 'We already have a few requests from this connection. Please message us on WhatsApp instead, or try again in an hour.' : e?.status === 400 ? `Please check your details: ${String(e.message).replace(/^[a-z]+: /i, '')}` : 'That did not go through. Please try again.');
       track('quote_error', { status: e?.status || 0, market, intent, form_variant: form });
     }
-  }, [answers, contact, intent, market, seasons]);
+  }, [answers, contact, intent, market, seasons, wantsCall]);
 
   const value = useMemo(
-    () => ({ market, intent, step, setStep, answers, setAnswers, answer, contact, setContact, status, error, fails, submit, open, setOpen, openQuote, result, seasons, lastForm, begin }),
-    [market, intent, step, answers, answer, contact, status, error, fails, submit, open, openQuote, result, seasons, lastForm, begin],
+    () => ({ market, intent, step, setStep, answers, setAnswers, answer, contact, setContact, status, error, fails, submit, open, setOpen, openQuote, result, seasons, lastForm, begin, wantsCall, setWantsCall }),
+    [market, intent, step, answers, answer, contact, status, error, fails, submit, open, openQuote, result, seasons, lastForm, begin, wantsCall],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
@@ -339,7 +344,7 @@ export function QuoteFlow({ where = 'inline' }) {
   const set = (k) => (e) => q.setContact((c) => ({ ...c, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
   const blur = (k) => () => setBlurred((b) => ({ ...b, [k]: true }));
   const suggestion = emailFix(q.contact.email);
-  const title = key === 'fit' ? M.fitQuestion : key === 'contact' ? 'Where should we send your price?' : QUESTIONS[key].title;
+  const title = key === 'fit' ? M.fitQuestion : key === 'contact' ? (q.wantsCall ? 'Who should we expect on the call?' : 'Where should we send your price?') : QUESTIONS[key].title;
 
   return (
     <div className="text-left">
@@ -349,7 +354,7 @@ export function QuoteFlow({ where = 'inline' }) {
             <ArrowLeft className="h-4 w-4" /> Back
           </button>
         ) : (
-          <span className="text-sm font-semibold text-zinc-600">About 1 minute</span>
+          <span className="text-sm font-semibold text-zinc-600">{q.wantsCall ? 'Four quick questions, then pick your time' : 'About 1 minute'}</span>
         )}
         <span className="text-sm font-semibold text-zinc-600" aria-live="polite">
           Step {q.step + 1} of {STEP_KEYS.length}
@@ -441,7 +446,7 @@ function SendButton() {
   return (
     <button type="submit" disabled={q.status === 'sending'} className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-4 text-lg font-extrabold text-white shadow-sm transition hover:brightness-110 disabled:opacity-70" style={{ backgroundColor: RED }}>
       {q.status === 'sending' ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
-      {q.status === 'sending' ? 'Sending…' : 'Get my price'}
+      {q.status === 'sending' ? 'Sending…' : q.wantsCall ? 'Continue to the calendar' : 'Get my price'}
     </button>
   );
 }
@@ -613,9 +618,9 @@ function Thanks() {
         <Check className="h-7 w-7" strokeWidth={3} />
       </div>
       <h3 className="mt-4 text-2xl font-extrabold leading-tight text-zinc-950" style={{ fontFamily: '"Roboto Condensed", Inter, system-ui, sans-serif' }}>
-        Thank you{r.first ? `, ${r.first}` : ''}. Your request is in.
+        Thank you{r.first ? `, ${r.first}` : ''}. {q.wantsCall ? 'Now pick your time.' : 'Your request is in.'}
       </h3>
-      <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">We’ll reply within one business day with your price and build options, and we’ll message you if a quick question helps.</p>
+      <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">{q.wantsCall ? 'Your answers are in. Choose a time below and we’ll come to the call with your price and build options.' : 'We’ll reply within one business day with your price and build options, and we’ll message you if a quick question helps.'}</p>
 
       {/* the call comes first: 8 of 9 buyers planned their build on one */}
       <div className="mt-5 rounded-xl border-2 border-zinc-900 p-4">
@@ -672,7 +677,7 @@ export function QuoteModal() {
     document.body.style.overflow = 'hidden';
     const onKey = (e) => e.key === 'Escape' && q.setOpen(false);
     window.addEventListener('keydown', onKey);
-    track('quote_open', { market: q.market, intent: q.intent, step: STEP_KEYS[q.step] });
+    track('quote_open', { market: q.market, intent: q.intent, step: STEP_KEYS[q.step], next_step: q.wantsCall ? 'call' : 'quote' });
     return () => {
       document.body.style.overflow = prev;
       window.removeEventListener('keydown', onKey);
@@ -681,10 +686,10 @@ export function QuoteModal() {
   }, [q.open]);
   if (!q.open) return null;
   return (
-    <div className="fixed inset-0 z-[60] flex items-stretch justify-center bg-black/60 sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-label="Get your Coffee Bike price" onClick={(e) => e.target === e.currentTarget && q.setOpen(false)}>
+    <div className="fixed inset-0 z-[60] flex items-stretch justify-center bg-black/60 sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-label={q.wantsCall ? 'Book your 15-minute call' : 'Get your Coffee Bike price'} onClick={(e) => e.target === e.currentTarget && q.setOpen(false)}>
       <div className="relative flex max-h-full w-full flex-col overflow-y-auto bg-white px-5 pb-8 pt-4 sm:max-h-[92vh] sm:max-w-[520px] sm:rounded-2xl sm:px-7 sm:pb-7" style={{ paddingTop: 'max(16px, env(safe-area-inset-top))' }}>
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>Your Coffee Bike price</span>
+          <span className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{q.wantsCall ? 'Book your 15-minute call' : 'Your Coffee Bike price'}</span>
           <button type="button" onClick={() => q.setOpen(false)} aria-label="Close" className="-mr-2 rounded-full p-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900">
             <X className="h-6 w-6" />
           </button>
@@ -704,7 +709,7 @@ export function HeroQuestion() {
   if (q.step > 0) {
     return (
       <button type="button" onClick={() => q.openQuote('hero_resume')} className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-4 text-lg font-extrabold text-white shadow-sm hover:brightness-110 sm:w-auto" style={{ backgroundColor: RED }}>
-        Continue to your price · step {q.step + 1} of 5 <ArrowRight className="h-5 w-5" />
+        Continue to your {q.wantsCall ? 'call' : 'price'} · step {q.step + 1} of 5 <ArrowRight className="h-5 w-5" />
       </button>
     );
   }

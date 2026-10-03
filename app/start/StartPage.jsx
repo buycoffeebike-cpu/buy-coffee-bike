@@ -5,7 +5,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ArrowRight, BatteryCharging, Calendar, Check, ChevronDown, Clock, Coffee, CreditCard, Droplets, FileText, Info, Mail, MapPin, ShieldCheck, Snowflake, Sun, Users } from 'lucide-react';
 import LiteYouTube from '../../components/LiteYouTube';
 import {
-  ADDRESS, ADS_TAG, BASE_PATH, CALL_URL, COMPARE_COLS, DEPOSIT_URL, EMAIL, FEATURES, INCLUDED, INTENTS, LOGO, MARKETS, OWNERS, PHOTOS, PRICING,
+  ADDRESS, ADS_TAG, BASE_PATH, COMPARE_COLS, DEPOSIT_URL, EMAIL, FEATURES, INCLUDED, INTENTS, LOGO, MARKETS, OWNERS, PHOTOS, PRICING,
   SPEC_SHEET, SPECS, TRUST, WALKTHROUGH_ID, compareRows, faqs, steps, whatsappLink,
 } from './content';
 import { HeroQuestion, QuoteFullForm, QuoteModal, QuoteProvider, RED, useQuote } from './quote';
@@ -68,6 +68,16 @@ function PriceButton({ where, children, className = '', variant = 'primary' }) {
   const look = variant === 'primary' ? 'text-white shadow-sm hover:brightness-110' : variant === 'light' ? 'bg-white text-zinc-950 hover:bg-zinc-100' : 'border border-zinc-300 bg-white text-zinc-900 hover:border-zinc-500';
   return (
     <button type="button" onClick={() => q.openQuote(where)} className={`inline-flex items-center justify-center gap-2 rounded-xl px-5 py-4 text-base font-extrabold transition focus:outline-none focus-visible:ring-4 focus-visible:ring-red-300 ${look} ${className}`} style={variant === 'primary' ? { backgroundColor: RED } : undefined}>
+      {children}
+    </button>
+  );
+}
+
+/** Every "book a call" button: the four questions first, then the calendar, so a booking is a lead with its answers (founder, 3 Oct 2026). */
+function CallButton({ where, className = '', style, children }) {
+  const q = useQuote();
+  return (
+    <button type="button" onClick={() => q.openQuote(where, { call: true })} className={className} style={style}>
       {children}
     </button>
   );
@@ -236,9 +246,9 @@ function Page({ intent, market }) {
           <div className="md:col-start-1 md:row-start-3">
             <HeroQuestion />
             <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1">
-              <a href={CALL_URL} target="_blank" rel="noopener" onClick={() => track('cta_click', { where: 'hero_call', intent, market })} className="inline-flex items-center gap-2 py-1 text-[15px] font-bold text-zinc-800 underline underline-offset-4">
+              <CallButton where="hero_call" className="inline-flex items-center gap-2 py-1 text-[15px] font-bold text-zinc-800 underline underline-offset-4">
                 <Calendar className="h-4 w-4" aria-hidden /> Prefer to talk? Book a 15-minute call
-              </a>
+              </CallButton>
               <a href="#walkthrough" onClick={() => track('cta_click', { where: 'hero_video', intent, market })} className="inline-flex items-center gap-2 py-1 text-[15px] font-bold text-zinc-800 underline underline-offset-4">
                 Watch the 6-minute walkthrough
               </a>
@@ -425,10 +435,10 @@ function Page({ intent, market }) {
               ))}
             </ul>
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
-              <a href={CALL_URL} target="_blank" rel="noopener" onClick={() => track('cta_click', { where: 'book_call', intent, market })} className="block rounded-xl border border-zinc-700 p-4 hover:border-zinc-400">
+              <CallButton where="book_call" className="block w-full rounded-xl border border-zinc-700 p-4 text-left hover:border-zinc-400">
                 <div className="flex items-center gap-2 font-bold"><Calendar className="h-4 w-4" aria-hidden /> Prefer to talk first?</div>
                 <div className="mt-1 text-sm text-zinc-400">Book a discovery call →</div>
-              </a>
+              </CallButton>
               <a href={whatsappLink(market)} target="_blank" rel="noopener" onClick={() => track('whatsapp_click', { where: 'quote', intent, market })} className="block rounded-xl border border-zinc-700 p-4 hover:border-zinc-400">
                 <div className="flex items-center gap-2 font-bold"><WhatsAppIcon className="h-4 w-4" /> Message us on WhatsApp</div>
                 <div className="mt-1 text-sm text-zinc-400">Straight to our team →</div>
@@ -731,7 +741,7 @@ function Numbers({ intent, market }) {
             <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4">
               <p className="text-xs font-bold uppercase tracking-wider" style={{ color: RED }}>Check your numbers with the founder</p>
               <p className="mt-1 text-xs leading-snug text-zinc-300">Walk through equipment, pricing and your assumptions on a 15-minute call.</p>
-              <a href={CALL_URL} target="_blank" rel="noopener" onClick={() => track('cta_click', { where: 'calculator_call', intent, market })} className="mt-3 block rounded-lg px-4 py-2.5 text-center text-xs font-extrabold uppercase tracking-wide text-white hover:brightness-110" style={{ backgroundColor: RED }}>Book a 15-minute call</a>
+              <CallButton where="calculator_call" className="mt-3 block w-full rounded-lg px-4 py-2.5 text-center text-xs font-extrabold uppercase tracking-wide text-white hover:brightness-110" style={{ backgroundColor: RED }}>Book a 15-minute call</CallButton>
             </div>
           </div>
         </div>

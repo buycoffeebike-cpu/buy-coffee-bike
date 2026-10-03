@@ -6,6 +6,8 @@ import dynamic from 'next/dynamic';
 // only the US page renders this section, so the sales page never downloads it
 const UsCartSection = dynamic(() => import('./UsCartSection'));
 import { VARIANTS, ownersFirst } from './buyVariants';
+import CallGate from './CallGate';
+import { QuoteProvider } from '../app/start/quote';
 import { ChevronDown, ChevronLeft, ChevronRight, Edit2, Check, Info, Lock, Search, Leaf, Globe, Clock, Award, Mail, MapPin, Play, TrendingUp, DollarSign, Calendar, Users, Zap, Coffee, Star, ArrowRight, Sparkles, ZoomIn, X, Eye } from 'lucide-react';
 
 /** WhatsApp Business number connected to GoHighLevel: chats land straight in the CRM. Offered as WhatsApp only. */
@@ -384,6 +386,8 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
 
   const openInquiry = () => setInquiryModalOpen(true);
   const openSchedule = () => setScheduleModalOpen(true);
+  // the quote questions inside "Schedule a Call": Canadian dollars = the Canadian form (financing), everyone else = US
+  const quoteMarket = variantKey === 'us' ? 'us' : currency === 'CAD' ? 'ca' : 'us';
   const openDeposit = () => { setBuildCopied(false); setPaymentStarted(false); setDepositModalOpen(true); };
   const openFinancing = () => { setFinancingAmountCopied(false); setFinancingStarted(false); setFinancingModalOpen(true); };
 
@@ -766,6 +770,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
   );
 
   return (
+    <QuoteProvider market={quoteMarket} intent="buy-page">
     <div className="min-h-screen bg-white font-sans text-zinc-900 pb-20 sm:pb-0">
       {zoomImg && (
         <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-6 cursor-zoom-out" onClick={() => setZoomImg(null)}>
@@ -825,16 +830,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
       {scheduleModalOpen && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6" style={{ zIndex: 9999 }} onClick={() => setScheduleModalOpen(false)}>
           <div className="bg-white rounded-2xl shadow-2xl w-[94vw] max-w-4xl overflow-hidden relative flex flex-col modal-shell-94" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-200 bg-white flex-shrink-0">
-              <div className="min-w-0">
-                <div className="text-[10px] uppercase tracking-wider font-bold mb-0.5" style={{ color: RED }}>Schedule a Call</div>
-                <div className="text-base font-bold leading-tight">Pick a Time With Our Team</div>
-              </div>
-              <button onClick={() => setScheduleModalOpen(false)} aria-label="Close" className="w-9 h-9 rounded-full hover:bg-zinc-100 flex items-center justify-center transition flex-shrink-0">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            {basePackage && (
+            <CallGate calendarUrl={bookingUrl} onClose={() => setScheduleModalOpen(false)} summary={basePackage && (
               <div className="px-5 py-3 bg-zinc-50 border-b border-zinc-200 flex-shrink-0">
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div className="min-w-0 flex-1">
@@ -855,21 +851,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
                   Your build details will be attached to this booking automatically.
                 </div>
               </div>
-            )}
-<div className="modal-embed flex-1 min-h-0 overflow-hidden bg-white px-3 sm:px-5 pb-4">
-  <iframe
-    src={bookingUrl}
-    style={{
-      width: '100%',
-      height: '100%',
-      border: 'none',
-      borderRadius: 0,
-      display: 'block'
-    }}
-    scrolling="yes"
-    title="Schedule a Call"
-  ></iframe>
-</div>
+            )} />
           </div>
         </div>
       )}
@@ -2770,6 +2752,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
   </div>
 </footer>
     </div>
+    </QuoteProvider>
   );
 }
 
