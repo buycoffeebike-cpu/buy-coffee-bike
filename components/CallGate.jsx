@@ -10,6 +10,7 @@
 import { useEffect, useMemo } from 'react';
 import { X } from 'lucide-react';
 import { QuoteFlow, RED, useQuote } from '../app/start/quote';
+import TimePicker from '../app/start/TimePicker';
 
 export default function CallGate({ calendarUrl, summary, onClose }) {
   const q = useQuote();
@@ -43,8 +44,11 @@ export default function CallGate({ calendarUrl, summary, onClose }) {
       {done ? (
         <>
           {summary || null}
-          <div className="modal-embed flex-1 min-h-0 overflow-hidden bg-white px-3 sm:px-5 pb-4">
-            <iframe src={src} style={{ width: '100%', height: '100%', border: 'none', borderRadius: 0, display: 'block' }} scrolling="yes" title="Schedule a Call"></iframe>
+          <div className="flex-1 min-h-0 overflow-y-auto bg-white px-5 py-5 sm:px-7">
+            <div className="mx-auto max-w-[560px]">
+              <p className="mb-3 text-[15px] text-zinc-700">Your answers are in. Pick a time for a 15-minute call with the founder.</p>
+              <TimePicker leadId={q.result?.id} calendar="buypage" fallbackUrl={src} market={q.market} intent={q.intent} booked={q.booking} onBooked={q.setBooking} />
+            </div>
           </div>
         </>
       ) : (

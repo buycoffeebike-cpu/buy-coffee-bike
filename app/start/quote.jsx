@@ -9,6 +9,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Calendar, Check, FileText, Loader2, MessageCircle, PlayCircle, X } from 'lucide-react';
 import { ADS_CONVERSION, CALL_URL, DEPOSIT_URL, FINANCING_URL, INCLUDED, LEAD_API, MARKETS, QUOTE_FORM_URL, SPEC_SHEET, whatsappLink } from './content';
+import TimePicker from './TimePicker';
 
 export const RED = '#E31E24';
 const STEP_KEYS = ['use', 'timeline', 'stage', 'fit', 'contact'];
@@ -135,7 +136,7 @@ function emailFix(email) {
   return user && domain && DOMAIN_FIX[domain] ? `${user}@${DOMAIN_FIX[domain]}` : '';
 }
 
-export function QuoteProvider({ market, intent, children }) {
+export function QuoteProvider({ market, intent, extra, children }) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({});
   const [contact, setContact] = useState({ name: '', email: '', phone: '', location: '', question: '', hp: '' });
@@ -149,6 +150,8 @@ export function QuoteProvider({ market, intent, children }) {
   const [lastForm, setLastForm] = useState('steps');
   // opened from a "book a call" button: the same questions, then the calendar (founder, 3 Oct 2026: a booking is a lead too)
   const [wantsCall, setWantsCall] = useState(false);
+  // the call booked after the form, shared by every picker on the page (pop-up and page section)
+  const [booking, setBooking] = useState(null);
   const started = useRef(0);
   const restored = useRef(false);
 
@@ -230,6 +233,8 @@ export function QuoteProvider({ market, intent, children }) {
       consent: true,
       intent,
       form,
+      // what the page knows besides the answers, e.g. the Buy page's configured build
+      ...(extra || {}),
       page: window.location.href.slice(0, 600),
       referrer: document.referrer ? document.referrer.slice(0, 600) : undefined,
       utm: attr.utm,
@@ -270,11 +275,11 @@ export function QuoteProvider({ market, intent, children }) {
       setError(e?.status === 429 ? 'We already have a few requests from this connection. Please message us on WhatsApp instead, or try again in an hour.' : e?.status === 400 ? `Please check your details: ${String(e.message).replace(/^[a-z]+: /i, '')}` : 'That did not go through. Please try again.');
       track('quote_error', { status: e?.status || 0, market, intent, form_variant: form });
     }
-  }, [answers, contact, intent, market, seasons, wantsCall]);
+  }, [answers, contact, extra, intent, market, seasons, wantsCall]);
 
   const value = useMemo(
-    () => ({ market, intent, step, setStep, answers, setAnswers, answer, contact, setContact, status, error, fails, submit, open, setOpen, openQuote, result, seasons, lastForm, begin, wantsCall, setWantsCall }),
-    [market, intent, step, answers, answer, contact, status, error, fails, submit, open, openQuote, result, seasons, lastForm, begin, wantsCall],
+    () => ({ market, intent, step, setStep, answers, setAnswers, answer, contact, setContact, status, error, fails, submit, open, setOpen, openQuote, result, seasons, lastForm, begin, wantsCall, setWantsCall, booking, setBooking }),
+    [market, intent, step, answers, answer, contact, status, error, fails, submit, open, openQuote, result, seasons, lastForm, begin, wantsCall, booking],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
@@ -625,12 +630,10 @@ function Thanks() {
       {/* the call comes first: 8 of 9 buyers planned their build on one */}
       <div className="mt-5 rounded-xl border-2 border-zinc-900 p-4">
         <p className="flex items-center gap-2 font-extrabold text-zinc-950"><Calendar className="h-5 w-5" aria-hidden /> Step 1 of 2 done. Next: pick a time to review your build</p>
-        <p className="mt-1 text-sm text-zinc-600">A 15-minute call. Most owners planned their build on one with us.</p>
-        <a href={booking} target="_blank" rel="noopener" onClick={() => track('cta_click', { where: 'thanks_call', market: q.market, intent: q.intent })} className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 font-extrabold text-white" style={{ backgroundColor: RED }}>
-          Open the calendar <ArrowRight className="h-5 w-5" />
-        </a>
-        <div className="mt-3 overflow-hidden rounded-lg border border-zinc-200">
-          <iframe src={booking} title="Book a call with Coffee Bike World" className="block h-[600px] w-full border-0" loading="lazy" onLoad={() => track('booking_view', { market: q.market, intent: q.intent })} />
+        <p className="mt-1 text-sm text-zinc-600">A 15-minute call. Most owners planned their build on one with us. Nothing to type again: just pick the time.</p>
+        {/* our own picker (3 Oct 2026): the calendar widget asked for name, email and phone a second time */}
+        <div className="mt-3">
+          <TimePicker leadId={r.id} calendar="discovery" fallbackUrl={booking} market={q.market} intent={q.intent} booked={q.booking} onBooked={q.setBooking} />
         </div>
       </div>
 

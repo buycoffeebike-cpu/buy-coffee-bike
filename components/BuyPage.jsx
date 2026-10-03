@@ -388,6 +388,8 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
   const openSchedule = () => setScheduleModalOpen(true);
   // the quote questions inside "Schedule a Call": Canadian dollars = the Canadian form (financing), everyone else = US
   const quoteMarket = variantKey === 'us' ? 'us' : currency === 'CAD' ? 'ca' : 'us';
+  // the configured build travels with the quote request (CRM note + lead email) instead of the calendar form
+  const quoteExtra = useMemo(() => ({ build: buildSummary || undefined }), [buildSummary]);
   const openDeposit = () => { setBuildCopied(false); setPaymentStarted(false); setDepositModalOpen(true); };
   const openFinancing = () => { setFinancingAmountCopied(false); setFinancingStarted(false); setFinancingModalOpen(true); };
 
@@ -770,7 +772,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
   );
 
   return (
-    <QuoteProvider market={quoteMarket} intent="buy-page">
+    <QuoteProvider market={quoteMarket} intent="buy-page" extra={quoteExtra}>
     <div className="min-h-screen bg-white font-sans text-zinc-900 pb-20 sm:pb-0">
       {zoomImg && (
         <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-6 cursor-zoom-out" onClick={() => setZoomImg(null)}>
@@ -848,7 +850,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
                 </div>
                 <div className="text-[10px] text-zinc-500 mt-1.5 flex items-center gap-1">
                   <Check className="w-3 h-3" style={{ color: RED }} strokeWidth={3} />
-                  Your build details will be attached to this booking automatically.
+                  Your build details are attached to your request automatically.
                 </div>
               </div>
             )} />
