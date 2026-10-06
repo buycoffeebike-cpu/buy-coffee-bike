@@ -25,8 +25,12 @@ const zone = () => {
   }
 };
 const fmtDay = (iso, tz) => new Date(iso).toLocaleDateString('en-US', { timeZone: tz, weekday: 'short', month: 'short', day: 'numeric' });
-const fmtTime = (iso, tz) => new Date(iso).toLocaleTimeString('en-US', { timeZone: tz, hour: 'numeric', minute: '2-digit' });
-const fmtFull = (iso, tz) => new Date(iso).toLocaleString('en-US', { timeZone: tz, weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+// 24-hour clock: 09:00 in the morning, 21:00 in the evening. People mixed up 9 AM and 9 PM (Vlad, 5 Oct 2026)
+const fmtTime = (iso, tz) => {
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: tz, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date(iso)).map((x) => [x.type, x.value]));
+  return `${p.hour}:${p.minute}`;
+};
+const fmtFull = (iso, tz) => `${new Date(iso).toLocaleDateString('en-US', { timeZone: tz, weekday: 'long', month: 'long', day: 'numeric' })} at ${fmtTime(iso, tz)}`;
 const UUID = /^[0-9a-f-]{36}$/i;
 
 export default function TimePicker({ leadId, calendar = 'discovery', fallbackUrl, market, intent, booked: shared, onBooked }) {
