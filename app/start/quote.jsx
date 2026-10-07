@@ -538,9 +538,11 @@ function PhoneCode({ where }) {
   const ref = useRef(null);
 
   useEffect(() => {
+    // the page's own copy stays quiet while the pop-up is open: the code box there gets the keyboard
+    if (where === 'inline' && q.open) return;
     ref.current?.focus({ preventScroll: where !== 'full' });
     if (where === 'full') ref.current?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
-  }, [where]);
+  }, [where]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);

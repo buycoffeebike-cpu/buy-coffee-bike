@@ -127,7 +127,9 @@ export default function TimePicker({ leadId, calendar = 'discovery', fallbackUrl
   return (
     <div>
       <p className="text-xs font-semibold text-zinc-500">Times in your time zone ({tz.replace(/_/g, ' ')}). A 15-minute video call.</p>
-      <div className="mt-2 flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Day">
+      {/* contain inline-size: the row of days scrolls inside the width it is given and never widens what holds it. Without
+          it the page section's grid grew to the whole row, 542 px on a 412 px phone, and the pop-up with it (6 Oct 2026) */}
+      <div className="mt-2 flex gap-2 overflow-x-auto pb-1 [contain:inline-size]" role="tablist" aria-label="Day">
         {days.map((x, i) => (
           <button key={x.date} type="button" role="tab" aria-selected={i === day} onClick={() => { setDay(i); setPick(null); }} className={`flex-none rounded-lg border-2 px-3 py-2 text-sm font-bold ${i === day ? 'border-zinc-900 bg-zinc-900 text-white' : 'border-zinc-200 bg-white text-zinc-800 hover:border-zinc-400'}`}>
             {fmtDay(x.slots[0], tz)}
