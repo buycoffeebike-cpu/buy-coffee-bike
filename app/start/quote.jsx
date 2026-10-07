@@ -807,14 +807,23 @@ function Thanks() {
         <Check className="h-7 w-7" strokeWidth={3} />
       </div>
       <h3 className="mt-4 text-2xl font-extrabold leading-tight text-zinc-950" style={{ fontFamily: '"Roboto Condensed", Inter, system-ui, sans-serif' }}>
-        Thank you{r.first ? `, ${r.first}` : ''}. {q.wantsCall ? 'Now pick your time.' : 'Your request is in.'}
+        Thank you{r.first ? `, ${r.first}` : ''}. {q.booking ? 'Your call is booked.' : q.wantsCall ? 'Now pick your time.' : 'Your request is in.'}
       </h3>
-      <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">{q.wantsCall ? 'Your answers are in. Choose a time below and we’ll come to the call with your price and build options.' : 'We’ll reply within one business day with your price and build options, and we’ll message you if a quick question helps.'}</p>
+      <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">{q.booking ? 'We’ll come to the call with your price and build options ready.' : q.wantsCall ? 'Your answers are in. Choose a time below and we’ll come to the call with your price and build options.' : 'We’ll reply within one business day with your price and build options, and we’ll message you if a quick question helps.'}</p>
 
-      {/* the call comes first: 8 of 9 buyers planned their build on one */}
+      {/* the call comes first: 8 of 9 buyers planned their build on one. Once booked, both steps are done (Vlad, 7 Oct 2026) */}
       <div className="mt-5 rounded-xl border-2 border-zinc-900 p-4">
-        <p className="flex items-center gap-2 font-extrabold text-zinc-950"><Calendar className="h-5 w-5" aria-hidden /> Step 1 of 2 done. Next: pick a time to review your build</p>
-        <p className="mt-1 text-sm text-zinc-600">A 15-minute call. Most owners planned their build on one with us. Nothing to type again: just pick the time.</p>
+        {q.booking ? (
+          <>
+            <p className="flex items-center gap-2 font-extrabold text-zinc-950"><Check className="h-5 w-5" strokeWidth={3} style={{ color: RED }} aria-hidden /> Step 2 of 2 done. Your call is booked</p>
+            <p className="mt-1 text-sm text-zinc-600">Our specialist will join the call at the time you picked to discuss your Coffee Bike with you.</p>
+          </>
+        ) : (
+          <>
+            <p className="flex items-center gap-2 font-extrabold text-zinc-950"><Calendar className="h-5 w-5" aria-hidden /> Step 1 of 2 done. Next: pick a time to review your build</p>
+            <p className="mt-1 text-sm text-zinc-600">A 15-minute call. Most owners planned their build on one with us. Nothing to type again: just pick the time.</p>
+          </>
+        )}
         {/* our own picker (3 Oct 2026): the calendar widget asked for name, email and phone a second time */}
         <div className="mt-3">
           <TimePicker leadId={r.id} calendar="discovery" fallbackUrl={booking} market={q.market} intent={q.intent} booked={q.booking} onBooked={q.setBooking} />
