@@ -36,6 +36,8 @@ export const ADS_CONVERSION = 'AW-369959194/fgpSCMzoj4kdEJrCtLAB';
 export const LEAD_API = process.env.NEXT_PUBLIC_LEAD_API || 'https://coffee-bike-os.vercel.app/api/v1/web/bike-inquiry';
 /** The same OS: free call times (GET /call-slots) and the booking (POST /call-booking) for the pages' own time picker. */
 export const CALL_API = LEAD_API.replace(/\/bike-inquiry$/, '');
+/** The same OS: the code step for visitors it checks by text (POST /phone-check: confirm the code, or text a new one). */
+export const PHONE_API = `${CALL_API}/phone-check`;
 /** WhatsApp Business number connected to GoHighLevel (messages land in the CRM). Offered as WhatsApp only, never as a number to call. */
 export const WHATSAPP = 'https://wa.me/17786558631';
 export const whatsappLink = (market) => `${WHATSAPP}?text=${encodeURIComponent(`Hi Coffee Bike World! I have a question about a Coffee Bike (${market === 'ca' ? 'Canada' : 'US'}).`)}`;

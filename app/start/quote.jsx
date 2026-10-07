@@ -8,7 +8,7 @@
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Calendar, Check, FileText, Loader2, MessageCircle, PlayCircle, X } from 'lucide-react';
-import { ADS_CONVERSION, CALL_URL, DEPOSIT_URL, FINANCING_URL, INCLUDED, LEAD_API, MARKETS, QUOTE_FORM_URL, SPEC_SHEET, whatsappLink } from './content';
+import { ADS_CONVERSION, CALL_URL, DEPOSIT_URL, FINANCING_URL, INCLUDED, LEAD_API, MARKETS, PHONE_API, QUOTE_FORM_URL, SPEC_SHEET, whatsappLink } from './content';
 import TimePicker from './TimePicker';
 
 export const RED = '#E31E24';
@@ -121,6 +121,27 @@ const track = (name, params) => {
   } catch {}
 };
 
+// ?phonecheck=1 asks the OS for the code step even while its switch is off: to try it on a real phone (6 Oct 2026)
+const forcedCheck = () => {
+  try {
+    return new URLSearchParams(window.location.search).get('phonecheck') === '1';
+  } catch {
+    return false;
+  }
+};
+
+/** The code step's two calls to the OS: confirm the code (answers like LEAD_API) or text a new one. */
+async function postPhone(payload) {
+  const res = await fetch(PHONE_API, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+  const j = await res.json().catch(() => null);
+  if (!res.ok || !j?.ok) {
+    const e = new Error(j?.error?.message || `status ${res.status}`);
+    e.status = res.status;
+    throw e;
+  }
+  return j;
+}
+
 function e164(phone) {
   const d = String(phone || '').replace(/[^\d+]/g, '');
   if (d.startsWith('+')) return d.length >= 8 ? d : '';
@@ -140,8 +161,10 @@ export function QuoteProvider({ market, intent, extra, children }) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({});
   const [contact, setContact] = useState({ name: '', email: '', phone: '', location: '', question: '', hp: '' });
-  const [status, setStatus] = useState('idle'); // idle | sending | done | error
+  const [status, setStatus] = useState('idle'); // idle | sending | code | done | error
   const [error, setError] = useState('');
+  // the code step: { checkId, to, resendAt, body, eventId, form, busy, error, note } while the OS waits for the texted code
+  const [check, setCheck] = useState(null);
   const [fails, setFails] = useState(0);
   const [open, setOpen] = useState(false);
   const [result, setResult] = useState(null);
@@ -208,6 +231,29 @@ export function QuoteProvider({ market, intent, extra, children }) {
     if (!started.current) started.current = Date.now();
   }, []);
 
+  // the lead is in (straight away, or once the texted code came back): Google Ads with enhanced conversions, GA4 and
+  // Meta once per lead, then the thank-you
+  const finish = useCallback(
+    (j, body, eventId, form) => {
+      const [first, ...rest] = body.name.split(/\s+/);
+      const user = { email: body.email.toLowerCase(), address: { first_name: first, last_name: rest.join(' ') || undefined, country: market === 'ca' ? 'CA' : 'US' } };
+      const ph = e164(body.phone);
+      if (ph) user.phone_number = ph;
+      // live site only: previews and local builds must not count as conversions (the layout sets __cbwLive); and only a
+      // NEW lead counts: the OS answers fresh: false for a repeat within a day or a dropped bot (Meta showed 18 for 16, 3 Oct 2026)
+      if (window.__cbwLive && j.data?.fresh !== false) try {
+        window.gtag?.('set', 'user_data', user);
+        window.gtag?.('event', 'conversion', { send_to: ADS_CONVERSION, value: 100, currency: 'CAD', transaction_id: j.data?.id });
+        window.gtag?.('event', 'generate_lead', { form: 'quote_flow', form_variant: form, market, intent, use: answers.use, timeline: answers.timeline, stage: answers.stage, fit: answers.fit, next_step: wantsCall ? 'call' : 'quote' });
+        // the event every Coffee Bike Sales ad set optimises for; the OS sends the server copy with the same id
+        window.fbq?.('track', 'SubmitApplication', { content_name: 'Coffee Bike quote', content_category: market, form_variant: form, next_step: wantsCall ? 'call' : 'quote' }, { eventID: eventId });
+      } catch {}
+      setResult({ first, last: rest.join(' '), email: body.email, phone: body.phone, id: j.data?.id });
+      setStatus('done');
+    },
+    [answers, intent, market, wantsCall],
+  );
+
   // form: 'steps' (the widget in the hero and the pop-up) or 'full' (every question on screen), so the two can be
   // compared in the CRM, the lead email and GA4 (founder, 2 Oct 2026)
   const submit = useCallback(async (form = 'steps') => {
@@ -244,6 +290,9 @@ export function QuoteProvider({ market, intent, extra, children }) {
       wantsCall: wantsCall || undefined,
       hp: contact.hp || undefined,
       ms: started.current ? Date.now() - started.current : undefined,
+      // this page can show the code step; the OS decides who gets it (6 Oct 2026)
+      phoneCheck: true,
+      forcePhoneCheck: forcedCheck() || undefined,
     };
     try {
       const res = await fetch(LEAD_API, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
@@ -253,33 +302,63 @@ export function QuoteProvider({ market, intent, extra, children }) {
         e.status = res.status;
         throw e;
       }
-      // Google Ads (with enhanced conversions), GA4 and Meta: once per lead
-      const [first, ...rest] = body.name.split(/\s+/);
-      const user = { email: body.email.toLowerCase(), address: { first_name: first, last_name: rest.join(' ') || undefined, country: market === 'ca' ? 'CA' : 'US' } };
-      const ph = e164(body.phone);
-      if (ph) user.phone_number = ph;
-      // live site only: previews and local builds must not count as conversions (the layout sets __cbwLive); and only a
-      // NEW lead counts: the OS answers fresh: false for a repeat within a day or a dropped bot (Meta showed 18 for 16, 3 Oct 2026)
-      if (window.__cbwLive && j.data?.fresh !== false) try {
-        window.gtag?.('set', 'user_data', user);
-        window.gtag?.('event', 'conversion', { send_to: ADS_CONVERSION, value: 100, currency: 'CAD', transaction_id: j.data?.id });
-        window.gtag?.('event', 'generate_lead', { form: 'quote_flow', form_variant: form, market, intent, use: answers.use, timeline: answers.timeline, stage: answers.stage, fit: answers.fit, next_step: wantsCall ? 'call' : 'quote' });
-        // the event every Coffee Bike Sales ad set optimises for; the OS sends the server copy with the same id
-        window.fbq?.('track', 'SubmitApplication', { content_name: 'Coffee Bike quote', content_category: market, form_variant: form, next_step: wantsCall ? 'call' : 'quote' }, { eventID: eventId });
-      } catch {}
-      setResult({ first, last: rest.join(' '), email: body.email, phone: body.phone, id: j.data?.id });
-      setStatus('done');
+      // a checked visitor: the OS texted a code and holds the request until it comes back; nothing counts before that
+      if (j.data?.needsCode) {
+        setCheck({ checkId: j.data.checkId, to: j.data.to, resendAt: Date.now() + (j.data.resendInSec || 30) * 1000, body, eventId, form, busy: false, error: '', note: '' });
+        setStatus('code');
+        track('phone_code_shown', { market, intent, form_variant: form });
+        return;
+      }
+      finish(j, body, eventId, form);
     } catch (e) {
       setFails((n) => n + 1);
       setStatus('error');
-      setError(e?.status === 429 ? 'We already have a few requests from this connection. Please message us on WhatsApp instead, or try again in an hour.' : e?.status === 400 ? `Please check your details: ${String(e.message).replace(/^[a-z]+: /i, '')}` : 'That did not go through. Please try again.');
+      // the OS's own words when it is about the texted code (a number sent too many codes); otherwise the usual line
+      setError(e?.status === 429 ? (/code/i.test(String(e.message)) ? e.message : 'We already have a few requests from this connection. Please message us on WhatsApp instead, or try again in an hour.') : e?.status === 400 ? `Please check your details: ${String(e.message).replace(/^[a-z]+: /i, '')}` : 'That did not go through. Please try again.');
       track('quote_error', { status: e?.status || 0, market, intent, form_variant: form });
     }
-  }, [answers, contact, extra, intent, market, seasons, wantsCall]);
+  }, [answers, contact, extra, finish, intent, market, seasons, wantsCall]);
+
+  // the code step: the request goes through once the code texted to their number comes back
+  const confirmCode = useCallback(
+    async (code) => {
+      if (!check || check.busy) return;
+      setCheck((c) => c && { ...c, busy: true, error: '', note: '' });
+      try {
+        const j = await postPhone({ action: 'confirm', checkId: check.checkId, code });
+        track('phone_code_confirmed', { market, intent, form_variant: check.form });
+        setCheck(null);
+        finish(j, check.body, check.eventId, check.form);
+      } catch (e) {
+        setCheck((c) => c && { ...c, busy: false, error: e?.status && e.status < 500 ? e.message : 'That did not go through. Please try again.', errAt: Date.now() });
+        track('phone_code_error', { status: e?.status || 0, market, intent });
+      }
+    },
+    [check, finish, intent, market],
+  );
+
+  const resendCode = useCallback(async () => {
+    if (!check || check.busy) return;
+    setCheck((c) => c && { ...c, busy: true, error: '', note: '' });
+    try {
+      const j = await postPhone({ action: 'resend', checkId: check.checkId });
+      setCheck((c) => c && { ...c, to: j.data.to, resendAt: Date.now() + (j.data.resendInSec || 30) * 1000, busy: false, error: '', note: 'We texted you a new code.' });
+      track('phone_code_resent', { market, intent });
+    } catch (e) {
+      setCheck((c) => c && { ...c, busy: false, error: e?.status && e.status < 500 ? e.message : 'That did not go through. Please try again.' });
+    }
+  }, [check, intent, market]);
+
+  // "Wrong number?": back to their details, everything still filled in; sending again texts the corrected number
+  const changeNumber = useCallback(() => {
+    setCheck(null);
+    setStatus('idle');
+    track('phone_code_change_number', { market, intent });
+  }, [intent, market]);
 
   const value = useMemo(
-    () => ({ market, intent, step, setStep, answers, setAnswers, answer, contact, setContact, status, error, fails, submit, open, setOpen, openQuote, result, seasons, lastForm, begin, wantsCall, setWantsCall, booking, setBooking }),
-    [market, intent, step, answers, answer, contact, status, error, fails, submit, open, openQuote, result, seasons, lastForm, begin, wantsCall, booking],
+    () => ({ market, intent, step, setStep, answers, setAnswers, answer, contact, setContact, status, error, fails, submit, open, setOpen, openQuote, result, seasons, lastForm, begin, wantsCall, setWantsCall, booking, setBooking, check, confirmCode, resendCode, changeNumber }),
+    [market, intent, step, answers, answer, contact, status, error, fails, submit, open, openQuote, result, seasons, lastForm, begin, wantsCall, booking, check, confirmCode, resendCode, changeNumber],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
@@ -337,6 +416,7 @@ export function QuoteFlow({ where = 'inline' }) {
   }, [q.step, where]);
 
   if (q.status === 'done') return <Thanks />;
+  if (q.status === 'code') return <PhoneCode where={where} />;
 
   const errs = {
     name: q.contact.name.trim().length < 2 ? 'Please enter your name.' : '',
@@ -446,6 +526,107 @@ function SendError() {
   );
 }
 
+/**
+ * After the form, for a visitor the OS checks by text (6 Oct 2026): the 4-digit code it sent, then the request goes
+ * through. Phones offer the code from the message themselves (autocomplete one-time-code; Android Chrome reads it).
+ */
+function PhoneCode({ where }) {
+  const q = useQuote();
+  const c = q.check || {};
+  const [code, setCode] = useState('');
+  const [now, setNow] = useState(() => Date.now());
+  const ref = useRef(null);
+
+  useEffect(() => {
+    ref.current?.focus({ preventScroll: where !== 'full' });
+    if (where === 'full') ref.current?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+  }, [where]);
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  // a wrong or expired code (each time, even the same message twice): an empty box to type the next one
+  useEffect(() => {
+    if (c.errAt) {
+      setCode('');
+      ref.current?.focus({ preventScroll: true });
+    }
+  }, [c.errAt]);
+  // Android Chrome reads the code from the text by itself (the text ends with "@coffeebike.ca #1234")
+  useEffect(() => {
+    if (!c.checkId || typeof window === 'undefined' || !('OTPCredential' in window)) return undefined;
+    const ac = new AbortController();
+    navigator.credentials
+      .get({ otp: { transport: ['sms'] }, signal: ac.signal })
+      .then((otp) => {
+        if (otp?.code) {
+          setCode(otp.code);
+          q.confirmCode(otp.code);
+        }
+      })
+      .catch(() => {});
+    return () => ac.abort();
+  }, [c.checkId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const wait = Math.max(0, Math.ceil(((c.resendAt || 0) - now) / 1000));
+  const go = (v) => {
+    if (v.length === 4 && !c.busy) q.confirmCode(v);
+  };
+  return (
+    <div className="grid gap-4">
+      <div>
+        <p className="text-xl font-extrabold text-zinc-950">Check your texts</p>
+        <p className="mt-1 text-[15px] leading-relaxed text-zinc-700">
+          We just texted a 4-digit code to <span className="font-bold text-zinc-950">{c.to}</span>. Type it here and your request goes through.
+        </p>
+      </div>
+      <form
+        noValidate
+        onSubmit={(e) => {
+          e.preventDefault();
+          go(code);
+        }}
+        className="grid gap-3"
+      >
+        <input
+          ref={ref}
+          className={`${input} text-center text-2xl font-extrabold tracking-[0.5em]`}
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          pattern="[0-9]*"
+          maxLength={4}
+          aria-label="The 4-digit code"
+          placeholder="····"
+          value={code}
+          onChange={(e) => {
+            const v = e.target.value.replace(/\D/g, '').slice(0, 4);
+            setCode(v);
+            go(v);
+          }}
+        />
+        {c.error ? (
+          <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm font-semibold text-red-800">{c.error}</p>
+        ) : c.note ? (
+          <p role="status" className="text-sm font-semibold text-emerald-800">{c.note}</p>
+        ) : null}
+        <button type="submit" disabled={c.busy || code.length !== 4} className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-4 text-lg font-extrabold text-white shadow-sm transition hover:brightness-110 disabled:opacity-70" style={{ backgroundColor: RED }}>
+          {c.busy ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
+          {c.busy ? 'Checking…' : 'Confirm and send'}
+        </button>
+      </form>
+      <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
+        <button type="button" onClick={q.resendCode} disabled={wait > 0 || c.busy} className="font-bold text-zinc-800 underline underline-offset-2 disabled:text-zinc-400 disabled:no-underline">
+          {wait > 0 ? `Text me a new code (${wait}s)` : 'Text me a new code'}
+        </button>
+        <button type="button" onClick={q.changeNumber} className="font-bold text-zinc-800 underline underline-offset-2">
+          Wrong number? Change it
+        </button>
+      </div>
+      <p className="text-xs text-zinc-500">We check the number so our reply reaches you. Message and data rates may apply.</p>
+    </div>
+  );
+}
+
 function SendButton() {
   const q = useQuote();
   return (
@@ -493,6 +674,7 @@ export function QuoteFullForm() {
   const refs = { use: useRef(null), timeline: useRef(null), stage: useRef(null), fit: useRef(null), contact: useRef(null) };
 
   if (q.status === 'done') return <Thanks />;
+  if (q.status === 'code') return <PhoneCode where="full" />;
 
   const touch = (what) => {
     q.begin();
