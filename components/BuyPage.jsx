@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 const UsCartSection = dynamic(() => import('./UsCartSection'));
 import { VARIANTS, ownersFirst } from './buyVariants';
 import CallGate from './CallGate';
-import { QuoteProvider } from '../app/start/quote';
+import { FinishBar, QuoteProvider } from '../app/start/quote';
 import { ChevronDown, ChevronLeft, ChevronRight, Edit2, Check, Info, Lock, Search, Leaf, Globe, Clock, Award, Mail, MapPin, Play, TrendingUp, DollarSign, Calendar, Users, Zap, Coffee, Star, ArrowRight, Sparkles, ZoomIn, X, Eye } from 'lucide-react';
 
 /** WhatsApp Business number connected to GoHighLevel: chats land straight in the CRM. Offered as WhatsApp only. */
@@ -773,6 +773,8 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
 
   return (
     <QuoteProvider market={quoteMarket} intent="buy-page" extra={quoteExtra}>
+    {/* typed their details in the call form and closed it: one tap back (11 Oct 2026) */}
+    <FinishBar hidden={scheduleModalOpen || inConfigurator} onFinish={() => setScheduleModalOpen(true)} />
     <div className="min-h-screen bg-white font-sans text-zinc-900 pb-20 sm:pb-0">
       {zoomImg && (
         <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-6 cursor-zoom-out" onClick={() => setZoomImg(null)}>

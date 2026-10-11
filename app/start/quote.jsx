@@ -228,14 +228,32 @@ export function QuoteProvider({ market, intent, extra, children }) {
     [market, intent],
   );
 
+  // the pop-up opens at the first question still unanswered (11 Oct 2026: a visitor who had answered in the full form
+  // pressed "Get my price", got question 1 again, answered it all a second time and left)
   const openQuote = useCallback(
     (where, opts) => {
+      // never backwards: the hero tiles answer question 1 and open in the same tap, before `answers` here has it
+      const first = STEP_KEYS.findIndex((k) => k !== 'contact' && !answers[k]);
+      setStep((s) => Math.max(s, first === -1 ? STEP_KEYS.indexOf('contact') : first));
       setOpen(true);
       if (opts?.call) setWantsCall(true);
       track('cta_click', { where, intent, market, next_step: opts?.call ? 'call' : 'quote' });
     },
-    [intent, market],
+    [answers, intent, market],
   );
+
+  // the "finish your request" bar (11 Oct 2026): back to the form they were typing in, everything still filled in
+  const [typedIn, setTypedIn] = useState(null);
+  const fullFormRef = useRef(null);
+  const typing = ['name', 'email', 'phone'].some((k) => (contact[k] || '').trim());
+  const finishRequest = useCallback(() => {
+    track('finish_bar_click', { market, intent, form: typedIn || 'steps' });
+    if (typedIn === 'full' && fullFormRef.current) {
+      fullFormRef.current.querySelector('[data-contact]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    openQuote('finish_bar');
+  }, [typedIn, market, intent, openQuote]);
 
   // the full form starts the "time to answer" clock on its first touch, as the widget does on its first answer
   const begin = useCallback(() => {
@@ -368,8 +386,8 @@ export function QuoteProvider({ market, intent, extra, children }) {
   }, [intent, market]);
 
   const value = useMemo(
-    () => ({ market, intent, step, setStep, answers, setAnswers, answer, contact, setContact, status, error, fails, submit, open, setOpen, openQuote, result, seasons, lastForm, begin, wantsCall, setWantsCall, booking, setBooking, check, confirmCode, resendCode, changeNumber }),
-    [market, intent, step, answers, answer, contact, status, error, fails, submit, open, openQuote, result, seasons, lastForm, begin, wantsCall, booking, check, confirmCode, resendCode, changeNumber],
+    () => ({ market, intent, step, setStep, answers, setAnswers, answer, contact, setContact, status, error, fails, submit, open, setOpen, openQuote, result, seasons, lastForm, begin, wantsCall, setWantsCall, booking, setBooking, check, confirmCode, resendCode, changeNumber, typedIn, setTypedIn, fullFormRef, typing, finishRequest }),
+    [market, intent, step, answers, answer, contact, status, error, fails, submit, open, openQuote, result, seasons, lastForm, begin, wantsCall, booking, check, confirmCode, resendCode, changeNumber, typedIn, typing, finishRequest],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
@@ -402,9 +420,9 @@ function Tiles({ name, options, value, onPick, cols = 1 }) {
   );
 }
 
-function Field({ label, hint, error, children }) {
+function Field({ label, hint, error, children, ...rest }) {
   return (
-    <label className="block">
+    <label className="block" {...rest}>
       <span className="text-sm font-bold text-zinc-900">{label}</span>
       <div className="mt-1.5">{children}</div>
       {error ? <span className="mt-1 block text-sm font-semibold text-red-700">{error}</span> : hint ? <span className="mt-1 block text-xs text-zinc-500">{hint}</span> : null}
@@ -437,7 +455,10 @@ export function QuoteFlow({ where = 'inline' }) {
   };
   const show = (k) => (tried || blurred[k]) && errs[k];
   const contactOk = !errs.name && !errs.email && !errs.phone && !errs.location;
-  const set = (k) => (e) => q.setContact((c) => ({ ...c, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+  const set = (k) => (e) => {
+    q.setTypedIn('steps');
+    q.setContact((c) => ({ ...c, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+  };
   const blur = (k) => () => setBlurred((b) => ({ ...b, [k]: true }));
   const suggestion = emailFix(q.contact.email);
   const title = key === 'fit' ? M.fitQuestion : key === 'contact' ? (q.wantsCall ? 'Who should we expect on the call?' : 'Where should we send your price?') : QUESTIONS[key].title;
@@ -515,6 +536,7 @@ export function QuoteFlow({ where = 'inline' }) {
             </div>
             {q.status === 'error' && q.lastForm === 'steps' ? <SendError /> : null}
             <SendButton />
+            <Reassurance />
             <Consent />
           </form>
         ) : null}
@@ -654,6 +676,66 @@ function SendButton() {
   );
 }
 
+/**
+ * Under the send button, the three worries people scrolled away to check in the FAQs before sending (Clarity, 11 Oct
+ * 2026): one quiet line, only what the page already says. Never permits.
+ */
+function Reassurance() {
+  return (
+    <ul className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs font-semibold text-zinc-600" aria-label="Good to know">
+      {['Fully equipped, ready to serve', 'Delivered to your door, insured', 'Yours outright, not a franchise'].map((t) => (
+        <li key={t} className="inline-flex items-center gap-1">
+          <Check className="h-3.5 w-3.5 flex-none" strokeWidth={3} style={{ color: RED }} aria-hidden /> {t}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * A slim bar once someone has started typing their details and left the form (to read the FAQs, Clarity 11 Oct 2026):
+ * one tap back to the form, everything still filled in. Hidden while the form is open or its contact fields are on
+ * screen, and once the request is in.
+ */
+export function FinishBar({ onFinish, hidden = false }) {
+  const q = useQuote();
+  const [contactOnScreen, setContactOnScreen] = useState(false);
+  const shown = useRef(false);
+  const active = !hidden && q.typing && !q.open && (q.status === 'idle' || q.status === 'error');
+  useEffect(() => {
+    const el = q.fullFormRef.current?.querySelector('[data-contact]');
+    if (!el || typeof IntersectionObserver === 'undefined') return undefined;
+    const io = new IntersectionObserver(([e]) => setContactOnScreen(e.isIntersecting), { threshold: 0.1 });
+    io.observe(el);
+    return () => io.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q.fullFormRef.current]);
+  const visible = active && !contactOnScreen;
+  useEffect(() => {
+    if (visible && !shown.current) {
+      shown.current = true;
+      track('finish_bar_shown', { market: q.market, intent: q.intent, form: q.typedIn || 'steps' });
+    }
+  }, [visible, q.market, q.intent, q.typedIn]);
+  return (
+    <div
+      className={`fixed inset-x-0 bottom-0 z-50 transition-transform duration-300 sm:inset-x-auto sm:bottom-6 sm:left-1/2 sm:w-[440px] sm:-translate-x-1/2 ${visible ? 'translate-y-0' : 'translate-y-[150%]'}`}
+      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      aria-hidden={!visible}
+    >
+      <div className="flex items-center justify-between gap-3 border-t border-zinc-200 bg-white px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.12)] sm:rounded-2xl sm:border">
+        <div className="min-w-0 leading-tight">
+          <div className="text-xs text-zinc-500">Your details are saved</div>
+          <div className="truncate font-extrabold text-zinc-950">Your request isn’t sent yet</div>
+        </div>
+        <button type="button" tabIndex={visible ? 0 : -1} onClick={onFinish ?? q.finishRequest} className="flex-none rounded-xl px-4 py-3 font-extrabold text-white shadow-sm hover:brightness-110" style={{ backgroundColor: RED }}>
+          Finish my request
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function Consent() {
   return (
     <p className="text-center text-xs leading-relaxed text-zinc-500">
@@ -664,14 +746,14 @@ function Consent() {
 
 /** One numbered question of the full form. Top level on purpose: a component made inside the form would be a new
  * component on every keystroke and the field being typed in would lose focus. */
-function Question({ n, title, error, innerRef, children }) {
+function Question({ n, title, error, innerRef, flash, children, ...rest }) {
   return (
-    <fieldset ref={innerRef} className="scroll-mt-24">
+    <fieldset ref={innerRef} className={`scroll-mt-28 rounded-xl transition-shadow duration-500 ${flash ? 'shadow-[0_0_0_4px_#E31E24] bg-red-50/60' : ''}`} {...rest}>
       <legend className="flex items-baseline gap-2 text-[18px] font-extrabold leading-snug text-zinc-950" style={{ fontFamily: '"Roboto Condensed", Inter, system-ui, sans-serif' }}>
         <span className="text-sm font-bold" style={{ color: RED }}>{n}.</span> {title}
       </legend>
       <div className="mt-3">{children}</div>
-      {error ? <p className="mt-2 text-sm font-semibold text-red-700">{error}</p> : null}
+      {error ? <p role="alert" className="mt-2 text-[15px] font-bold text-red-700">{error}</p> : null}
     </fieldset>
   );
 }
@@ -687,6 +769,11 @@ export function QuoteFullForm() {
   const M = MARKETS[q.market];
   const [tried, setTried] = useState(false);
   const [blurred, setBlurred] = useState({});
+  // the question the visitor still has to answer, lit up for a moment after "Get my price" (11 Oct 2026: two people
+  // pressed it with an answer missing, saw nothing happen and left)
+  const [flash, setFlash] = useState(null);
+  const flashTimer = useRef(null);
+  useEffect(() => () => clearTimeout(flashTimer.current), []);
   const startedRef = useRef(false);
   const refs = { use: useRef(null), timeline: useRef(null), stage: useRef(null), fit: useRef(null), contact: useRef(null) };
 
@@ -714,11 +801,12 @@ export function QuoteFullForm() {
   const contactOk = !errs.name && !errs.email && !errs.phone && !errs.location;
   const set = (k) => (e) => {
     touch(k);
+    q.setTypedIn('full');
     q.setContact((c) => ({ ...c, [k]: e.target.value }));
   };
   const blur = (k) => () => setBlurred((b) => ({ ...b, [k]: true }));
   const suggestion = emailFix(q.contact.email);
-  const pickError = (k) => (tried && !q.answers[k] ? 'Please pick one.' : '');
+  const pickError = (k) => (tried && !q.answers[k] ? 'Please pick one of these to continue.' : '');
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -726,7 +814,17 @@ export function QuoteFullForm() {
     if (q.status === 'sending') return;
     if (missing.length || !contactOk) {
       const first = missing[0] ?? 'contact';
-      refs[first].current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const box = refs[first].current;
+      // the missing question comes into view under the header and lights up; a missing detail gets the keyboard
+      box?.scrollIntoView({ behavior: 'smooth', block: first === 'contact' ? 'center' : 'start' });
+      setFlash(first);
+      clearTimeout(flashTimer.current);
+      flashTimer.current = setTimeout(() => setFlash(null), 2500);
+      if (first === 'contact') {
+        const bad = ['name', 'phone', 'email', 'location'].find((k) => errs[k]);
+        setBlurred((b) => ({ ...b, [bad]: true }));
+        setTimeout(() => box?.querySelector(`[data-field="${bad}"] input`)?.focus({ preventScroll: true }), 400);
+      }
       track('full_form_incomplete', { missing: missing.join(',') || 'contact', market: q.market, intent: q.intent });
       return;
     }
@@ -734,31 +832,31 @@ export function QuoteFullForm() {
   };
 
   return (
-    <form noValidate onSubmit={onSubmit} className="grid gap-7 text-left" aria-label="Get your Coffee Bike price">
-      <Question n={1} innerRef={refs.use} title={QUESTIONS.use.title} error={pickError('use')}>
+    <form ref={q.fullFormRef} noValidate onSubmit={onSubmit} className="grid gap-7 text-left" aria-label="Get your Coffee Bike price">
+      <Question n={1} innerRef={refs.use} flash={flash === 'use'} title={QUESTIONS.use.title} error={pickError('use')}>
         <Tiles name={QUESTIONS.use.title} options={QUESTIONS.use.options} value={q.answers.use} onPick={(v) => pick('use', v)} cols={2} />
       </Question>
-      <Question n={2} innerRef={refs.timeline} title={QUESTIONS.timeline.title} error={pickError('timeline')}>
+      <Question n={2} innerRef={refs.timeline} flash={flash === 'timeline'} title={QUESTIONS.timeline.title} error={pickError('timeline')}>
         <Tiles name={QUESTIONS.timeline.title} options={q.seasons} value={q.answers.timeline} onPick={(v) => pick('timeline', v)} cols={2} />
       </Question>
-      <Question n={3} innerRef={refs.stage} title={QUESTIONS.stage.title} error={pickError('stage')}>
+      <Question n={3} innerRef={refs.stage} flash={flash === 'stage'} title={QUESTIONS.stage.title} error={pickError('stage')}>
         <Tiles name={QUESTIONS.stage.title} options={QUESTIONS.stage.options} value={q.answers.stage} onPick={(v) => pick('stage', v)} cols={2} />
       </Question>
-      <Question n={4} innerRef={refs.fit} title={M.fitQuestion} error={pickError('fit')}>
+      <Question n={4} innerRef={refs.fit} flash={flash === 'fit'} title={M.fitQuestion} error={pickError('fit')}>
         <p className="mb-3 rounded-xl bg-zinc-100 p-4 text-[15px] leading-relaxed text-zinc-800">{M.fitLine}</p>
         <Tiles name={M.fitQuestion} options={M.fit} value={q.answers.fit} onPick={(v) => pick('fit', v)} />
       </Question>
-      <Question n={5} innerRef={refs.contact} title="Where should we send your price?">
+      <Question n={5} innerRef={refs.contact} flash={flash === 'contact'} title="Where should we send your price?" data-contact="">
         <div className="grid gap-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Full name" error={show('name')}>
+            <Field label="Full name" error={show('name')} data-field="name">
               <input className={input} value={q.contact.name} onChange={set('name')} onBlur={blur('name')} autoComplete="name" placeholder="First and last name" />
             </Field>
-            <Field label="Mobile number" hint="So we can text or call you back fast." error={show('phone')}>
+            <Field label="Mobile number" hint="So we can text or call you back fast." error={show('phone')} data-field="phone">
               <input className={input} type="tel" inputMode="tel" value={q.contact.phone} onChange={set('phone')} onBlur={blur('phone')} autoComplete="tel" placeholder={M.phonePlaceholder} />
             </Field>
           </div>
-          <Field label="Email" error={show('email')}>
+          <Field label="Email" error={show('email')} data-field="email">
             <input className={input} type="email" inputMode="email" value={q.contact.email} onChange={set('email')} onBlur={blur('email')} autoComplete="email" placeholder="you@example.com" />
             {suggestion ? (
               <button type="button" onClick={() => q.setContact((c) => ({ ...c, email: suggestion }))} className="mt-1 text-sm font-semibold text-zinc-700 underline underline-offset-2">
@@ -766,7 +864,7 @@ export function QuoteFullForm() {
               </button>
             ) : null}
           </Field>
-          <Field label="City and province or state" hint="For your delivery cost and local permit rules." error={show('location')}>
+          <Field label="City and province or state" hint="For your delivery cost and local permit rules." error={show('location')} data-field="location">
             <input className={input} value={q.contact.location} onChange={set('location')} onBlur={blur('location')} autoComplete="address-level2" placeholder={M.cityPlaceholder} />
           </Field>
           <Field label="Questions or comments (optional)">
@@ -785,6 +883,7 @@ export function QuoteFullForm() {
       {q.status === 'error' && q.lastForm === 'full' ? <SendError /> : null}
       <div className="grid gap-3">
         <SendButton />
+        <Reassurance />
         <Consent />
       </div>
     </form>

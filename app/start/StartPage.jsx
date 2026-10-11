@@ -1,14 +1,14 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { ArrowRight, BatteryCharging, Calendar, Check, ChevronDown, Clock, Coffee, CreditCard, Droplets, FileText, Info, Mail, MapPin, ShieldCheck, Snowflake, Sun, Users } from 'lucide-react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { ArrowRight, BatteryCharging, Calendar, Check, ChevronDown, Clock, Coffee, CreditCard, Droplets, FileText, Info, Mail, MapPin, ShieldCheck, Snowflake, Sun, Users, X, ZoomIn } from 'lucide-react';
 import LiteYouTube from '../../components/LiteYouTube';
 import {
   ADDRESS, ADS_TAG, BASE_PATH, COMPARE_COLS, DEPOSIT_URL, EMAIL, FEATURES, INCLUDED, INTENTS, LOGO, MARKETS, OWNERS, PHOTOS, PRICING,
   SPEC_SHEET, SPECS, TRUST, WALKTHROUGH_ID, compareRows, faqs, steps, whatsappLink,
 } from './content';
-import { HeroQuestion, QuoteFullForm, QuoteModal, QuoteProvider, RED, useQuote } from './quote';
+import { FinishBar, HeroQuestion, QuoteFullForm, QuoteModal, QuoteProvider, RED, useQuote } from './quote';
 
 const DISPLAY = { fontFamily: '"Roboto Condensed", Inter, system-ui, sans-serif' };
 const BALANCE = { textWrap: 'balance' };
@@ -73,6 +73,52 @@ function PriceButton({ where, children, className = '', variant = 'primary' }) {
   );
 }
 
+/**
+ * A photo that opens full screen on a tap (11 Oct 2026: Clarity showed visitors tapping the bike photos two or three
+ * times, expecting them to enlarge, and nothing happened). The same next/image, so nothing new is downloaded until the tap.
+ */
+function Photo({ photo, caption, onOpen, sizes, imgClassName = 'object-cover', style, className = '' }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen({ src: photo.src, alt: photo.alt, caption: caption ?? photo.alt })}
+      className={`group relative block w-full cursor-zoom-in overflow-hidden text-left focus:outline-none focus-visible:ring-4 focus-visible:ring-red-300 ${className}`}
+      style={style}
+      aria-label={`View larger: ${caption ?? photo.alt}`}
+    >
+      <Image src={photo.src} alt={photo.alt} fill sizes={sizes} className={imgClassName} />
+      <span className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition group-hover:bg-black/75" aria-hidden>
+        <ZoomIn className="h-4 w-4" strokeWidth={2.5} />
+      </span>
+    </button>
+  );
+}
+
+/** The full-screen view: the whole photo, uncropped, its caption, and a tap anywhere or Escape to close. */
+function Lightbox({ photo, onClose }) {
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [onClose]);
+  return (
+    <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center bg-black/95 p-3 sm:p-6" role="dialog" aria-modal="true" aria-label={photo.caption} onClick={onClose}>
+      <button type="button" onClick={onClose} aria-label="Close" className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20" style={{ top: 'max(12px, env(safe-area-inset-top))' }}>
+        <X className="h-6 w-6" />
+      </button>
+      <div className="relative h-[76vh] w-full max-w-5xl">
+        <Image src={photo.src} alt={photo.alt} fill sizes="100vw" className="object-contain" priority />
+      </div>
+      <p className="mt-3 max-w-xl px-2 text-center text-sm font-semibold text-zinc-200">{photo.caption}</p>
+    </div>
+  );
+}
+
 /** Every "book a call" button: the four questions first, then the calendar, so a booking is a lead with its answers (founder, 3 Oct 2026). */
 function CallButton({ where, className = '', style, children }) {
   const q = useQuote();
@@ -102,6 +148,13 @@ function Page({ intent, market }) {
   const [allRows, setAllRows] = useState(false);
   const [allFaq, setAllFaq] = useState(false);
   const [sticky, setSticky] = useState(false);
+  // the photo open full screen, if any
+  const [zoom, setZoom] = useState(null);
+  const openPhoto = (p) => {
+    setZoom(p);
+    track('photo_open', { photo: p.caption, intent, market });
+  };
+  const closePhoto = useCallback(() => setZoom(null), []);
   // a visitor from the other country: one tap to their own prices, with the ad's tracking kept in the link
   const [elsewhere, setElsewhere] = useState(null);
   useEffect(() => {
@@ -330,9 +383,7 @@ function Page({ intent, market }) {
         <div className="mt-8 flex gap-2 sm:gap-4">
           {[PHOTOS.customerSide, PHOTOS.baristaSide, PHOTOS.closed].map((p, i) => (
             <figure key={p.src} className="min-w-0 overflow-hidden rounded-xl bg-white" style={{ flex: `${p.w / p.h} 1 0%` }}>
-              <div className="relative" style={{ aspectRatio: `${p.w} / ${p.h}` }}>
-                <Image src={p.src} alt={p.alt} fill sizes="(min-width: 1152px) 440px, 40vw" className="object-cover" />
-              </div>
+              <Photo photo={p} caption={['Customer side', 'Barista side', 'Closed to ride'][i]} onOpen={openPhoto} sizes="(min-width: 1152px) 440px, 40vw" style={{ aspectRatio: `${p.w} / ${p.h}` }} />
               <figcaption className="px-2 py-2 text-center text-xs font-semibold text-zinc-600 sm:text-sm">{['Customer side', 'Barista side', 'Closed to ride'][i]}</figcaption>
             </figure>
           ))}
@@ -341,9 +392,7 @@ function Page({ intent, market }) {
         <div className="-mx-4 mt-6 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:mt-8 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3" onScroll={onFeaturesScroll}>
           {FEATURES.map((f) => (
             <article key={f.title} className="w-[82%] max-w-[340px] flex-none snap-start overflow-hidden rounded-xl bg-white sm:w-auto sm:max-w-none">
-              <div className="relative aspect-[4/3] bg-zinc-100">
-                <Image src={f.img} alt={f.title} fill sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 82vw" className="object-cover" />
-              </div>
+              <Photo photo={{ src: f.img, alt: f.title }} caption={f.title} onOpen={openPhoto} sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 82vw" className="aspect-[4/3] bg-zinc-100" />
               <div className="p-4 sm:p-5">
                 <h3 className="font-bold text-zinc-950 sm:text-lg">{f.title}</h3>
                 <p className="mt-1 text-sm leading-relaxed text-zinc-600 sm:mt-1.5 sm:text-[15px]">{f.text}</p>
@@ -481,7 +530,7 @@ function Page({ intent, market }) {
         </div>
       </Section>
 
-      <DayAndWhere />
+      <DayAndWhere onOpen={openPhoto} />
 
       {/* seasons */}
       <Section id="seasons" tone="soft">
@@ -503,9 +552,7 @@ function Page({ intent, market }) {
               ))}
             </div>
           </div>
-          <div className="relative aspect-square overflow-hidden rounded-2xl bg-zinc-200">
-            <Image src={PHOTOS.indoors.src} alt={PHOTOS.indoors.alt} fill sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover object-[50%_60%]" />
-          </div>
+          <Photo photo={PHOTOS.indoors} onOpen={openPhoto} sizes="(min-width: 1024px) 40vw, 100vw" imgClassName="object-cover object-[50%_60%]" className="aspect-square rounded-2xl bg-zinc-200" />
         </div>
       </Section>
 
@@ -527,9 +574,7 @@ function Page({ intent, market }) {
       <Section id="founder">
         <div className="grid items-center gap-10 md:grid-cols-[1.1fr_1fr]">
           {/* the whole 3:2 photo: the founder and the open bike side by side */}
-          <div className="relative aspect-[3/2] w-full overflow-hidden rounded-xl bg-zinc-200">
-            <Image src={PHOTOS.founder.src} alt={PHOTOS.founder.alt} fill sizes="(min-width: 1152px) 580px, (min-width: 768px) 52vw, 100vw" className="object-cover" />
-          </div>
+          <Photo photo={PHOTOS.founder} onOpen={openPhoto} sizes="(min-width: 1152px) 580px, (min-width: 768px) 52vw, 100vw" className="aspect-[3/2] rounded-xl bg-zinc-200" />
           <div>
             <Heading eyebrow="Built by people who run it" title="We’ve served 1.5 million cups from these bikes ourselves" />
             <div className="mt-5 max-w-xl space-y-4 text-lg leading-relaxed text-zinc-700">
@@ -593,8 +638,8 @@ function Page({ intent, market }) {
         </div>
       </footer>
 
-      {/* phones: price bar that follows the visitor */}
-      <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white/95 backdrop-blur transition-transform md:hidden ${sticky && !q.open ? 'translate-y-0' : 'translate-y-full'}`} style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+      {/* phones: price bar that follows the visitor; while the finish bar is up (details typed, request not sent) it steps aside */}
+      <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white/95 backdrop-blur transition-transform md:hidden ${sticky && !q.open && !(q.typing && (q.status === 'idle' || q.status === 'error')) ? 'translate-y-0' : 'translate-y-full'}`} style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         <div className="flex items-center justify-between gap-3 px-4 py-3">
           <div className="leading-tight">
             <div className="text-xs text-zinc-500">{M.sticky.k}</div>
@@ -605,6 +650,8 @@ function Page({ intent, market }) {
           </button>
         </div>
       </div>
+      <FinishBar />
+      {zoom ? <Lightbox photo={zoom} onClose={closePhoto} /> : null}
     </div>
   );
 }
@@ -613,7 +660,7 @@ function Page({ intent, market }) {
  * Day-to-day running, what the bike can do and where owners sell (together 42% of the questions buyers send us).
  * General advice only: the page never promises venues, events or customers (a business-opportunity claim).
  */
-function DayAndWhere() {
+function DayAndWhere({ onOpen }) {
   const day = [
     { icon: Clock, t: 'Open in minutes', d: 'Ride in, open the canopy, start the machine: propane outdoors, a standard outlet indoors.' },
     { icon: Coffee, t: 'Keeps up with a line', d: 'About 60–100 drinks an hour, depending on your menu and barista.' },
@@ -645,9 +692,7 @@ function DayAndWhere() {
           </ul>
           <p className="mt-3 text-sm text-zinc-500">Your permits decide where you can vend, so every city is different.</p>
         </div>
-        <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-zinc-200">
-          <Image src={PHOTOS.boardwalk.src} alt={PHOTOS.boardwalk.alt} fill sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover object-[50%_45%]" />
-        </div>
+        <Photo photo={PHOTOS.boardwalk} onOpen={onOpen} sizes="(min-width: 1024px) 45vw, 100vw" imgClassName="object-cover object-[50%_45%]" className="aspect-[4/3] rounded-2xl bg-zinc-200" />
       </div>
     </Section>
   );
