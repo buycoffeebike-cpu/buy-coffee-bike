@@ -196,17 +196,27 @@ export function QuoteProvider({ market, intent, extra, children }) {
         setContact((c) => ({ ...c, ...(s.contact || {}), hp: '' }));
         setStep(Math.min(s.step || 0, STEP_KEYS.length - 1));
         if (s.wantsCall) setWantsCall(true);
+        // the code screen comes back too (11 Oct 2026): Facebook's in-app browser reloads the page when the visitor
+        // switches to their texts to read the code, and they landed back on the form ("I keep getting kicked out")
+        if (s.status === 'code' && s.check?.checkId && (s.check.expiresAt || 0) > Date.now()) {
+          setCheck({ ...s.check, busy: false, error: '', note: '' });
+          setStatus('code');
+          if (s.open) setOpen(true);
+          track('phone_code_restored', { market, intent });
+        }
       }
     } catch {}
     restored.current = true;
-  }, [market]);
+  }, [market]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!restored.current) return;
     try {
       const { hp, ...keep } = contact;
-      sessionStorage.setItem(STORE, JSON.stringify({ market, step, answers, contact: keep, status, wantsCall }));
+      // the code step's own fields only (the held request is the same details already kept here)
+      const code = status === 'code' && check ? { checkId: check.checkId, to: check.to, resendAt: check.resendAt, expiresAt: check.expiresAt, body: check.body, eventId: check.eventId, form: check.form } : null;
+      sessionStorage.setItem(STORE, JSON.stringify({ market, step, answers, contact: keep, status, wantsCall, check: code, open }));
     } catch {}
-  }, [market, step, answers, contact, status, wantsCall]);
+  }, [market, step, answers, contact, status, wantsCall, check, open]);
 
   const answer = useCallback(
     (key, v) => {
@@ -305,7 +315,7 @@ export function QuoteProvider({ market, intent, extra, children }) {
       }
       // a checked visitor: the OS texted a code and holds the request until it comes back; nothing counts before that
       if (j.data?.needsCode) {
-        setCheck({ checkId: j.data.checkId, to: j.data.to, resendAt: Date.now() + (j.data.resendInSec || 30) * 1000, body, eventId, form, busy: false, error: '', note: '' });
+        setCheck({ checkId: j.data.checkId, to: j.data.to, resendAt: Date.now() + (j.data.resendInSec || 30) * 1000, expiresAt: Date.now() + (j.data.expiresInSec || 600) * 1000, body, eventId, form, busy: false, error: '', note: '' });
         setStatus('code');
         track('phone_code_shown', { market, intent, form_variant: form });
         return;
@@ -343,7 +353,7 @@ export function QuoteProvider({ market, intent, extra, children }) {
     setCheck((c) => c && { ...c, busy: true, error: '', note: '' });
     try {
       const j = await postPhone({ action: 'resend', checkId: check.checkId });
-      setCheck((c) => c && { ...c, to: j.data.to, resendAt: Date.now() + (j.data.resendInSec || 30) * 1000, busy: false, error: '', note: 'We texted you a new code.' });
+      setCheck((c) => c && { ...c, to: j.data.to, resendAt: Date.now() + (j.data.resendInSec || 30) * 1000, expiresAt: Date.now() + (j.data.expiresInSec || 600) * 1000, busy: false, error: '', note: 'We texted you a new code.' });
       track('phone_code_resent', { market, intent });
     } catch (e) {
       setCheck((c) => c && { ...c, busy: false, error: e?.status && e.status < 500 ? e.message : 'That did not go through. Please try again.' });
@@ -581,6 +591,10 @@ function PhoneCode({ where }) {
         <p className="text-xl font-extrabold text-zinc-950">Check your texts</p>
         <p className="mt-1 text-[15px] leading-relaxed text-zinc-700">
           We just texted a 4-digit code to <span className="font-bold text-zinc-950">{c.to}</span>. Type it here and your request goes through.
+        </p>
+        {/* the founder, 11 Oct 2026: a visitor gave up after leaving the page to read the code */}
+        <p className="mt-2 rounded-lg bg-zinc-100 p-3 text-[15px] font-semibold leading-relaxed text-zinc-800">
+          Keep this page open while you check your messages. The code usually arrives within a minute.
         </p>
       </div>
       <form
