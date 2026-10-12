@@ -520,7 +520,7 @@ export function QuoteFlow({ where = 'inline' }) {
             <Field label="Mobile number" hint="So we can text or call you back fast." error={show('phone')}>
               <input className={input} type="tel" inputMode="tel" value={q.contact.phone} onChange={set('phone')} onBlur={blur('phone')} autoComplete="tel" placeholder={M.phonePlaceholder} />
             </Field>
-            <Field label="City and province or state" hint="For your delivery cost and local permit rules." error={show('location')}>
+            <Field label="City and province or state" hint="For your delivery cost." error={show('location')}>
               <input className={input} value={q.contact.location} onChange={set('location')} onBlur={blur('location')} autoComplete="address-level2" placeholder={M.cityPlaceholder} />
             </Field>
             {/* open, not folded away: people missed it, and what they write tells us the most (founder, 2 Oct 2026) */}
@@ -864,7 +864,7 @@ export function QuoteFullForm() {
               </button>
             ) : null}
           </Field>
-          <Field label="City and province or state" hint="For your delivery cost and local permit rules." error={show('location')} data-field="location">
+          <Field label="City and province or state" hint="For your delivery cost." error={show('location')} data-field="location">
             <input className={input} value={q.contact.location} onChange={set('location')} onBlur={blur('location')} autoComplete="address-level2" placeholder={M.cityPlaceholder} />
           </Field>
           <Field label="Questions or comments (optional)">
