@@ -610,14 +610,6 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
       quote: "Mine is technically a Chai Bike — same Coffee Bike build, my menu. I wanted to share traditional chai the way I grew up with it, and the bike gave me a way to do that on my own terms. The build handles everything I need and people are genuinely curious every time I open up. Brewing something from your culture and watching strangers fall in love with it never gets old.",
     },
     {
-      name: 'Jorge',
-      loc: 'Vancouver, BC',
-      biz: 'Amor Cafe',
-      months: 13,
-      img: 'https://coffeebike.ca/wp-content/uploads/2026/05/Amor.png',
-      quote: "Vlad and I talked for years before I finally pulled the trigger. I'm a husband, a dad, and now I'm living the coffee entrepreneur dream I'd been circling for so long. The Coffee Bike World community on Discord has been huge for me — owners actually help each other. I post almost daily because I want others to see it's possible. If you're on the fence, just go.",
-    },
-    {
       name: 'Chris',
       loc: 'Lawndale, CA',
       biz: 'Ampelos Coffee',
