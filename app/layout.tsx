@@ -10,12 +10,12 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata = { robots: { index: true, follow: true }, metadataBase: new URL('https://coffeebike.ca'), alternates: { canonical: 'https://coffeebike.ca/buy-a-mobile-coffee-bike', ...(HREFLANG ? { languages: HREFLANG } : {}) },
   title: 'Buy a Coffee Bike | Electric Coffee Cart for Sale, Worldwide',
   description:
-    'Electric Coffee Bike for sale from $9,850 USD: a custom-branded coffee cart and espresso bar. No franchise fees. Ships to the USA, Canada and worldwide.',
+    'Electric Coffee Bike for sale, fully equipped from $15,850 USD: a custom-branded coffee cart and espresso bar. No franchise fees. Ships to the USA, Canada and worldwide.',
 
   openGraph: {
     title: 'Buy a Coffee Bike | Electric Coffee Cart for Sale, Worldwide',
     description:
-      'Electric Coffee Bike for sale from $9,850 USD: a custom-branded coffee cart and espresso bar. No franchise fees. Ships to the USA, Canada and worldwide.',
+      'Electric Coffee Bike for sale, fully equipped from $15,850 USD: a custom-branded coffee cart and espresso bar. No franchise fees. Ships to the USA, Canada and worldwide.',
     url: 'https://coffeebike.ca/buy-a-mobile-coffee-bike',
     siteName: 'Coffee Bike World',
     images: [
@@ -33,7 +33,7 @@ export const metadata = { robots: { index: true, follow: true }, metadataBase: n
     card: 'summary_large_image',
     title: 'Buy a Coffee Bike | Electric Coffee Cart for Sale, Worldwide',
     description:
-      'Electric Coffee Bike for sale from $9,850 USD: a custom-branded coffee cart and espresso bar. No franchise fees. Ships to the USA, Canada and worldwide.',
+      'Electric Coffee Bike for sale, fully equipped from $15,850 USD: a custom-branded coffee cart and espresso bar. No franchise fees. Ships to the USA, Canada and worldwide.',
     images: ['https://coffeebike.ca/wp-content/uploads/2026/05/open-ready.jpg.jpg'],
   },
 };
