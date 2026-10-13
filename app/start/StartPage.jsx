@@ -429,7 +429,7 @@ function Page({ intent, market }) {
         </div>
         <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_1fr]">
           <div className="rounded-2xl bg-zinc-950 p-6 text-white sm:p-8">
-            <p className="text-sm font-bold uppercase tracking-wider text-zinc-400">Typical build</p>
+            <p className="text-sm font-bold uppercase tracking-wider text-zinc-400">Fully equipped</p>
             <p className="mt-1 text-5xl font-extrabold tabular-nums sm:text-6xl" style={DISPLAY}>{P.lead}</p>
             <p className="mt-2 max-w-md text-[15px] leading-relaxed text-zinc-300">{P.leadNote}</p>
             <ul className="mt-6 grid gap-2.5 text-[15px] leading-snug text-zinc-100">
@@ -706,7 +706,7 @@ function DayAndWhere({ onOpen }) {
  */
 function Numbers({ intent, market }) {
   const cur = market === 'ca' ? 'CA$' : 'US$';
-  const build = market === 'ca' ? 25000 : 15850;
+  const build = market === 'ca' ? 22500 : 15850;
   const [mode, setMode] = useState('retail');
   const [cups, setCups] = useState(50);
   const [cupPrice, setCupPrice] = useState(5.5);
@@ -781,7 +781,7 @@ function Numbers({ intent, market }) {
             <div className="mt-6 rounded-xl border p-4" style={{ borderColor: RED, backgroundColor: 'rgba(227,30,36,0.15)' }}>
               <p className="text-xs font-bold uppercase tracking-wider" style={{ color: RED }}>Build cost comparison</p>
               <p className="mt-1 text-3xl font-extrabold tabular-nums" style={DISPLAY}>{r.payback < 1 ? '< 1' : Math.ceil(r.payback)} months</p>
-              <p className="text-xs text-zinc-400">of this monthly amount to equal a typical {money(build)} build (your quote may differ), before your other costs</p>
+              <p className="text-xs text-zinc-400">of this monthly amount to equal a {money(build)} starting build (your quote may differ), before your other costs</p>
             </div>
             <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4">
               <p className="text-xs font-bold uppercase tracking-wider" style={{ color: RED }}>Check your numbers with the founder</p>

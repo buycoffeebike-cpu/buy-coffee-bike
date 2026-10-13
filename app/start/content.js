@@ -45,20 +45,20 @@ export const EMAIL = 'coffeebike@vladvik.com';
 export const ADDRESS = '1356 Frances St, Vancouver, BC V5L 1Y9';
 
 /**
- * Prices by market (founder, 28 Sept 2026): Canadian visitors see Canadian dollars anchored on a typical build of
- * about CA$25,000, US visitors US dollars anchored on about US$15,850. Never a "from" price.
+ * Prices by market (founder, 13 Oct 2026, replacing the 28 Sept "typical build, never a from price" wording): "Starts
+ * at 15850 USD and 22500 CAD for a fully equipped unit (as it goes higher with each upgrade)". CA$22,500 is before tax.
  */
 export const MARKETS = {
   us: {
     key: "us",
     base: "/start",
     typical: "US$15,850",
-    fitQuestion: "Is about US$15,850 realistic for you?",
+    fitQuestion: "Fully equipped Coffee Bikes start at US$15,850. Does that fit your plan?",
     ownersIn: "Owners in Florida, Arizona, Oregon and California",
-    heroPrice: "About US$15,850",
-    heroPriceNote: "for a ready-to-serve espresso build, before tax. Shipping quoted to your address",
-    sticky: { k: "Typical build", v: "US$15,850" },
-    fitLine: "Most US owners invest about US$15,850 for a ready-to-serve espresso build, before tax and shipping. Your final price depends on your build.",
+    heroPrice: "From US$15,850",
+    heroPriceNote: "fully equipped, before tax. Shipping quoted to your address",
+    sticky: { k: "Fully equipped from", v: "US$15,850" },
+    fitLine: "A fully equipped Coffee Bike starts at US$15,850 before tax and shipping, and the price goes up with each upgrade you choose.",
     // no financing answer: there is no US financing partner yet (founder, 29 Sept 2026); no lower-cost answer either,
     // there is little to offer below a typical build (founder, 1 Oct 2026), so a stretched budget goes to the call
     fit: [
@@ -66,7 +66,7 @@ export const MARKETS = {
       { v: "talk", t: "Close, I'd like to talk it through" },
       { v: "unsure", t: "Not sure yet" },
     ],
-    thanksPrice: "A ready-to-serve espresso build is about US$15,850.",
+    thanksPrice: "A fully equipped Coffee Bike starts at US$15,850.",
     thanksNote: "Your quote adds your options and shipping to your address.",
     phonePlaceholder: "+1 555 555 0123",
     cityPlaceholder: "e.g. Austin, TX",
@@ -75,19 +75,19 @@ export const MARKETS = {
   ca: {
     key: "ca",
     base: "/start/ca",
-    typical: "CA$25,000",
-    fitQuestion: "Is about CA$25,000 realistic for you?",
+    typical: "CA$22,500",
+    fitQuestion: "Fully equipped Coffee Bikes start at CA$22,500. Does that fit your plan?",
     ownersIn: "Owners in BC, Alberta, Manitoba and Ontario",
-    heroPrice: "About CA$25,000",
-    heroPriceNote: "for a typical Canadian build, depending on your final build. Taxes extra; shipping quoted to your address",
-    sticky: { k: "Typical build", v: "CA$25,000" },
-    fitLine: "Most Canadian owners invest about CA$25,000, depending on the final build. Taxes are extra and shipping is quoted for your address.",
+    heroPrice: "From CA$22,500",
+    heroPriceNote: "fully equipped, before tax. Shipping quoted to your address",
+    sticky: { k: "Fully equipped from", v: "CA$22,500" },
+    fitLine: "A fully equipped Coffee Bike starts at CA$22,500 before tax, and the price goes up with each upgrade you choose. Shipping is quoted for your address.",
     fit: [
       { v: "fits", t: "Yes, I can plan around that" },
       { v: "finance", t: "I'd like to apply for financing", d: "Through iFinance, on approved credit" },
       { v: "unsure", t: "Not sure yet" },
     ],
-    thanksPrice: "Most Canadian owners invest about CA$25,000, depending on the final build.",
+    thanksPrice: "A fully equipped Coffee Bike starts at CA$22,500 before tax.",
     thanksNote: "Your quote adds your options, taxes and shipping to your address.",
     phonePlaceholder: "+1 604 555 0123",
     cityPlaceholder: "e.g. Calgary, AB",
@@ -217,7 +217,7 @@ const MONEY_ROWS = {
   us: [
     {
       label: 'Typical cost to start',
-      bike: 'About US$15,850 for a ready-to-serve espresso build',
+      bike: 'From US$15,850, fully equipped',
       truck: 'New builds often US$55,000–150,000; used coffee trucks around US$64,000',
       trailer: 'New US$21,000–80,000 equipped; used around US$33,000. Plus a vehicle to tow it',
       cart: 'About US$8,000–25,000 once an espresso machine and grinder are added',
@@ -235,7 +235,7 @@ const MONEY_ROWS = {
   ca: [
     {
       label: 'Typical cost to start',
-      bike: 'About CA$25,000 for a typical build',
+      bike: 'From CA$22,500 before tax, fully equipped',
       truck: 'New builds often CA$75,000–205,000; used coffee trucks around CA$88,000',
       trailer: 'New CA$29,000–110,000 equipped; used around CA$45,000. Plus a vehicle to tow it',
       cart: 'About CA$11,000–34,000 once an espresso machine and grinder are added',
@@ -330,8 +330,8 @@ export const INCLUDED = [
 export const PRICING = {
   us: {
     big: 'US$15,850',
-    lead: 'About US$15,850',
-    leadNote: 'for a ready-to-serve espresso build, before tax. Your final price depends on the options below and shipping.',
+    lead: 'From US$15,850',
+    leadNote: 'fully equipped, before tax. The price goes up with the options below and shipping.',
     changes: [
       { item: 'Double-group espresso setup instead of single', price: '+US$2,000', note: 'For high-volume events and long lines' },
       { item: 'UL certification for the espresso setup', price: '+US$575', note: 'Recommended in the US and Canada' },
@@ -342,9 +342,9 @@ export const PRICING = {
     payment: { t: 'Paying for it', d: 'Bank transfer or card, once you approve your invoice. Nothing is charged before that.' },
   },
   ca: {
-    big: 'CA$25,000',
-    lead: 'About CA$25,000',
-    leadNote: 'is what most Canadian owners invest, depending on the final build. Taxes extra. We quote every build in Canadian dollars.',
+    big: 'CA$22,500',
+    lead: 'From CA$22,500',
+    leadNote: 'fully equipped, before tax. The price goes up with each upgrade, and we quote every build in Canadian dollars.',
     changes: [
       { item: 'Espresso setup', note: 'Single group for most owners; double group for high-volume events' },
       { item: 'Certification', note: 'UL certification for the espresso setup, recommended in Canada' },
@@ -368,7 +368,7 @@ export const steps = (market) => STEPS_BASE.map((x) => ({ t: x.t, d: typeof x.d 
 /** Questions buyers ask, answered for the visitor’s market (money and financing differ between Canada and the US). */
 const FAQ_BASE = [
   { q: "Do I need permits?", a: { us: "Yes, and the rules differ by city. Most health departments review your setup (sinks, water, food-safe surfaces) and inspect it, and many ask for a commissary or approved base. Permits often take 60–90 days, so owners apply while their bike is being built. Owners usually trade on private property (a deal with a landlord, market or venue) or in public space with a mobile vending permit where the city offers one.", ca: "Yes, and the rules differ by city and province. Most health authorities review your setup (sinks, water, food-safe surfaces) and inspect it, and many ask for a commissary or approved base. Permits often take 60–90 days, so owners apply while their bike is being built. Owners usually trade on private property (a deal with a landlord, market or venue) or in public space with a mobile vending permit where the city offers one." } },
-  { q: "What does a complete Coffee Bike cost?", a: { us: "Most US owners invest about US$15,850 for a ready-to-serve espresso build: the bike, branded body and canopy, sinks, fridge, batteries and a Fracino single-group espresso setup. A double-group setup, UL certification and add-ons change the price, and shipping is quoted for your address.", ca: "Most Canadian owners invest about CA$25,000, depending on the final build: the espresso setup, certification, branding, add-ons and training. We quote every build in Canadian dollars, shipping is quoted for your address, and Canadian residents can apply for financing through iFinance." } },
+  { q: "What does a complete Coffee Bike cost?", a: { us: "A fully equipped Coffee Bike starts at US$15,850: the bike, branded body and canopy, sinks, fridge, batteries and a Fracino single-group espresso setup. A double-group setup, UL certification and add-ons raise the price, and shipping is quoted for your address.", ca: "A fully equipped Coffee Bike starts at CA$22,500 before tax: the bike, branded body and canopy, sinks, fridge, batteries and a Fracino single-group espresso setup. Certification, branding, add-ons and training raise the price. We quote every build in Canadian dollars, shipping is quoted for your address, and Canadian residents can apply for financing through iFinance." } },
   { q: "How soon can I open?", a: "A bike in stock ships right away. Made-to-order builds take about 4–6 weeks, and delivery typically adds 2–4 weeks depending on where you are. If you want to open for spring markets, ordering in winter gives you time to arrange permits and a spot." },
   { q: "What about winter and rain?", a: "Many owners move indoors in the cold months: office lobbies, hospitals, campuses, residential towers, grocery stores and gyms. The bike needs no build-out on the landlord’s side: it rolls in, plugs into a standard outlet and serves." },
   { q: "How far can it go, and can it handle hills?", a: "The electric motor climbs steep hills fully loaded, with twin hydraulic brakes and front and rear suspension. One battery pack covers about 10–15 km and two about 20–30 km, depending on the roads." },
@@ -377,7 +377,7 @@ const FAQ_BASE = [
   { q: "Do you deliver to my door?", a: { us: "Yes, anywhere in the US. Every Coffee Bike is crated, palletized, insured and delivered to your door. We quote shipping before you confirm your order.", ca: "Yes, anywhere in Canada. Every Coffee Bike is crated, palletized, insured and delivered to your door. We quote shipping before you confirm your order." } },
   { q: { us: "How do I pay?", ca: "How do I pay, and is there financing?" }, a: { us: "You receive an invoice within one business day of confirming your build and pay by bank transfer or card. You can reserve a production spot with a US$250 deposit, applied in full to your order.", ca: "You receive an invoice within one business day of confirming your build and pay by bank transfer (CAD or USD) or card. Canadian residents can apply for financing through iFinance. You can reserve a production spot with a US$250 deposit, applied in full to your order." } },
   { q: "Can I sell more than coffee?", a: "Yes. It’s your business and your menu: specialty coffee, tea, matcha, hot chocolate and more. The Iced Express package suits ice cream and bottled drinks, and a multi-grill option adds hot food." },
-  { q: "What is the difference between builds?", a: { us: "The espresso setup (none, single group or double group), certification, branding and add-ons. Most owners choose a ready-to-serve espresso build at about US$15,850.", ca: "The espresso setup (none, single group or double group), certification, branding and add-ons. Most Canadian owners invest about CA$25,000. Canadian residents can also apply for financing through iFinance." } },
+  { q: "What is the difference between builds?", a: { us: "The espresso setup (none, single group or double group), certification, branding and add-ons. Fully equipped espresso builds start at US$15,850.", ca: "The espresso setup (none, single group or double group), certification, branding and add-ons. Fully equipped builds start at CA$22,500 before tax. Canadian residents can also apply for financing through iFinance." } },
   { q: "Can I brand it and choose the colours?", a: "Yes. Your name, logo and colours on the body and canopy, a wrap if you want one, and a custom LED sign. Owners also add a nitro cold brew tap, an LED screen or a latte art printer." },
   { q: "How big is it, and will it fit in a van or through a door?", a: "The body is 120 × 90 cm (47 × 35 in) and 151 cm tall closed, on a cargo bike frame. Tell us your doorway, elevator or van measurements and we’ll check before you order." },
   { q: "How much can I make?", a: "It depends on your prices, costs, location and hours, so we don’t promise income. Try the calculator on this page with your own numbers, and we’ll walk through your plan on a call." },
