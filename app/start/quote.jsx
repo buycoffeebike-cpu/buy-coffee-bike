@@ -739,7 +739,7 @@ export function FinishBar({ onFinish, hidden = false }) {
 function Consent() {
   return (
     <p className="text-center text-xs leading-relaxed text-zinc-500">
-      By sending, you agree Coffee Bike World (Vladvik Holding Inc.) may email, call, text or WhatsApp you about your quote (confirmations, follow-ups and call reminders), plus owner stories and offers by email. Unsubscribe anytime. Msg &amp; data rates may apply; message frequency varies. Reply STOP to opt out of texts, HELP for help. We never share your number for anyone else&apos;s marketing.{" "}
+      By sending, you agree Coffee Bike World (Vladvik Holding Inc.) may email, call, text or WhatsApp you about your quote: transactional and promotional messages such as confirmations, follow-ups, call invitations and reminders, plus owner stories and offers by email. Unsubscribe anytime. Msg &amp; data rates may apply; message frequency varies. Reply STOP to opt out of texts, HELP for help. We never share your number for anyone else&apos;s marketing.{" "}
       <a href="https://coffeebike.ca/terms/" className="underline">Terms</a> · <a href="https://coffeebike.ca/privacy-policy/" className="underline">Privacy</a>
     </p>
   );
