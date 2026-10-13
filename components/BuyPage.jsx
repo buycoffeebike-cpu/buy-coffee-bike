@@ -12,6 +12,10 @@ import { ChevronDown, ChevronLeft, ChevronRight, Edit2, Check, Info, Lock, Searc
 
 /** WhatsApp Business number connected to GoHighLevel: chats land straight in the CRM. Offered as WhatsApp only. */
 const WHATSAPP_NUMBER = '17786558631';
+// Device clocks of the +1 countries (US, Canada, the Caribbean members of the North American plan, Bermuda, Guam); the
+// same list as the OS's scripts/_ghl_form_clock.ts for the WordPress forms. Mexico and the rest of the Americas have
+// their own codes and are left out on purpose.
+const PLUS_ONE_ZONES = new RegExp('^(America[/](New_York|Detroit|Kentucky[/].*|Indiana[/].*|Chicago|Menominee|North_Dakota[/].*|Denver|Boise|Phoenix|Los_Angeles|Anchorage|Juneau|Sitka|Metlakatla|Yakutat|Nome|Adak|Toronto|Vancouver|Edmonton|Winnipeg|Halifax|St_Johns|Regina|Montreal|Moncton|Glace_Bay|Goose_Bay|Whitehorse|Dawson|Dawson_Creek|Fort_Nelson|Creston|Yellowknife|Inuvik|Iqaluit|Rankin_Inlet|Resolute|Cambridge_Bay|Swift_Current|Atikokan|Blanc-Sablon|Nipigon|Thunder_Bay|Rainy_River|Pangnirtung|Puerto_Rico|Jamaica|Nassau|Santo_Domingo|Port_of_Spain|Barbados|St_Thomas|Tortola|Grand_Turk|Cayman|Antigua|Anguilla|St_Kitts|Dominica|Grenada|St_Lucia|St_Vincent|Montserrat|Virgin)|Pacific[/](Honolulu|Guam|Saipan)|Atlantic[/]Bermuda|US[/].*|Canada[/].*)$');
 const WHATSAPP_GREEN = '#25D366';
 function WhatsAppIcon({ className = '', style }) {
   return (
@@ -62,6 +66,15 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
   const [flashStep, setFlashStep] = useState(null);
   const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
   const [inConfigurator, setInConfigurator] = useState(false);
+  // The GoHighLevel forms (Save My Build, Get In Touch) guess the visitor's country from their IP and refuse a North
+  // American number typed from anywhere else (13 Oct 2026: "it forces a 0 at the start"). A phone box that opens with
+  // "+1 " is read as +1 whatever the guess, so the forms get that prefill when the device clock is in a +1 country
+  // (US, Canada, the Caribbean members of the North American plan; Mexico and the rest of the Americas have their own
+  // codes). A visitor in London or Mexico City keeps GoHighLevel's own guess, which is right for them.
+  const [plusOne, setPlusOne] = useState(false);
+  useEffect(() => {
+    try { setPlusOne(PLUS_ONE_ZONES.test(Intl.DateTimeFormat().resolvedOptions().timeZone || '')); } catch {}
+  }, []);
 
   // Prices in the visitor's currency: ?currency=CAD|USD|EUR in the link wins (each Meta ad set links with its
   // country's currency); otherwise a device set to a Canadian time zone sees Canadian dollars, everyone else US dollars.
@@ -353,10 +366,11 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
   }, [basePackage, setup, ulCertifiedMap, color, colorInput, pantoneInput, addOns, extraBatteryType, support, total, currency]);
 
   const iframeUrl = useMemo(() => {
-    const baseUrl = 'https://link.coffeebike.ca/widget/form/xnay3GGsJKCfqhvw55Yx';
+    const baseUrl = `https://link.coffeebike.ca/widget/form/xnay3GGsJKCfqhvw55Yx${plusOne ? '?phone=%2B1%20' : ''}`;
     if (!buildSummary || !basePackage) return baseUrl;
-    return `${baseUrl}?coffee_bike_build=${encodeURIComponent(buildSummary)}`;
-  }, [buildSummary, basePackage]);
+    return `${baseUrl}${plusOne ? '&' : '?'}coffee_bike_build=${encodeURIComponent(buildSummary)}`;
+  }, [buildSummary, basePackage, plusOne]);
+  const getInTouchUrl = `https://link.coffeebike.ca/widget/form/xnay3GGsJKCfqhvw55Yx${plusOne ? '?phone=%2B1%20' : ''}`;
 
   const bookingUrl = useMemo(() => {
     const baseUrl = 'https://link.coffeebike.ca/widget/booking/RdfoeipljDAc8l0StvxS';
@@ -1625,7 +1639,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
       </div>
 
       <div className="modal-embed h-[78dvh] overflow-hidden bg-white">
-        <iframe src="https://link.coffeebike.ca/widget/form/xnay3GGsJKCfqhvw55Yx" style={{ width: '100%', height: '100%', border: 'none', borderRadius: '0px' }} scrolling="yes" id="inline-xnay3GGsJKCfqhvw55Yx" data-layout="{'id':'INLINE'}" data-trigger-type="alwaysShow" data-trigger-value="" data-activation-type="alwaysActivated" data-activation-value="" data-deactivation-type="neverDeactivate" data-deactivation-value="" data-form-name="Save My Build" data-height="1423" data-layout-iframe-id="inline-xnay3GGsJKCfqhvw55Yx" data-form-id="xnay3GGsJKCfqhvw55Yx" title="Save My Build" />
+        <iframe src={getInTouchUrl} style={{ width: '100%', height: '100%', border: 'none', borderRadius: '0px' }} scrolling="yes" id="inline-xnay3GGsJKCfqhvw55Yx" data-layout="{'id':'INLINE'}" data-trigger-type="alwaysShow" data-trigger-value="" data-activation-type="alwaysActivated" data-activation-value="" data-deactivation-type="neverDeactivate" data-deactivation-value="" data-form-name="Save My Build" data-height="1423" data-layout-iframe-id="inline-xnay3GGsJKCfqhvw55Yx" data-form-id="xnay3GGsJKCfqhvw55Yx" title="Save My Build" />
       </div>
     </div>
   </div>
