@@ -21,6 +21,8 @@ type Props = {
   eager?: boolean;
   /** `sizes` for the placeholder thumbnail */
   sizes?: string;
+  /** Called once, when YouTube first reports that the video is playing */
+  onPlay?: () => void;
 };
 
 type GtagWindow = Window & { gtag?: (...args: unknown[]) => void };
@@ -33,7 +35,9 @@ type GtagWindow = Window & { gtag?: (...args: unknown[]) => void };
  * thumbnail holds the space, so nothing shifts. Place it inside a `position: relative` box with a fixed aspect ratio
  * (e.g. `aspect-video`).
  */
-export default function LiteYouTube({ videoId, title, trackingName, caption, playlistId, eager = false, sizes = '(min-width: 1072px) 1024px, calc(100vw - 32px)' }: Props) {
+export default function LiteYouTube({ videoId, title, trackingName, caption, playlistId, eager = false, sizes = '(min-width: 1072px) 1024px, calc(100vw - 32px)', onPlay }: Props) {
+  const onPlayRef = useRef(onPlay);
+  onPlayRef.current = onPlay;
   const rootRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLIFrameElement>(null);
   const reported = useRef<string | null>(null);
@@ -87,6 +91,11 @@ export default function LiteYouTube({ videoId, title, trackingName, caption, pla
         (window as GtagWindow).gtag?.('event', 'video_play', { video_id: videoId, video_name: trackingName ?? videoId, video_provider: 'youtube' });
       } catch {
         /* analytics must never get in the way of playback */
+      }
+      try {
+        onPlayRef.current?.();
+      } catch {
+        /* nor must a caller's own tracking */
       }
     };
     window.addEventListener('message', onMessage);

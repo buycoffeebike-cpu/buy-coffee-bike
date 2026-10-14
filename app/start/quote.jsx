@@ -926,24 +926,22 @@ function Thanks() {
       </h3>
       <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">{q.booking ? 'We’ll come to the call with your price and build options ready.' : q.wantsCall ? 'Your answers are in. Choose a time below and we’ll come to the call with your price and build options.' : 'We’ll reply within one business day with your price and build options, and we’ll message you if a quick question helps.'}</p>
 
-      {/* the call comes first: 8 of 9 buyers planned their build on one. Once booked, both steps are done (Vlad, 7 Oct 2026) */}
-      <div className="mt-5 rounded-xl border-2 border-zinc-900 p-4">
-        {q.booking ? (
-          <>
-            <p className="flex items-center gap-2 font-extrabold text-zinc-950"><Check className="h-5 w-5" strokeWidth={3} style={{ color: RED }} aria-hidden /> Step 2 of 2 done. Your call is booked</p>
-            <p className="mt-1 text-sm text-zinc-600">Our specialist will join the call at the time you picked to discuss your Coffee Bike with you.</p>
-          </>
-        ) : (
-          <>
-            <p className="flex items-center gap-2 font-extrabold text-zinc-950"><Calendar className="h-5 w-5" aria-hidden /> Step 1 of 2 done. Next: pick a time to review your build</p>
-            <p className="mt-1 text-sm text-zinc-600">A 15-minute call. Most owners planned their build on one with us. Nothing to type again: just pick the time.</p>
-          </>
-        )}
-        {/* our own picker (3 Oct 2026): the calendar widget asked for name, email and phone a second time */}
-        <div className="mt-3">
+      {/* the call comes first: 8 of 9 buyers planned their build on one (Vlad, 7 Oct 2026). Once booked, the booking and
+          the walkthrough stand on their own, full width, so the video starts as high on a phone as it can (13 Oct 2026) */}
+      {q.booking ? (
+        <div className="mt-5">
           <TimePicker leadId={r.id} calendar="discovery" fallbackUrl={booking} market={q.market} intent={q.intent} booked={q.booking} onBooked={q.setBooking} />
         </div>
-      </div>
+      ) : (
+        <div className="mt-5 rounded-xl border-2 border-zinc-900 p-4">
+          <p className="flex items-center gap-2 font-extrabold text-zinc-950"><Calendar className="h-5 w-5" aria-hidden /> Step 1 of 2 done. Next: pick a time to review your build</p>
+          <p className="mt-1 text-sm text-zinc-600">A 15-minute call. Most owners planned their build on one with us. Nothing to type again: just pick the time.</p>
+          {/* our own picker (3 Oct 2026): the calendar widget asked for name, email and phone a second time */}
+          <div className="mt-3">
+            <TimePicker leadId={r.id} calendar="discovery" fallbackUrl={booking} market={q.market} intent={q.intent} booked={q.booking} onBooked={q.setBooking} />
+          </div>
+        </div>
+      )}
 
       <div className="mt-4 rounded-xl bg-zinc-100 p-4">
         <p className="text-sm font-bold uppercase tracking-wider text-zinc-500">Your starting point</p>
@@ -968,9 +966,12 @@ function Thanks() {
         <a href={SPEC_SHEET} target="_blank" rel="noopener" onClick={() => track('spec_sheet', { where: 'thanks', market: q.market, intent: q.intent })} className="flex items-center gap-3 rounded-xl border-2 border-zinc-200 px-4 py-3.5 font-bold text-zinc-900 hover:border-zinc-400">
           <FileText className="h-5 w-5 flex-none" /> Specs and health inquiry package (PDF)
         </a>
-        <a href="#walkthrough" onClick={() => q.setOpen(false)} className="flex items-center gap-3 rounded-xl border-2 border-zinc-200 px-4 py-3.5 font-bold text-zinc-900 hover:border-zinc-400">
-          <PlayCircle className="h-5 w-5 flex-none" /> Watch the 6-minute walkthrough
-        </a>
+        {/* once booked, the walkthrough plays right under the booking (TimePicker), so no second link to it */}
+        {q.booking ? null : (
+          <a href="#walkthrough" onClick={() => q.setOpen(false)} className="flex items-center gap-3 rounded-xl border-2 border-zinc-200 px-4 py-3.5 font-bold text-zinc-900 hover:border-zinc-400">
+            <PlayCircle className="h-5 w-5 flex-none" /> Watch the 6-minute walkthrough
+          </a>
+        )}
       </div>
       <a href={whatsappLink(q.market)} target="_blank" rel="noopener" onClick={() => track('whatsapp_click', { where: 'thanks', market: q.market, intent: q.intent })} className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-zinc-900 underline underline-offset-4">
         <MessageCircle className="h-4 w-4" aria-hidden /> Questions now? Message us on WhatsApp

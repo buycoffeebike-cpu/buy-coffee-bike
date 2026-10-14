@@ -7,9 +7,10 @@
  * calendar's own confirmation (email, text, Zoom link) follows. If the times cannot load, the calendar link is the
  * fallback.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowRight, Check, Loader2 } from 'lucide-react';
-import { CALL_API } from './content';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowRight, Check, Loader2, MessageCircle } from 'lucide-react';
+import LiteYouTube from '../../components/LiteYouTube';
+import { CALL_API, WALKTHROUGH_ID } from './content';
 
 const RED = '#E31E24';
 const track = (name, params) => {
@@ -32,6 +33,43 @@ const fmtTime = (iso, tz) => {
 };
 const fmtFull = (iso, tz) => `${new Date(iso).toLocaleDateString('en-US', { timeZone: tz, weekday: 'long', month: 'long', day: 'numeric' })} at ${fmtTime(iso, tz)}`;
 const UUID = /^[0-9a-f-]{36}$/i;
+
+/**
+ * Right after the booking, the 6-minute walkthrough (Vlad, 13 Oct 2026: people who booked should understand what a
+ * Coffee Bike is made of before the call). An invitation, never a gate. A play is told to the OS once, so the founder
+ * sees on Telegram and in the CRM note who watched before the call.
+ */
+function Walkthrough({ leadId, market, intent }) {
+  const [played, setPlayed] = useState(false);
+  const sent = useRef(false);
+  const onPlay = useCallback(() => {
+    setPlayed(true);
+    track('walkthrough_after_booking', { market, intent });
+    if (sent.current || !UUID.test(String(leadId || ''))) return;
+    sent.current = true;
+    try {
+      fetch(`${CALL_API}/lead-event`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ leadId, event: 'walkthrough_play' }), keepalive: true }).catch(() => {});
+    } catch {}
+  }, [leadId, market, intent]);
+  return (
+    <section aria-labelledby="before-call" className="mt-4 overflow-hidden rounded-xl border-2 border-zinc-900 bg-white">
+      <div className="p-4 sm:p-5">
+        <p className="text-xs font-extrabold uppercase tracking-[0.14em]" style={{ color: RED }}>Before our call</p>
+        <h4 id="before-call" className="mt-1 text-[22px] font-extrabold leading-tight text-zinc-950" style={{ fontFamily: '"Roboto Condensed", Inter, system-ui, sans-serif' }}>
+          Take the 6-minute tour of the Coffee Bike
+        </h4>
+        <p className="mt-1.5 text-[15px] leading-relaxed text-zinc-700">See every part up close, from the espresso machine to the battery and canopy, so our 15 minutes go to your plans and your questions.</p>
+      </div>
+      <div className="relative aspect-video bg-zinc-900">
+        <LiteYouTube videoId={WALKTHROUGH_ID} title="Coffee Bike full walkthrough" trackingName="coffee_bike_walkthrough_after_booking" caption="Full walkthrough · 6:32" eager onPlay={onPlay} sizes="(min-width: 640px) 560px, calc(100vw - 40px)" />
+      </div>
+      <p className="flex items-center gap-2 bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-700 sm:px-5" aria-live="polite">
+        {played ? <Check className="h-4 w-4 flex-none" strokeWidth={3} style={{ color: RED }} aria-hidden /> : <MessageCircle className="h-4 w-4 flex-none" aria-hidden />}
+        {played ? 'Thanks for watching. Bring any question it raises to the call.' : 'Questions while you watch? Note them down and bring them to the call.'}
+      </p>
+    </section>
+  );
+}
 
 export default function TimePicker({ leadId, calendar = 'discovery', fallbackUrl, market, intent, booked: shared, onBooked }) {
   const tz = useMemo(zone, []);
@@ -98,10 +136,17 @@ export default function TimePicker({ leadId, calendar = 'discovery', fallbackUrl
 
   if (state === 'booked' && booked) {
     return (
-      <div role="status" className="rounded-xl bg-emerald-50 p-4">
-        <p className="flex items-center gap-2 font-extrabold text-emerald-900"><Check className="h-5 w-5" strokeWidth={3} aria-hidden /> {booked.already ? 'Your call is already booked' : 'You’re booked'}</p>
-        <p className="mt-1 text-[16px] font-bold text-zinc-950">{fmtFull(booked.start, tz)}</p>
-        <p className="mt-1 text-sm text-zinc-700">Your time zone: {tz.replace(/_/g, ' ')}. The Zoom link and a confirmation are on their way by email and text. To change the time, use the link in that email.</p>
+      <div>
+        <div role="status" className="flex gap-3 rounded-xl bg-emerald-50 p-4">
+          <span className="mt-0.5 flex h-7 w-7 flex-none items-center justify-center rounded-full bg-emerald-600 text-white"><Check className="h-4 w-4" strokeWidth={3} aria-hidden /></span>
+          <div>
+            {booked.already ? <p className="text-sm font-bold text-emerald-900">Your call is already booked</p> : null}
+            <p className="text-[17px] font-extrabold leading-snug text-zinc-950">{fmtFull(booked.start, tz)}</p>
+            <p className="text-sm font-semibold text-emerald-900">{tz.split('/').pop().replace(/_/g, ' ')} time · 15-minute video call</p>
+            <p className="mt-1.5 text-sm leading-relaxed text-zinc-700">The Zoom link and a confirmation are on their way by email and text. Need another time? Use the link in that email.</p>
+          </div>
+        </div>
+        <Walkthrough leadId={leadId} market={market} intent={intent} />
       </div>
     );
   }

@@ -35,7 +35,7 @@ export default function CallGate({ calendarUrl, summary, onClose }) {
       <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-200 bg-white flex-shrink-0">
         <div className="min-w-0">
           <div className="text-[10px] uppercase tracking-wider font-bold mb-0.5" style={{ color: RED }}>Schedule a Call</div>
-          <div className="text-base font-bold leading-tight">{done ? 'Pick a Time With Our Team' : 'First, four quick questions'}</div>
+          <div className="text-base font-bold leading-tight">{q.booking ? 'Your Call Is Booked' : done ? 'Pick a Time With Our Team' : 'First, four quick questions'}</div>
         </div>
         <button type="button" onClick={onClose} aria-label="Close" className="w-9 h-9 rounded-full hover:bg-zinc-100 flex items-center justify-center transition flex-shrink-0">
           <X className="w-5 h-5" />
@@ -46,7 +46,11 @@ export default function CallGate({ calendarUrl, summary, onClose }) {
           {summary || null}
           <div className="flex-1 min-h-0 overflow-y-auto bg-white px-5 py-5 sm:px-7">
             <div className="mx-auto max-w-[560px]">
-              <p className="mb-3 text-[15px] text-zinc-700">Your answers are in. Pick a time for a 15-minute call with the founder.</p>
+              {q.booking ? (
+                <p className="mb-3 text-[15px] text-zinc-700"><strong className="text-zinc-950">Thank you{q.result?.first ? `, ${q.result.first}` : ''}.</strong> Your 15-minute call with the founder is booked. We’ll come to it with your price and build options ready.</p>
+              ) : (
+                <p className="mb-3 text-[15px] text-zinc-700">Your answers are in. Pick a time for a 15-minute call with the founder.</p>
+              )}
               <TimePicker leadId={q.result?.id} calendar="buypage" fallbackUrl={src} market={q.market} intent={q.intent} booked={q.booking} onBooked={q.setBooking} />
             </div>
           </div>
