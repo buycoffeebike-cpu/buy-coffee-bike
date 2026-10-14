@@ -46,7 +46,7 @@ function WhatsAppIcon({ className = '' }) {
 function Section({ id, tone = 'light', className = '', children }) {
   const bg = tone === 'dark' ? 'bg-zinc-950 text-white' : tone === 'soft' ? 'bg-[#F4F4F3] text-zinc-900' : 'bg-white text-zinc-900';
   return (
-    <section id={id} className={`${bg} scroll-mt-16 py-14 md:py-20 ${className}`}>
+    <section id={id} className={`cv-auto ${bg} scroll-mt-16 py-14 md:py-20 ${className}`}>
       <div className="mx-auto max-w-6xl px-4 sm:px-6">{children}</div>
     </section>
   );

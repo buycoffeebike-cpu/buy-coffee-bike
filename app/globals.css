@@ -67,3 +67,18 @@ html {
   .modal-max-90 { max-height: 90dvh; }
   .modal-max-94 { max-height: 94dvh; }
 }
+
+/* The /start pages' sections below the first screen (the shared Section component): the browser skips their layout
+   and paint until they come near the screen (14 Oct 2026: the first layout of the whole ~18,000 px page took ~2.9 s
+   on a throttled phone and held the first paint; with this ~1.2 s). "auto" remembers each section's real height once
+   it has been shown. Overlays (photo zoom, quote modal, sticky bar) live outside these sections, so the containment
+   this implies clips nothing. */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
+/* After any same-page jump the whole page is laid out (layout.tsx sets cv-off), so jumps land exactly. */
+.cv-off .cv-auto {
+  content-visibility: visible;
+}
