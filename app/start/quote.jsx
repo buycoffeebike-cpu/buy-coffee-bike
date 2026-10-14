@@ -481,7 +481,7 @@ export function QuoteFlow({ where = 'inline' }) {
         <div className="h-full rounded-full transition-all duration-300" style={{ width: `${((q.step + 1) / STEP_KEYS.length) * 100}%`, backgroundColor: RED }} />
       </div>
 
-      <h3 ref={headRef} tabIndex={-1} className="mt-5 text-[22px] font-extrabold leading-tight text-zinc-950 focus:outline-none" style={{ fontFamily: '"Roboto Condensed", Inter, system-ui, sans-serif', textWrap: 'balance' }}>
+      <h3 ref={headRef} tabIndex={-1} className="mt-5 text-[22px] font-extrabold leading-tight text-zinc-950 focus:outline-none" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif', textWrap: 'balance' }}>
         {title}
       </h3>
 
@@ -750,7 +750,7 @@ function Consent() {
 function Question({ n, title, error, innerRef, flash, children, ...rest }) {
   return (
     <fieldset ref={innerRef} className={`scroll-mt-28 rounded-xl transition-shadow duration-500 ${flash ? 'shadow-[0_0_0_4px_#E31E24] bg-red-50/60' : ''}`} {...rest}>
-      <legend className="flex items-baseline gap-2 text-[18px] font-extrabold leading-snug text-zinc-950" style={{ fontFamily: '"Roboto Condensed", Inter, system-ui, sans-serif' }}>
+      <legend className="flex items-baseline gap-2 text-[18px] font-extrabold leading-snug text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>
         <span className="text-sm font-bold" style={{ color: RED }}>{n}.</span> {title}
       </legend>
       <div className="mt-3">{children}</div>
@@ -921,7 +921,7 @@ function Thanks() {
       <div className="flex h-12 w-12 items-center justify-center rounded-full text-white" style={{ backgroundColor: RED }}>
         <Check className="h-7 w-7" strokeWidth={3} />
       </div>
-      <h3 className="mt-4 text-2xl font-extrabold leading-tight text-zinc-950" style={{ fontFamily: '"Roboto Condensed", Inter, system-ui, sans-serif' }}>
+      <h3 className="mt-4 text-2xl font-extrabold leading-tight text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>
         Thank you{r.first ? `, ${r.first}` : ''}. {q.booking ? 'Your call is booked.' : q.wantsCall ? 'Now pick your time.' : 'Your request is in.'}
       </h3>
       <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">{q.booking ? 'We’ll come to the call with your price and build options ready.' : q.wantsCall ? 'Your answers are in. Choose a time below and we’ll come to the call with your price and build options.' : 'We’ll reply within one business day with your price and build options, and we’ll message you if a quick question helps.'}</p>

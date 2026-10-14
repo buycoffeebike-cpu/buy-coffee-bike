@@ -55,7 +55,7 @@ function Walkthrough({ leadId, market, intent }) {
     <section aria-labelledby="before-call" className="mt-4 overflow-hidden rounded-xl border-2 border-zinc-900 bg-white">
       <div className="p-4 sm:p-5">
         <p className="text-xs font-extrabold uppercase tracking-[0.14em]" style={{ color: RED }}>Before our call</p>
-        <h4 id="before-call" className="mt-1 text-[22px] font-extrabold leading-tight text-zinc-950" style={{ fontFamily: '"Roboto Condensed", Inter, system-ui, sans-serif' }}>
+        <h4 id="before-call" className="mt-1 text-[22px] font-extrabold leading-tight text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>
           Take the 6-minute tour of the Coffee Bike
         </h4>
         <p className="mt-1.5 text-[15px] leading-relaxed text-zinc-700">See every part up close, from the espresso machine to the battery and canopy, so our 15 minutes go to your plans and your questions.</p>

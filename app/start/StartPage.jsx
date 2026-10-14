@@ -10,7 +10,7 @@ import {
 } from './content';
 import { FinishBar, HeroQuestion, QuoteFullForm, QuoteModal, QuoteProvider, RED, useQuote } from './quote';
 
-const DISPLAY = { fontFamily: '"Roboto Condensed", Inter, system-ui, sans-serif' };
+const DISPLAY = { fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' };
 const BALANCE = { textWrap: 'balance' };
 
 const track = (name, params) => {
@@ -242,7 +242,7 @@ function Page({ intent, market }) {
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
           <a href="#top" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} aria-label="Coffee Bike World, back to top" className="flex items-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={LOGO} alt="Coffee Bike" className="h-8 w-auto" />
+            <Image src={LOGO} alt="Coffee Bike" width={50} height={32} quality={90} loading="eager" className="h-8 w-auto" />
           </a>
           <div className="flex items-center gap-1 sm:gap-5">
             <a href={whatsappLink(market)} target="_blank" rel="noopener" onClick={() => track('whatsapp_click', { where: 'header', intent, market })} className="inline-flex items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold text-zinc-300 hover:text-white" aria-label="Message us on WhatsApp">

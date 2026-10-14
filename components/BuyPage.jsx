@@ -1356,7 +1356,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
 
       <div
         className="hidden xl:flex items-center gap-[8px] text-[17px] font-black tracking-[0.12em] uppercase leading-none"
-        style={{ fontFamily: 'Roboto Condensed, sans-serif' }}
+        style={{ fontFamily: 'var(--font-display), sans-serif' }}
       >
         <a
           href="https://coffeebike.ca/"
@@ -1398,7 +1398,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
 
       <div
         className="hidden xl:flex items-center ml-auto text-[17px] font-black tracking-[0.12em] uppercase leading-none"
-        style={{ fontFamily: 'Roboto Condensed, sans-serif' }}
+        style={{ fontFamily: 'var(--font-display), sans-serif' }}
       >
 
 
@@ -1424,7 +1424,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
     {mobileNavOpen && (
       <div
         className="xl:hidden pb-5 flex flex-col gap-1 text-[17px] font-black tracking-[0.12em] uppercase"
-        style={{ fontFamily: 'Roboto Condensed, sans-serif' }}
+        style={{ fontFamily: 'var(--font-display), sans-serif' }}
       >
         <a href="https://coffeebike.ca/" className="px-4 py-3 text-[#ff1f1f] bg-black">
           Home
