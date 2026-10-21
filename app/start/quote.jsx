@@ -8,8 +8,8 @@
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Calendar, Check, FileText, Loader2, MessageCircle, PlayCircle, X } from 'lucide-react';
-import { ADS_CONVERSION, CALL_URL, DEPOSIT_URL, FINANCING_URL, INCLUDED, LEAD_API, MARKETS, PHONE_API, QUOTE_FORM_URL, SPEC_SHEET, whatsappLink } from './content';
-import TimePicker from './TimePicker';
+import { ADS_CONVERSION, CALL_API, CALL_URL, DEPOSIT_URL, FINANCING_URL, INCLUDED, LEAD_API, MARKETS, PHONE_API, QUOTE_FORM_URL, SPEC_SHEET, whatsappLink } from './content';
+import TimePicker, { Walkthrough } from './TimePicker';
 
 export const RED = '#E31E24';
 const STEP_KEYS = ['use', 'timeline', 'stage', 'fit', 'contact'];
@@ -122,6 +122,35 @@ const track = (name, params) => {
   } catch {}
 };
 
+const UUID = /^[0-9a-f-]{36}$/i;
+/** Something the lead did after the form, told to the OS once (a CRM note and tag): the call skipped, "scroll down" pressed. */
+export function postLeadEvent(leadId, event, where) {
+  if (!UUID.test(String(leadId || ''))) return;
+  try {
+    fetch(`${CALL_API}/lead-event`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ leadId, event, where }), keepalive: true }).catch(() => {});
+  } catch {}
+}
+
+/**
+ * Who gets the one-screen form instead of the step-by-step widget (Adam's suggestion, Vlad's go, 21 Oct 2026): paid
+ * Google visitors only. A Google click id in the address bar or saved from an earlier visit (readAttribution, 90 days),
+ * or the ads' own utm_source=google with a paid medium. ?form=simple shows it to anyone (to look at it), ?form=steps
+ * the step-by-step one. Meta and organic visitors see nothing new. The layout's inline script makes the same call
+ * before the page paints, so the hero never swaps forms in front of the visitor.
+ */
+const PAID_MEDIUM = /^(cpc|ppc|paid|paidsearch|paid_search|paid-search)$/i;
+export function simpleVariant() {
+  try {
+    const f = new URLSearchParams(window.location.search).get('form');
+    if (f === 'simple') return true;
+    if (f === 'steps') return false;
+    const a = readAttribution();
+    return Boolean(a.click.gclid || a.click.gbraid || a.click.wbraid || (/^google$/i.test(a.utm.source || '') && PAID_MEDIUM.test(a.utm.medium || '')));
+  } catch {
+    return false;
+  }
+}
+
 // ?phonecheck=1 asks the OS for the code step even while its switch is off: to try it on a real phone (6 Oct 2026)
 const forcedCheck = () => {
   try {
@@ -176,6 +205,11 @@ export function QuoteProvider({ market, intent, extra, children }) {
   const [wantsCall, setWantsCall] = useState(false);
   // the call booked after the form, shared by every picker on the page (pop-up and page section)
   const [booking, setBooking] = useState(null);
+  // 'simple' for paid Google visitors (the one-screen form), 'steps' for everyone else; null until the page knows
+  const [variant, setVariant] = useState(null);
+  // "Skip the call for now" on the simple form's thank-you: the walkthrough is offered instead
+  const [callSkipped, setCallSkipped] = useState(false);
+  const heroSimpleRef = useRef(null);
   const started = useRef(0);
   const restored = useRef(false);
 
@@ -185,7 +219,11 @@ export function QuoteProvider({ market, intent, extra, children }) {
   // remember the ad click on arrival, not only at sending, so a visitor who comes back later still counts for it
   useEffect(() => {
     readAttribution();
-  }, []);
+    const simple = simpleVariant();
+    setVariant(simple ? 'simple' : 'steps');
+    // the denominator for each form's conversion rate in GA4 (generate_lead carries the same form_variant)
+    track('form_variant_shown', { form_variant: simple ? 'simple' : 'steps', market, intent });
+  }, [market, intent]);
 
   // pick up where the visitor left off (same tab), never across markets
   useEffect(() => {
@@ -252,6 +290,12 @@ export function QuoteProvider({ market, intent, extra, children }) {
       fullFormRef.current.querySelector('[data-contact]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
+    // the simple form lives in the hero (and the page section): back to whichever is on the page
+    const simple = typedIn === 'simple' ? heroSimpleRef.current || fullFormRef.current : null;
+    if (simple) {
+      simple.querySelector('[data-contact]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
     openQuote('finish_bar');
   }, [typedIn, market, intent, openQuote]);
 
@@ -262,8 +306,11 @@ export function QuoteProvider({ market, intent, extra, children }) {
 
   // the lead is in (straight away, or once the texted code came back): Google Ads with enhanced conversions, GA4 and
   // Meta once per lead, then the thank-you
+  // phoneCheck: 'none' (no code step), 'confirmed' (the texted code came back) or 'skipped' ("Skip for now" on the
+  // simple form, 21 Oct 2026). A skipped lead is unconfirmed: Google gets the conversion at a quarter of the value,
+  // Meta gets no event (the OS withholds the server copy too), and GA4 says which on generate_lead.
   const finish = useCallback(
-    (j, body, eventId, form) => {
+    (j, body, eventId, form, phoneCheck = 'none') => {
       const [first, ...rest] = body.name.split(/\s+/);
       const user = { email: body.email.toLowerCase(), address: { first_name: first, last_name: rest.join(' ') || undefined, country: market === 'ca' ? 'CA' : 'US' } };
       const ph = e164(body.phone);
@@ -272,10 +319,10 @@ export function QuoteProvider({ market, intent, extra, children }) {
       // NEW lead counts: the OS answers fresh: false for a repeat within a day or a dropped bot (Meta showed 18 for 16, 3 Oct 2026)
       if (window.__cbwLive && j.data?.fresh !== false) try {
         window.gtag?.('set', 'user_data', user);
-        window.gtag?.('event', 'conversion', { send_to: ADS_CONVERSION, value: 100, currency: 'CAD', transaction_id: j.data?.id });
-        window.gtag?.('event', 'generate_lead', { form: 'quote_flow', form_variant: form, market, intent, use: answers.use, timeline: answers.timeline, stage: answers.stage, fit: answers.fit, next_step: wantsCall ? 'call' : 'quote' });
+        window.gtag?.('event', 'conversion', { send_to: ADS_CONVERSION, value: phoneCheck === 'skipped' ? 25 : 100, currency: 'CAD', transaction_id: j.data?.id });
+        window.gtag?.('event', 'generate_lead', { form: 'quote_flow', form_variant: form, market, intent, use: answers.use, timeline: answers.timeline, stage: answers.stage, fit: answers.fit, next_step: wantsCall ? 'call' : 'quote', phone_check: phoneCheck });
         // the event every Coffee Bike Sales ad set optimises for; the OS sends the server copy with the same id
-        window.fbq?.('track', 'SubmitApplication', { content_name: 'Coffee Bike quote', content_category: market, form_variant: form, next_step: wantsCall ? 'call' : 'quote' }, { eventID: eventId });
+        if (phoneCheck !== 'skipped') window.fbq?.('track', 'SubmitApplication', { content_name: 'Coffee Bike quote', content_category: market, form_variant: form, next_step: wantsCall ? 'call' : 'quote' }, { eventID: eventId });
       } catch {}
       setResult({ first, last: rest.join(' '), email: body.email, phone: body.phone, id: j.data?.id });
       setStatus('done');
@@ -357,7 +404,7 @@ export function QuoteProvider({ market, intent, extra, children }) {
         const j = await postPhone({ action: 'confirm', checkId: check.checkId, code });
         track('phone_code_confirmed', { market, intent, form_variant: check.form });
         setCheck(null);
-        finish(j, check.body, check.eventId, check.form);
+        finish(j, check.body, check.eventId, check.form, 'confirmed');
       } catch (e) {
         setCheck((c) => c && { ...c, busy: false, error: e?.status && e.status < 500 ? e.message : 'That did not go through. Please try again.', errAt: Date.now() });
         track('phone_code_error', { status: e?.status || 0, market, intent });
@@ -385,9 +432,42 @@ export function QuoteProvider({ market, intent, extra, children }) {
     track('phone_code_change_number', { market, intent });
   }, [intent, market]);
 
+  // "Skip for now" on the code step (the simple form only, 21 Oct 2026): the request goes through unconfirmed. The OS
+  // marks it skipped and flags it for Kristel; Google gets a quarter-value conversion, Meta nothing.
+  const skipCode = useCallback(async () => {
+    if (!check || check.busy) return;
+    setCheck((c) => c && { ...c, busy: true, error: '', note: '' });
+    try {
+      const j = await postPhone({ action: 'skip', checkId: check.checkId });
+      track('phone_code_skipped', { market, intent, form_variant: check.form });
+      setCheck(null);
+      finish(j, check.body, check.eventId, check.form, 'skipped');
+    } catch (e) {
+      setCheck((c) => c && { ...c, busy: false, error: e?.status && e.status < 500 ? e.message : 'That did not go through. Please try again.' });
+    }
+  }, [check, finish, intent, market]);
+
+  // "Skip the call for now" under the time picker (the simple form's thank-you): the walkthrough is offered instead
+  const skipCall = useCallback(() => {
+    setCallSkipped(true);
+    track('call_skipped', { market, intent, form_variant: lastForm });
+    postLeadEvent(result?.id, 'call_skipped', 'thanks');
+  }, [market, intent, lastForm, result]);
+
+  // "Scroll down and learn more": the pop-up closes (if open) and the page moves to the comparison
+  const learnMore = useCallback(
+    (where) => {
+      track('scroll_more_click', { market, intent, where });
+      postLeadEvent(result?.id, 'scroll_more', where);
+      setOpen(false);
+      setTimeout(() => document.getElementById('compare')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    },
+    [market, intent, result],
+  );
+
   const value = useMemo(
-    () => ({ market, intent, step, setStep, answers, setAnswers, answer, contact, setContact, status, error, fails, submit, open, setOpen, openQuote, result, seasons, lastForm, begin, wantsCall, setWantsCall, booking, setBooking, check, confirmCode, resendCode, changeNumber, typedIn, setTypedIn, fullFormRef, typing, finishRequest }),
-    [market, intent, step, answers, answer, contact, status, error, fails, submit, open, openQuote, result, seasons, lastForm, begin, wantsCall, booking, check, confirmCode, resendCode, changeNumber, typedIn, typing, finishRequest],
+    () => ({ market, intent, step, setStep, answers, setAnswers, answer, contact, setContact, status, error, fails, submit, open, setOpen, openQuote, result, seasons, lastForm, begin, wantsCall, setWantsCall, booking, setBooking, check, confirmCode, resendCode, changeNumber, skipCode, typedIn, setTypedIn, fullFormRef, typing, finishRequest, variant, callSkipped, setCallSkipped, skipCall, learnMore, heroSimpleRef }),
+    [market, intent, step, answers, answer, contact, status, error, fails, submit, open, openQuote, result, seasons, lastForm, begin, wantsCall, booking, check, confirmCode, resendCode, changeNumber, skipCode, typedIn, typing, finishRequest, variant, callSkipped, skipCall, learnMore],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
@@ -444,6 +524,8 @@ export function QuoteFlow({ where = 'inline' }) {
     if (where !== 'hero') headRef.current?.focus({ preventScroll: true });
   }, [q.step, where]);
 
+  // paid Google visitors: the one-screen form, its code step and its own thank-you, in the pop-up too
+  if (q.variant === 'simple') return <SimpleFlow where={where} />;
   if (q.status === 'done') return <Thanks />;
   if (q.status === 'code') return <PhoneCode where={where} />;
 
@@ -571,10 +653,11 @@ function PhoneCode({ where }) {
   const ref = useRef(null);
 
   useEffect(() => {
-    // the page's own copy stays quiet while the pop-up is open: the code box there gets the keyboard
-    if (where === 'inline' && q.open) return;
+    // the page's own copies stay quiet while the pop-up is open: the code box there gets the keyboard
+    if ((where === 'inline' || where === 'hero') && q.open) return;
     ref.current?.focus({ preventScroll: where !== 'full' });
-    if (where === 'full') ref.current?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+    // the page section's copy, and the simple form's (a long form just left the screen): bring the code box into view
+    if (where === 'full' || c.form === 'simple') ref.current?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
   }, [where]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
@@ -660,6 +743,12 @@ function PhoneCode({ where }) {
         <button type="button" onClick={q.changeNumber} className="font-bold text-zinc-800 underline underline-offset-2">
           Wrong number? Change it
         </button>
+        {/* the simple form (paid Google visitors) may skip the code (Vlad, 21 Oct 2026); the request still goes through, marked unconfirmed */}
+        {c.form === 'simple' ? (
+          <button type="button" onClick={q.skipCode} disabled={c.busy} className="font-bold text-zinc-800 underline underline-offset-2 disabled:text-zinc-400 disabled:no-underline">
+            Skip this step for now
+          </button>
+        ) : null}
       </div>
       <p className="text-xs text-zinc-500">We check the number so our reply reaches you. Message and data rates may apply.</p>
     </div>
@@ -703,13 +792,22 @@ export function FinishBar({ onFinish, hidden = false }) {
   const shown = useRef(false);
   const active = !hidden && q.typing && !q.open && (q.status === 'idle' || q.status === 'error');
   useEffect(() => {
-    const el = q.fullFormRef.current?.querySelector('[data-contact]');
-    if (!el || typeof IntersectionObserver === 'undefined') return undefined;
-    const io = new IntersectionObserver(([e]) => setContactOnScreen(e.isIntersecting), { threshold: 0.1 });
-    io.observe(el);
+    // the page section's contact fields, and the whole simple form in the hero (21 Oct 2026: the bar must not pop up
+    // under someone still filling that form in)
+    const els = [q.fullFormRef.current?.querySelector('[data-contact]'), q.heroSimpleRef.current].filter(Boolean);
+    if (!els.length || typeof IntersectionObserver === 'undefined') return undefined;
+    const seen = new Map();
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => seen.set(e.target, e.isIntersecting));
+        setContactOnScreen([...seen.values()].some(Boolean));
+      },
+      { threshold: 0.05 },
+    );
+    els.forEach((el) => io.observe(el));
     return () => io.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q.fullFormRef.current]);
+  }, [q.fullFormRef.current, q.heroSimpleRef.current]);
   const visible = active && !contactOnScreen;
   useEffect(() => {
     if (visible && !shown.current) {
@@ -778,6 +876,8 @@ export function QuoteFullForm() {
   const startedRef = useRef(false);
   const refs = { use: useRef(null), timeline: useRef(null), stage: useRef(null), fit: useRef(null), contact: useRef(null) };
 
+  // paid Google visitors: the same one-screen form here as in the hero (one form, one set of answers)
+  if (q.variant === 'simple') return <SimpleFlow where="full" innerRef={q.fullFormRef} />;
   if (q.status === 'done') return <Thanks />;
   if (q.status === 'code') return <PhoneCode where="full" />;
 
@@ -980,6 +1080,239 @@ function Thanks() {
   );
 }
 
+/** Compact choices for the one-screen form: small boxes in a grid (the approved design), the picked one in red. */
+function Pills({ name, options, value, onPick }) {
+  return (
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3" role="radiogroup" aria-label={name}>
+      {options.map((o) => {
+        const on = value === o.v;
+        return (
+          <button key={o.v} type="button" role="radio" aria-checked={on} onClick={() => onPick(o.v)} className={`min-h-[46px] rounded-[10px] border-2 px-2.5 py-1.5 text-left text-[13px] font-bold leading-tight transition focus:outline-none focus-visible:ring-4 focus-visible:ring-red-200 sm:text-[14px] ${on ? 'border-[#E31E24] bg-red-50 text-zinc-950' : 'border-zinc-300 bg-white text-zinc-900 hover:border-zinc-500'}`}>
+            {o.short ?? o.t}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+const SIMPLE_PICKS = ['use', 'timeline', 'fit'];
+
+/**
+ * The one-screen form paid Google visitors see in the hero, the pop-up and the page section (Adam's suggestion,
+ * Vlad's go, 21 Oct 2026): their details, three quick choices (what for, how soon, does the price fit) and "Get my
+ * price". No "where are you in the process" question: the call finds that out. Sent as form "simple" to the same
+ * endpoint; the OS, the CRM note, the lead email and GA4 all say which form it was. A missing answer lights up and
+ * scrolls into view, so nothing fails silently (Astra's condition).
+ */
+function SimpleForm({ where, innerRef }) {
+  const q = useQuote();
+  const M = MARKETS[q.market];
+  const [tried, setTried] = useState(false);
+  const [blurred, setBlurred] = useState({});
+  const [flash, setFlash] = useState(null);
+  const [askOpen, setAskOpen] = useState(false);
+  const flashTimer = useRef(null);
+  const startedRef = useRef(false);
+  const refs = { contact: useRef(null), use: useRef(null), timeline: useRef(null), fit: useRef(null) };
+  useEffect(() => () => clearTimeout(flashTimer.current), []);
+
+  const touch = (what) => {
+    q.begin();
+    if (startedRef.current) return;
+    startedRef.current = true;
+    track('simple_form_start', { first: what, where, market: q.market, intent: q.intent });
+  };
+  const pick = (key, v) => {
+    touch(key);
+    q.setAnswers((a) => ({ ...a, [key]: v }));
+  };
+  const errs = {
+    name: q.contact.name.trim().length < 2 ? 'Please enter your name.' : '',
+    email: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(q.contact.email.trim()) ? '' : 'Please enter a valid email.',
+    phone: q.contact.phone.replace(/\D/g, '').length >= 7 && /^[+()\d\s.-]+$/.test(q.contact.phone.trim()) ? '' : 'Please enter a mobile number we can reach you on.',
+    location: q.contact.location.trim().length < 2 ? 'Tell us the city where you want to run it.' : '',
+  };
+  const show = (k) => (tried || blurred[k]) && errs[k];
+  const contactOk = !errs.name && !errs.email && !errs.phone && !errs.location;
+  const set = (k) => (e) => {
+    touch(k);
+    q.setTypedIn('simple');
+    q.setContact((c) => ({ ...c, [k]: e.target.value }));
+  };
+  const blur = (k) => () => setBlurred((b) => ({ ...b, [k]: true }));
+  const suggestion = emailFix(q.contact.email);
+  const missing = SIMPLE_PICKS.filter((k) => !q.answers[k]);
+  const pickError = (k) => (tried && !q.answers[k] ? 'Please pick one.' : '');
+
+  const onSubmit = (e) => {
+    e.preventDefault();
+    setTried(true);
+    if (q.status === 'sending') return;
+    if (!contactOk || missing.length) {
+      const first = !contactOk ? 'contact' : missing[0];
+      const box = refs[first].current;
+      box?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setFlash(first);
+      clearTimeout(flashTimer.current);
+      flashTimer.current = setTimeout(() => setFlash(null), 2500);
+      if (first === 'contact') {
+        const bad = ['name', 'phone', 'email', 'location'].find((k) => errs[k]);
+        setBlurred((b) => ({ ...b, [bad]: true }));
+        setTimeout(() => box?.querySelector(`[data-field="${bad}"] input`)?.focus({ preventScroll: true }), 400);
+      }
+      track('simple_form_incomplete', { missing: !contactOk ? 'contact' : missing.join(','), where, market: q.market, intent: q.intent });
+      return;
+    }
+    q.submit('simple');
+  };
+  const group = (key) => `scroll-mt-28 rounded-xl transition-shadow duration-500 ${flash === key ? 'bg-red-50/60 shadow-[0_0_0_4px_#E31E24]' : ''}`;
+  const legend = 'text-[15px] font-bold leading-snug text-zinc-950';
+
+  return (
+    <form ref={innerRef} noValidate onSubmit={onSubmit} className="grid gap-5 text-left" aria-label="Get your Coffee Bike price">
+      <div>
+        <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{q.wantsCall ? 'Book your 15-minute call' : 'Your Coffee Bike price'}</p>
+        <p className="mt-1 text-[22px] font-extrabold leading-tight text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>Get your price and delivery estimate</p>
+        <p className="mt-1 text-[14px] text-zinc-600">Your exact price with shipping to your city, within one business day. No payment, no obligation.</p>
+      </div>
+      <fieldset ref={refs.contact} className={group('contact')} data-contact="">
+        <div className="grid gap-3.5 sm:grid-cols-2">
+          <Field label="Your name" error={show('name')} data-field="name">
+            <input className={input} value={q.contact.name} onChange={set('name')} onBlur={blur('name')} autoComplete="name" placeholder="First and last name" />
+          </Field>
+          <Field label="Email" error={show('email')} data-field="email">
+            <input className={input} type="email" inputMode="email" value={q.contact.email} onChange={set('email')} onBlur={blur('email')} autoComplete="email" placeholder="you@example.com" />
+            {suggestion ? (
+              <button type="button" onClick={() => q.setContact((c) => ({ ...c, email: suggestion }))} className="mt-1 text-sm font-semibold text-zinc-700 underline underline-offset-2">
+                Did you mean {suggestion}?
+              </button>
+            ) : null}
+          </Field>
+          <Field label="Mobile number" hint="We text a 4-digit code to confirm it, then call or text you about your quote." error={show('phone')} data-field="phone">
+            <input className={input} type="tel" inputMode="tel" value={q.contact.phone} onChange={set('phone')} onBlur={blur('phone')} autoComplete="tel" placeholder={M.phonePlaceholder} />
+          </Field>
+          <Field label="City and province or state" hint="For your delivery cost." error={show('location')} data-field="location">
+            <input className={input} value={q.contact.location} onChange={set('location')} onBlur={blur('location')} autoComplete="address-level2" placeholder={M.cityPlaceholder} />
+          </Field>
+        </div>
+      </fieldset>
+      <fieldset ref={refs.use} className={group('use')}>
+        <legend className={legend}>What will you use it for?</legend>
+        <div className="mt-2"><Pills name="What will you use it for?" options={QUESTIONS.use.options} value={q.answers.use} onPick={(v) => pick('use', v)} /></div>
+        {pickError('use') ? <p role="alert" className="mt-1.5 text-sm font-semibold text-red-700">{pickError('use')}</p> : null}
+      </fieldset>
+      <fieldset ref={refs.timeline} className={group('timeline')}>
+        <legend className={legend}>How soon do you want to be serving?</legend>
+        <div className="mt-2"><Pills name="How soon do you want to be serving?" options={q.seasons} value={q.answers.timeline} onPick={(v) => pick('timeline', v)} /></div>
+        {pickError('timeline') ? <p role="alert" className="mt-1.5 text-sm font-semibold text-red-700">{pickError('timeline')}</p> : null}
+      </fieldset>
+      <fieldset ref={refs.fit} className={group('fit')}>
+        <legend className={legend}>{M.fitQuestion}</legend>
+        <div className="mt-2"><Pills name={M.fitQuestion} options={M.fit} value={q.answers.fit} onPick={(v) => pick('fit', v)} /></div>
+        {pickError('fit') ? <p role="alert" className="mt-1.5 text-sm font-semibold text-red-700">{pickError('fit')}</p> : null}
+      </fieldset>
+      {askOpen ? (
+        <Field label="Your question or comment (optional)">
+          <textarea className={`${input} min-h-[80px]`} value={q.contact.question} onChange={set('question')} maxLength={2000} placeholder="Your plans, where you'd serve, anything you want answered in our reply" autoFocus />
+        </Field>
+      ) : (
+        <button type="button" onClick={() => setAskOpen(true)} className="justify-self-start text-sm font-bold text-zinc-700 underline underline-offset-2">
+          Add a question or comment
+        </button>
+      )}
+      {/* people never see this field; bots fill it */}
+      <div aria-hidden className="absolute -left-[9999px] h-px w-px overflow-hidden">
+        <label>
+          Leave this empty
+          <input name="cbw_check" tabIndex={-1} autoComplete="off" data-1p-ignore data-lpignore="true" value={q.contact.hp} onChange={(e) => q.setContact((c) => ({ ...c, hp: e.target.value }))} />
+        </label>
+      </div>
+      {tried && (!contactOk || missing.length) ? <p role="alert" className="text-sm font-semibold text-red-700">A few answers are missing above. Please complete them and send again.</p> : null}
+      {q.status === 'error' && q.lastForm === 'simple' ? <SendError /> : null}
+      <div className="grid gap-3">
+        <SendButton />
+        <Reassurance />
+        <Consent />
+      </div>
+    </form>
+  );
+}
+
+/** The simple form, then its code step, then its thank-you: the same three in the hero, the pop-up and the page section. */
+function SimpleFlow({ where, innerRef }) {
+  const q = useQuote();
+  if (q.status === 'done') return <SimpleThanks where={where} />;
+  if (q.status === 'code') return <PhoneCode where={where} />;
+  return <SimpleForm where={where} innerRef={innerRef} />;
+}
+
+/**
+ * After the simple form (Vlad, 21 Oct 2026): the call comes first, with its times. "Skip the call for now" shows the
+ * 6-minute walkthrough instead ("before you go"), and both roads point down the page. Every choice is told to the OS
+ * (a CRM note and tag) and to GA4, so the founder sees who booked, who skipped and who watched.
+ */
+function SimpleThanks({ where }) {
+  const q = useQuote();
+  const r = q.result || {};
+  const headRef = useRef(null);
+  const fallback = useMemo(() => {
+    const p = new URLSearchParams();
+    if (r.first) p.set('first_name', r.first);
+    if (r.last) p.set('last_name', r.last);
+    if (r.email) p.set('email', r.email);
+    if (r.phone) p.set('phone', r.phone);
+    return `${CALL_URL}?${p.toString()}`;
+  }, [r.first, r.last, r.email, r.phone]);
+  // a long form just left the screen: the thank-you starts at the top of what the visitor sees
+  useEffect(() => {
+    if (where === 'hero' && q.open) return;
+    headRef.current?.scrollIntoView?.({ block: 'start', behavior: 'smooth' });
+  }, [where]); // eslint-disable-line react-hooks/exhaustive-deps
+  const more = () => q.learnMore(q.booking ? 'after_booking' : q.callSkipped ? 'after_skip' : 'thanks');
+  const picker = <TimePicker leadId={r.id} calendar="discovery" fallbackUrl={fallback} market={q.market} intent={q.intent} booked={q.booking} onBooked={q.setBooking} walkthrough={{ where: 'after_booking', onMore: more }} />;
+  return (
+    <div className="scroll-mt-20 text-left" role="status" ref={headRef}>
+      <div className="flex h-12 w-12 items-center justify-center rounded-full text-white" style={{ backgroundColor: RED }}>
+        <Check className="h-7 w-7" strokeWidth={3} />
+      </div>
+      <h3 className="mt-4 text-2xl font-extrabold leading-tight text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>
+        Thank you{r.first ? `, ${r.first}` : ''}. {q.booking ? 'Your call is booked.' : 'Your request is in.'}
+      </h3>
+      <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">{q.booking ? 'We’ll come to the call with your price and build options ready.' : 'We’ll reply within one business day with your price and build options.'}</p>
+
+      {q.booking ? (
+        <div className="mt-5">{picker}</div>
+      ) : q.callSkipped ? (
+        <div className="mt-5">
+          <Walkthrough leadId={r.id} market={q.market} intent={q.intent} where="after_skip" eyebrow="Before you go" title="Watch the full 6-minute walkthrough" text="Every part of the Coffee Bike up close, from the espresso machine to the batteries. Or scroll down and learn more about the Coffee Bike." onMore={more} />
+          <button type="button" onClick={() => q.setCallSkipped(false)} className="mt-3 text-sm font-bold text-zinc-700 underline underline-offset-2">
+            Changed your mind? Pick a time for the call
+          </button>
+        </div>
+      ) : (
+        <div className="mt-5 rounded-xl border-2 border-zinc-900 p-4">
+          <p className="flex items-center gap-2 font-extrabold text-zinc-950"><Calendar className="h-5 w-5 flex-none" aria-hidden /> Next: pick a time to review your build with our specialist</p>
+          <p className="mt-1 text-sm text-zinc-600">A 15-minute video call. Most owners planned their Coffee Bike build with us. Nothing to type again: just pick the time.</p>
+          <div className="mt-3">{picker}</div>
+          <button type="button" onClick={q.skipCall} className="mt-3 w-full rounded-xl border-2 border-zinc-200 px-4 py-3 text-center text-sm font-bold text-zinc-700 hover:border-zinc-400">
+            Skip the call for now
+          </button>
+        </div>
+      )}
+
+      <div className="mt-5 grid gap-2.5">
+        <a href={SPEC_SHEET} target="_blank" rel="noopener" onClick={() => track('spec_sheet', { where: 'thanks', market: q.market, intent: q.intent })} className="flex items-center gap-3 rounded-xl border-2 border-zinc-200 px-4 py-3.5 font-bold text-zinc-900 hover:border-zinc-400">
+          <FileText className="h-5 w-5 flex-none" /> Specs and health inquiry package (PDF)
+        </a>
+      </div>
+      <a href={whatsappLink(q.market)} target="_blank" rel="noopener" onClick={() => track('whatsapp_click', { where: 'thanks', market: q.market, intent: q.intent })} className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-zinc-900 underline underline-offset-4">
+        <MessageCircle className="h-4 w-4" aria-hidden /> Questions now? Message us on WhatsApp
+      </a>
+    </div>
+  );
+}
+
 /** The pop-up every price button opens: full screen on phones, a centred card on larger screens. */
 export function QuoteModal() {
   const q = useQuote();
@@ -1012,8 +1345,31 @@ export function QuoteModal() {
   );
 }
 
-/** Hero entry: the first question right under the headline; answering opens the rest in the pop-up. */
+/**
+ * Hero entry. Paid Google visitors get the one-screen form here (21 Oct 2026); everyone else the first question as
+ * tiles. Until the page knows which (the first client render), both are in the HTML and the layout's inline script
+ * plus globals.css (cbw-steps / cbw-simple) show the right one before the first paint, so nothing swaps in view.
+ */
 export function HeroQuestion() {
+  const q = useQuote();
+  // the same two slots whichever way it goes, so the form that stays is never unmounted and remounted when the page
+  // decides (its ref feeds the finish bar's "is the form on screen" check)
+  return (
+    <>
+      {q.variant !== 'steps' ? (
+        <div className="cbw-simple rounded-2xl bg-white p-4 shadow-[0_8px_30px_rgba(0,0,0,0.08)] sm:p-6">
+          <SimpleFlow where="hero" innerRef={q.heroSimpleRef} />
+        </div>
+      ) : null}
+      {q.variant !== 'simple' ? (
+        <div className="cbw-steps"><HeroTiles /></div>
+      ) : null}
+    </>
+  );
+}
+
+/** The first question right under the headline; answering opens the rest in the pop-up. */
+function HeroTiles() {
   const q = useQuote();
   if (q.status === 'done') {
     return <div className="rounded-xl bg-emerald-50 p-4 font-semibold text-emerald-900">Thank you. Your request is in: we’ll reply within one business day.</div>;

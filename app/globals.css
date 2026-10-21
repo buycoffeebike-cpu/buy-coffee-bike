@@ -82,3 +82,20 @@ html {
 .cv-off .cv-auto {
   content-visibility: visible;
 }
+
+/* The hero's two forms (app/start/quote.jsx HeroQuestion, 21 Oct 2026). Before the page is interactive the layout's
+   inline script marks a paid Google visitor on <html>, and these rules show them the one-screen form and everyone else
+   the step-by-step tiles; once React knows, it keeps only one. */
+html[data-cbw-form="simple"] .cbw-steps { display: none; }
+html:not([data-cbw-form="simple"]) .cbw-simple { display: none; }
+/* Wide screens, paid Google visitors: the one-screen form takes the photo's column and the photo sits under the text
+   (the approved design, 21 Oct 2026). Keyed on the same <html> mark, so the first paint is already right. */
+@media (min-width: 768px) {
+  html[data-cbw-form="simple"] .hero-form { grid-column: 2; grid-row: 1 / span 3; align-self: start; }
+  html[data-cbw-form="simple"] .hero-photo { grid-column: 1; grid-row: 3 / span 1; align-self: start; }
+  html[data-cbw-form="simple"] .hero-photo-box { aspect-ratio: 16 / 8; }
+}
+@media (min-width: 768px) {
+  /* the tall form spans three rows: with the last row flexible, the text rows keep their own height and the photo sits right under the bullets */
+  html[data-cbw-form="simple"] .hero-grid { grid-template-rows: auto auto 1fr; }
+}

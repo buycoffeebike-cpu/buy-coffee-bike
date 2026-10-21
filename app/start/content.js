@@ -61,10 +61,11 @@ export const MARKETS = {
     fitLine: "A fully equipped Coffee Bike starts at US$15,850 before tax and shipping, and the price goes up with each upgrade you choose.",
     // no financing answer: there is no US financing partner yet (founder, 29 Sept 2026); no lower-cost answer either,
     // there is little to offer below a typical build (founder, 1 Oct 2026), so a stretched budget goes to the call
+    // `short`: the one-screen form's boxes (21 Oct 2026); the step-by-step form shows the full line
     fit: [
-      { v: "fits", t: "Yes, I can plan around that" },
-      { v: "talk", t: "Close, I'd like to talk it through" },
-      { v: "unsure", t: "Not sure yet" },
+      { v: "fits", t: "Yes, I can plan around that", short: "Yes" },
+      { v: "talk", t: "Close, I'd like to talk it through", short: "Need to discuss" },
+      { v: "unsure", t: "Not sure yet", short: "Not yet" },
     ],
     thanksPrice: "A fully equipped Coffee Bike starts at US$15,850.",
     thanksNote: "Your quote adds your options and shipping to your address.",
@@ -83,9 +84,9 @@ export const MARKETS = {
     sticky: { k: "Fully equipped from", v: "CA$22,500" },
     fitLine: "A fully equipped Coffee Bike starts at CA$22,500 before tax, and the price goes up with each upgrade you choose. Shipping is quoted for your address.",
     fit: [
-      { v: "fits", t: "Yes, I can plan around that" },
-      { v: "finance", t: "I'd like to apply for financing", d: "Through iFinance, on approved credit" },
-      { v: "unsure", t: "Not sure yet" },
+      { v: "fits", t: "Yes, I can plan around that", short: "Yes" },
+      { v: "finance", t: "I'd like to apply for financing", d: "Through iFinance, on approved credit", short: "With financing" },
+      { v: "unsure", t: "Not sure yet", short: "Not yet" },
     ],
     thanksPrice: "A fully equipped Coffee Bike starts at CA$22,500 before tax.",
     thanksNote: "Your quote adds your options, taxes and shipping to your address.",

@@ -8,7 +8,7 @@
  * fallback.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, Check, Loader2, MessageCircle } from 'lucide-react';
+import { ArrowDown, ArrowRight, Check, Loader2, MessageCircle } from 'lucide-react';
 import LiteYouTube from '../../components/LiteYouTube';
 import { CALL_API, WALKTHROUGH_ID } from './content';
 
@@ -36,42 +36,50 @@ const UUID = /^[0-9a-f-]{36}$/i;
 
 /**
  * Right after the booking, the 6-minute walkthrough (Vlad, 13 Oct 2026: people who booked should understand what a
- * Coffee Bike is made of before the call). An invitation, never a gate. A play is told to the OS once, so the founder
- * sees on Telegram and in the CRM note who watched before the call.
+ * Coffee Bike is made of before the call). An invitation, never a gate. A play is told to the OS once (with where it
+ * happened), so the founder sees on Telegram and in the CRM note and tag who watched. Since 21 Oct 2026 it also
+ * follows "Skip the call for now" on the simple form's thank-you (where "after_skip"), with its own words, and can
+ * carry a "scroll down and learn more" link (onMore).
  */
-function Walkthrough({ leadId, market, intent }) {
+export function Walkthrough({ leadId, market, intent, where = 'after_booking', eyebrow = 'Before our call', title = 'Take the 6-minute tour of the Coffee Bike', text = 'See every part up close, from the espresso machine to the battery and canopy, so our 15 minutes go to your plans and your questions.', onMore }) {
   const [played, setPlayed] = useState(false);
   const sent = useRef(false);
+  const skipped = where === 'after_skip';
   const onPlay = useCallback(() => {
     setPlayed(true);
-    track('walkthrough_after_booking', { market, intent });
+    track(skipped ? 'walkthrough_after_skip' : 'walkthrough_after_booking', { market, intent });
     if (sent.current || !UUID.test(String(leadId || ''))) return;
     sent.current = true;
     try {
-      fetch(`${CALL_API}/lead-event`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ leadId, event: 'walkthrough_play' }), keepalive: true }).catch(() => {});
+      fetch(`${CALL_API}/lead-event`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ leadId, event: 'walkthrough_play', where }), keepalive: true }).catch(() => {});
     } catch {}
-  }, [leadId, market, intent]);
+  }, [leadId, market, intent, where, skipped]);
   return (
     <section aria-labelledby="before-call" className="mt-4 overflow-hidden rounded-xl border-2 border-zinc-900 bg-white">
       <div className="p-4 sm:p-5">
-        <p className="text-xs font-extrabold uppercase tracking-[0.14em]" style={{ color: RED }}>Before our call</p>
+        <p className="text-xs font-extrabold uppercase tracking-[0.14em]" style={{ color: RED }}>{eyebrow}</p>
         <h4 id="before-call" className="mt-1 text-[22px] font-extrabold leading-tight text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>
-          Take the 6-minute tour of the Coffee Bike
+          {title}
         </h4>
-        <p className="mt-1.5 text-[15px] leading-relaxed text-zinc-700">See every part up close, from the espresso machine to the battery and canopy, so our 15 minutes go to your plans and your questions.</p>
+        <p className="mt-1.5 text-[15px] leading-relaxed text-zinc-700">{text}</p>
       </div>
       <div className="relative aspect-video bg-zinc-900">
-        <LiteYouTube videoId={WALKTHROUGH_ID} title="Coffee Bike full walkthrough" trackingName="coffee_bike_walkthrough_after_booking" caption="Full walkthrough · 6:32" eager onPlay={onPlay} sizes="(min-width: 640px) 560px, calc(100vw - 40px)" />
+        <LiteYouTube videoId={WALKTHROUGH_ID} title="Coffee Bike full walkthrough" trackingName={skipped ? 'coffee_bike_walkthrough_after_skip' : 'coffee_bike_walkthrough_after_booking'} caption="Full walkthrough · 6:32" eager onPlay={onPlay} sizes="(min-width: 640px) 560px, calc(100vw - 40px)" />
       </div>
       <p className="flex items-center gap-2 bg-zinc-50 px-4 py-3 text-sm font-semibold text-zinc-700 sm:px-5" aria-live="polite">
         {played ? <Check className="h-4 w-4 flex-none" strokeWidth={3} style={{ color: RED }} aria-hidden /> : <MessageCircle className="h-4 w-4 flex-none" aria-hidden />}
-        {played ? 'Thanks for watching. Bring any question it raises to the call.' : 'Questions while you watch? Note them down and bring them to the call.'}
+        {skipped ? (played ? 'Thanks for watching. Any question it raises, send it on WhatsApp.' : 'Six minutes, every part of the bike. Questions? Message us on WhatsApp any time.') : played ? 'Thanks for watching. Bring any question it raises to the call.' : 'Questions while you watch? Note them down and bring them to the call.'}
       </p>
+      {onMore ? (
+        <button type="button" onClick={onMore} className="flex w-full items-center justify-center gap-2 border-t border-zinc-200 px-4 py-3 text-sm font-bold text-zinc-900 hover:bg-zinc-50">
+          Scroll down and learn more about the Coffee Bike <ArrowDown className="h-4 w-4" aria-hidden />
+        </button>
+      ) : null}
     </section>
   );
 }
 
-export default function TimePicker({ leadId, calendar = 'discovery', fallbackUrl, market, intent, booked: shared, onBooked }) {
+export default function TimePicker({ leadId, calendar = 'discovery', fallbackUrl, market, intent, booked: shared, onBooked, walkthrough }) {
   const tz = useMemo(zone, []);
   const [state, setState] = useState(shared ? 'booked' : 'loading'); // loading | ready | booking | booked | failed
   const [days, setDays] = useState([]);
@@ -146,7 +154,7 @@ export default function TimePicker({ leadId, calendar = 'discovery', fallbackUrl
             <p className="mt-1.5 text-sm leading-relaxed text-zinc-700">The Zoom link and a confirmation are on their way by email and text. Need another time? Use the link in that email.</p>
           </div>
         </div>
-        <Walkthrough leadId={leadId} market={market} intent={intent} />
+        <Walkthrough leadId={leadId} market={market} intent={intent} {...(walkthrough || {})} />
       </div>
     );
   }

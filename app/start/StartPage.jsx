@@ -266,14 +266,15 @@ function Page({ intent, market }) {
 
       {/* hero */}
       <section className="bg-[#F4F4F3]">
-        <div className="mx-auto grid max-w-6xl gap-x-12 gap-y-4 px-4 pb-8 pt-6 sm:px-6 md:grid-cols-[1fr_1fr] md:pb-16 md:pt-14">
+        <div className="hero-grid mx-auto grid max-w-6xl gap-x-12 gap-y-4 px-4 pb-8 pt-6 sm:px-6 md:grid-cols-[1fr_1fr] md:pb-16 md:pt-14">
           <div className="md:col-start-1 md:row-start-1">
             <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{I.eyebrow}</p>
             <h1 className="mt-2 text-[2.15rem] font-extrabold leading-[1.02] tracking-tight text-zinc-950 md:text-[3.6rem]" style={{ ...DISPLAY, ...BALANCE }}>{I.h1}</h1>
             <p className="mt-4 hidden max-w-xl text-lg leading-relaxed text-zinc-700 md:block">{I.sub}</p>
           </div>
-          <div className="relative md:col-start-2 md:row-span-3 md:row-start-1 md:self-start">
-            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-zinc-200 md:aspect-[4/5]">
+          {/* hero-photo / hero-form (globals.css): for paid Google visitors the one-screen form takes this column on wide screens and the photo moves under the text, as in the approved design (21 Oct 2026) */}
+          <div className="hero-photo relative md:col-start-2 md:row-span-3 md:row-start-1 md:self-start">
+            <div className="hero-photo-box relative aspect-[4/3] overflow-hidden rounded-2xl bg-zinc-200 md:aspect-[4/5]">
               <Image src={PHOTOS.hero.src} alt={PHOTOS.hero.alt} fill priority sizes="(min-width: 768px) 50vw, 100vw" className="object-cover object-[50%_42%] md:object-[50%_50%]" />
             </div>
             <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
@@ -296,7 +297,7 @@ function Page({ intent, market }) {
               ))}
             </ul>
           </div>
-          <div className="md:col-start-1 md:row-start-3">
+          <div className="hero-form md:col-start-1 md:row-start-3">
             <HeroQuestion />
             <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1">
               <CallButton where="hero_call" className="inline-flex items-center gap-2 py-1 text-[15px] font-bold text-zinc-800 underline underline-offset-4">
@@ -477,7 +478,7 @@ function Page({ intent, market }) {
           <div className="lg:sticky lg:top-24 lg:pt-6">
             <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>Your price</p>
             <h2 className="mt-2 text-3xl font-extrabold leading-tight md:text-5xl" style={{ ...DISPLAY, ...BALANCE }}>Get your price and build options</h2>
-            <p className="mt-3 text-lg text-zinc-300">Four quick questions and where to send your price, all in one form. We reply within one business day with pricing for your build.</p>
+            <p className="mt-3 text-lg text-zinc-300">{q.variant === 'simple' ? 'Your details and three quick questions, all in one form.' : 'Four quick questions and where to send your price, all in one form.'} We reply within one business day with pricing for your build.</p>
             <ul className="mt-6 space-y-3 text-[15px] leading-relaxed text-zinc-300">
               {['A short call to plan your setup, branding and add-ons. No pressure.', 'Nothing is charged until you approve an invoice.', 'Opening for spring? Permits often take 60–90 days, so owners order in winter and apply while the bike is built.'].map((x) => (
                 <li key={x} className="flex gap-3"><Check className="mt-1 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
@@ -646,7 +647,7 @@ function Page({ intent, market }) {
             <div className="font-extrabold text-zinc-950">{M.sticky.v}</div>
           </div>
           <button type="button" onClick={() => q.openQuote('sticky')} className="flex-1 rounded-xl px-4 py-3 text-center font-extrabold text-white" style={{ backgroundColor: RED }}>
-            {q.status === 'done' ? 'Request sent ✓' : q.step > 0 ? `Continue · step ${q.step + 1} of 5` : 'Get my price'}
+            {q.status === 'done' ? 'Request sent ✓' : q.variant !== 'simple' && q.step > 0 ? `Continue · step ${q.step + 1} of 5` : 'Get my price'}
           </button>
         </div>
       </div>
