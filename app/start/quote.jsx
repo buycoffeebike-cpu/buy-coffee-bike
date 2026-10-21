@@ -1189,7 +1189,7 @@ function SimpleForm({ where, innerRef }) {
               </button>
             ) : null}
           </Field>
-          <Field label="Mobile number" hint="We text a 4-digit code to confirm it, then call or text you about your quote." error={show('phone')} data-field="phone">
+          <Field label="Mobile number" hint="So we can text or call you back fast." error={show('phone')} data-field="phone">
             <input className={input} type="tel" inputMode="tel" value={q.contact.phone} onChange={set('phone')} onBlur={blur('phone')} autoComplete="tel" placeholder={M.phonePlaceholder} />
           </Field>
           <Field label="City and province or state" hint="For your delivery cost." error={show('location')} data-field="location">
