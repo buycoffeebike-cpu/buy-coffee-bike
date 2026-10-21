@@ -180,6 +180,18 @@ function e164(phone) {
   return '';
 }
 
+// A number typed as a US or Canadian one (no country code, or +1) must be one: Brandon (20 Oct 2026) typed
+// 646 328 42773, it passed as a foreign number, and every text to him failed. The OS refuses the same numbers.
+function phoneProblem(phone) {
+  const t = String(phone || '').trim();
+  const d = t.replace(/\D/g, '');
+  if (d.length < 7 || !/^[+()\d\s.-]+$/.test(t)) return 'Please enter a mobile number we can reach you on.';
+  if (t.startsWith('+') && !t.startsWith('+1')) return '';
+  const ten = d.length === 11 && d.startsWith('1') ? d.slice(1) : d.length === 10 ? d : null;
+  if (ten && /^[2-9]\d{2}[2-9]\d{6}$/.test(ten)) return '';
+  return 'Please check your number: US and Canadian mobiles have 10 digits. Outside the US and Canada, start with + and your country code.';
+}
+
 // the address typos people make most, and what they meant
 const DOMAIN_FIX = { 'gmial.com': 'gmail.com', 'gmai.com': 'gmail.com', 'gamil.com': 'gmail.com', 'gmail.co': 'gmail.com', 'gmail.con': 'gmail.com', 'gnail.com': 'gmail.com', 'hotmial.com': 'hotmail.com', 'hotmai.com': 'hotmail.com', 'hotmail.co': 'hotmail.com', 'yaho.com': 'yahoo.com', 'yahoo.co': 'yahoo.com', 'outlok.com': 'outlook.com', 'iclod.com': 'icloud.com', 'icloud.co': 'icloud.com' };
 function emailFix(email) {
@@ -532,7 +544,7 @@ export function QuoteFlow({ where = 'inline' }) {
   const errs = {
     name: q.contact.name.trim().length < 2 ? 'Please enter your name.' : '',
     email: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(q.contact.email.trim()) ? '' : 'Please enter a valid email.',
-    phone: q.contact.phone.replace(/\D/g, '').length >= 7 && /^[+()\d\s.-]+$/.test(q.contact.phone.trim()) ? '' : 'Please enter a mobile number we can reach you on.',
+    phone: phoneProblem(q.contact.phone),
     location: q.contact.location.trim().length < 2 ? 'Tell us the city where you want to run it.' : '',
   };
   const show = (k) => (tried || blurred[k]) && errs[k];
@@ -895,7 +907,7 @@ export function QuoteFullForm() {
   const errs = {
     name: q.contact.name.trim().length < 2 ? 'Please enter your name.' : '',
     email: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(q.contact.email.trim()) ? '' : 'Please enter a valid email.',
-    phone: q.contact.phone.replace(/\D/g, '').length >= 7 && /^[+()\d\s.-]+$/.test(q.contact.phone.trim()) ? '' : 'Please enter a mobile number we can reach you on.',
+    phone: phoneProblem(q.contact.phone),
     location: q.contact.location.trim().length < 2 ? 'Tell us the city where you want to run it.' : '',
   };
   const show = (k) => (tried || blurred[k]) && errs[k];
@@ -1130,7 +1142,7 @@ function SimpleForm({ where, innerRef }) {
   const errs = {
     name: q.contact.name.trim().length < 2 ? 'Please enter your name.' : '',
     email: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(q.contact.email.trim()) ? '' : 'Please enter a valid email.',
-    phone: q.contact.phone.replace(/\D/g, '').length >= 7 && /^[+()\d\s.-]+$/.test(q.contact.phone.trim()) ? '' : 'Please enter a mobile number we can reach you on.',
+    phone: phoneProblem(q.contact.phone),
     location: q.contact.location.trim().length < 2 ? 'Tell us the city where you want to run it.' : '',
   };
   const show = (k) => (tried || blurred[k]) && errs[k];
