@@ -4,13 +4,13 @@
  * plus the rules for that market.
  *
  * US (founder, 29–30 Sept 2026): "mobile coffee cart" / "coffee cart for sale" for US buyers; the original sales page
- * with its configurator; prices as "fully equipped from US$15,850" (founder, 13 Oct 2026; was "about US$15,850, never from"); no financing
- * anywhere (iFinance serves Canadian residents only and no US lender has signed); owner reviews word for word.
+ * with its configurator; prices as "fully equipped from US$15,850" (founder, 13 Oct 2026; was "about US$15,850, never from"); financing
+ * through Equinox Funding only, on approved credit (US lender signed 29 Oct 2026; iFinance never shown here); owner reviews word for word.
  */
 
 const US_URL = 'https://coffeebike.ca/buy-a-mobile-coffee-bike/mobile-coffee-cart';
 
-/** US FAQ: the sales page's own answers, US-first, without financing lines or "from" prices, plus the US questions. */
+/** US FAQ: the sales page's own answers, US-first, with Equinox Funding as the only lender, plus the US questions. */
 function usFaqs(base) {
   const by = Object.fromEntries(base.map((f) => [f.q, f]));
   const take = (q) => { if (!by[q]) throw new Error(`sales page FAQ changed: "${q}" not found`); return by[q]; };
@@ -28,7 +28,15 @@ function usFaqs(base) {
       sections: [
         { label: 'A Fully Equipped Coffee Bike', text: 'A fully equipped Coffee Bike starts at US$15,850 before tax: the bike, branded body and canopy, sinks, fridge, batteries and a Fracino single-group espresso setup. Upgrades raise the price.' },
         { label: 'What Changes the Price', text: 'A double-group setup, UL certification, branding and add-ons. The configurator on this page shows your price as you build, and shipping is quoted for your address before you confirm your order.' },
+        { label: 'Financing Available', text: 'US buyers can apply through Equinox Funding, on approved credit. Send your build first and we send you the application link; approval is not guaranteed.' },
         { label: 'Compared With Other Options', text: 'Espresso carts from other makers often cost about US$8,000–25,000 once an espresso machine and grinder are added, and they still need a vehicle or trailer to move them. New coffee trucks often cost US$55,000–150,000.' },
+      ],
+    },
+    {
+      q: 'Can I finance a mobile coffee cart?',
+      sections: [
+        { label: 'Yes, Through Equinox Funding', text: 'US buyers can apply for financing through Equinox Funding, on approved credit. You enter Coffee Bike World as the vendor and your build total in US dollars.' },
+        { label: 'How It Works', text: 'Build your bike, send the build, and we send you the application link. Approval is not guaranteed; once you hear back, our specialist finalizes the order with you.' },
       ],
     },
     edit('Coffee Bike vs. a coffee cart for sale: what is the difference?', (s) => s.map((x) => (x.label === 'Lower Total Cost'
@@ -53,7 +61,9 @@ function usFaqs(base) {
     take('What can I sell from my Coffee Bike?'),
     take('Does my Coffee Bike have any warranty? What happens if something breaks down?'),
     take('Do you provide any training?'),
-    take('What is the purchasing process, and what payment methods do you accept?'),
+    edit('What is the purchasing process, and what payment methods do you accept?', (s) => s.map((x) => (x.label === 'Accepted Payment Methods'
+      ? { label: 'Accepted Payment Methods', text: 'We accept direct bank transfer and credit card payments, and financing through Equinox Funding, on approved credit. A 3.9% processing fee applies to credit card transactions. Both an invoice and an official receipt are issued for your accounting records.' }
+      : x))),
     take('What is the Coffee Bike World community and is it mandatory to be part of it?'),
     take('How much can I realistically earn with a Coffee Bike?'),
     take('Can I purchase territory rights or become a distributor for the entire region or country?'),
@@ -70,13 +80,14 @@ export const VARIANTS = {
     priceLine: 'Fully equipped from US$15,850, before tax. Shipping quoted to your address.',
     whyTitle: 'Why US Buyers Choose a Coffee Bike Over a Coffee Cart',
     whySub: 'A turnkey mobile coffee business with low overhead, a lower startup cost than a coffee truck or trailer, and full ownership. No franchise fees, no royalties.',
-    lowEntryDesc: 'Fully equipped from US$15,850, a fraction of a coffee truck or a storefront café.',
+    lowEntryDesc: 'Fully equipped from US$15,850, a fraction of a coffee truck or a storefront café. Financing available through Equinox Funding, on approved credit.',
+    financingLine: 'Financing available through Equinox Funding, on approved credit.',
     shipTitle: 'Fully Brandable, Delivered Across the US',
     shipDesc: 'Custom Pantone colors, your logo, your vibe. Every Coffee Bike is crated, insured and tracked to your door anywhere in the US.',
     ownersTitle: 'Coffee Bike Owners in the US and Worldwide',
     ownersSub: 'Hear from owners in Florida, Arizona, Oregon and California, and from Canada to Peru.',
     ownersFirst: ['Lithia, FL', 'Tempe, AZ', 'Portland, OR', 'Lawndale, CA'],
-    hideFinancing: true,
+    lender: 'us',
     buildCost: 15850,
     usSection: true,
     faqs: usFaqs,

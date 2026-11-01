@@ -56,7 +56,8 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
   const [buildCopied, setBuildCopied] = useState(false);
   const [financingAmountCopied, setFinancingAmountCopied] = useState(false);
   const [paymentStarted, setPaymentStarted] = useState(false);
-  const [financingStarted, setFinancingStarted] = useState(false);
+  const [financingCountry, setFinancingCountry] = useState('ca');
+  const [financingInterest, setFinancingInterest] = useState(null);
   const [retailCups, setRetailCups] = useState(50);
   const [retailPrice, setRetailPrice] = useState(5.5);
   const [retailDays, setRetailDays] = useState(18);
@@ -367,9 +368,10 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
 
   const iframeUrl = useMemo(() => {
     const baseUrl = `https://link.coffeebike.ca/widget/form/xnay3GGsJKCfqhvw55Yx${plusOne ? '?phone=%2B1%20' : ''}`;
-    if (!buildSummary || !basePackage) return baseUrl;
-    return `${baseUrl}${plusOne ? '&' : '?'}coffee_bike_build=${encodeURIComponent(buildSummary)}`;
-  }, [buildSummary, basePackage, plusOne]);
+    const body = [buildSummary && basePackage ? buildSummary : '', financingInterest ? `Financing interest: ${financingInterest}, on approved credit` : ''].filter(Boolean).join('\n');
+    if (!body) return baseUrl;
+    return `${baseUrl}${plusOne ? '&' : '?'}coffee_bike_build=${encodeURIComponent(body)}`;
+  }, [buildSummary, basePackage, plusOne, financingInterest]);
   const getInTouchUrl = `https://link.coffeebike.ca/widget/form/xnay3GGsJKCfqhvw55Yx${plusOne ? '?phone=%2B1%20' : ''}`;
 
   const bookingUrl = useMemo(() => {
@@ -385,6 +387,11 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
     const grandTotal = subtotalCAD + tax + shipping;
     return { subtotalCAD, tax, shipping, grandTotal };
   }, [total]);
+  // the lender for the buyer's country: the US page has only Equinox Funding; the sales page lets the buyer pick
+  const financingUsd = Math.round(total);
+  const lender = (variant?.lender ?? financingCountry) === 'us'
+    ? { key: 'us', name: 'Equinox Funding', currency: 'USD', amount: financingUsd, intro: 'US buyers can apply for financing through Equinox Funding, on approved credit. You apply on their site with Coffee Bike World as the vendor and your build total in US dollars.', amountHelp: 'Enter this as the amount you want to finance, in US dollars, with Coffee Bike World as the vendor.', applyHelp: 'The link opens Equinox Funding\u2019s own application.' }
+    : { key: 'ca', name: 'iFinance', currency: 'CAD', amount: financingTotals.grandTotal, intro: 'Canadian residents can apply for financing through iFinance, on approved credit.', amountHelp: 'Enter this as the amount you want to finance when you fill in the iFinance application.', applyHelp: 'The link opens iFinance Canada\u2019s secure online application.' };
 
   // WhatsApp: the message carries the visitor's build when there is one, so the chat starts where they left off
   const whatsappHref = useMemo(() => {
@@ -405,7 +412,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
   // the configured build travels with the quote request (CRM note + lead email) instead of the calendar form
   const quoteExtra = useMemo(() => ({ build: buildSummary || undefined }), [buildSummary]);
   const openDeposit = () => { setBuildCopied(false); setPaymentStarted(false); setDepositModalOpen(true); };
-  const openFinancing = () => { setFinancingAmountCopied(false); setFinancingStarted(false); setFinancingModalOpen(true); };
+  const openFinancing = () => { setFinancingAmountCopied(false); setFinancingCountry(variantKey === 'us' ? 'us' : currency === 'CAD' ? 'ca' : 'us'); setFinancingModalOpen(true); };
 
   const copyBuildToClipboard = async () => {
     try { await navigator.clipboard.writeText(buildCodeCompact); setBuildCopied(true); setTimeout(() => setBuildCopied(false), 3000); }
@@ -416,8 +423,8 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
     }
   };
 
-  const copyFinancingAmount = async () => {
-    const value = String(financingTotals.grandTotal);
+  const copyFinancingAmount = async (amount) => {
+    const value = String(amount);
     try { await navigator.clipboard.writeText(value); setFinancingAmountCopied(true); setTimeout(() => setFinancingAmountCopied(false), 3000); }
     catch (e) {
       const t = document.createElement('textarea'); t.value = value; document.body.appendChild(t); t.select();
@@ -431,9 +438,11 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
     window.open('https://buy.stripe.com/cNibJ31nd3QeczHfjnaVa07', '_blank', 'noopener,noreferrer');
   };
 
-  const handleProceedToFinancing = () => {
-    setFinancingStarted(true);
-    window.open('https://apply.ifinancecanada.com/23545', '_blank', 'noopener,noreferrer');
+  // the lender's application follows once the build is sent (never before the lead is in): the interest rides along to the inquiry form
+  const sendBuildForFinancing = () => {
+    setFinancingInterest(lender.name);
+    setFinancingModalOpen(false);
+    openInquiry();
   };
 
   // what the calculator compares against: the sales page's fully equipped build, or the variant's typical build
@@ -641,7 +650,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
         { label: '3. Production Begins', text: 'Once full payment is received, we begin manufacturing your Coffee Bike immediately. If we have units in stock, we move straight to dispatch.' },
         { label: '4. Shipping Invoice', text: 'A second invoice for shipping is sent closer to the dispatch date, since freight rates fluctuate. This ensures you receive the most accurate, up-to-date shipping quote.' },
         { label: '5. Dispatch & Delivery', text: 'Once your unit is ready and all invoices are settled, we pack and ship your Coffee Bike directly to you. Get ready to launch.' },
-        { label: 'Accepted Payment Methods', text: 'We accept direct bank transfer and credit card payments. A 3.9% processing fee applies to credit card transactions. Both an invoice and an official receipt are issued for your accounting records.' },
+        { label: 'Accepted Payment Methods', text: 'We accept direct bank transfer and credit card payments, and financing through iFinance in Canada or Equinox Funding in the US, on approved credit. A 3.9% processing fee applies to credit card transactions. Both an invoice and an official receipt are issued for your accounting records.' },
         { label: 'Important Notes', text: 'Shipping is calculated separately once the delivery address is available. All sales are final — once payment is received, we reserve your spot in the production queue and begin manufacturing right away. Based on our market research, we expect very high demand on our first round of production, so earlier orders mean faster delivery.' },
       ],
     },
@@ -718,7 +727,8 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
         { label: 'Get In Touch', text: 'Please email us your proposal or questions at coffeebike@vladvik.com and our team will respond personally.' },
       ],
     },
-    { q: 'How much does a Coffee Bike cost?', sections: [{ label: 'Starting Price', text: 'A fully equipped Coffee Bike starts at $15,850 USD ($22,500 CAD before tax): the Classic package with a single-group Fracino espresso machine, branded body and canopy, sinks, fridge and batteries. Upgrades such as a double-group setup, certification and add-ons raise the price, and shipping is quoted to your address.' }, { label: 'Compared With a Café', text: 'A brick-and-mortar cafe typically costs $80,000 to $500,000 to open.' }, { label: 'Financing Available', text: 'Canadian buyers can apply for financing through our partner iFinance. International buyers can use their own bank or third-party equipment financing.' }] },
+    { q: 'How much does a Coffee Bike cost?', sections: [{ label: 'Starting Price', text: 'A fully equipped Coffee Bike starts at $15,850 USD ($22,500 CAD before tax): the Classic package with a single-group Fracino espresso machine, branded body and canopy, sinks, fridge and batteries. Upgrades such as a double-group setup, certification and add-ons raise the price, and shipping is quoted to your address.' }, { label: 'Compared With a Café', text: 'A brick-and-mortar cafe typically costs $80,000 to $500,000 to open.' }, { label: 'Financing Available', text: 'Canadian buyers can apply through iFinance and US buyers through Equinox Funding, on approved credit; approval is not guaranteed. Send your build first and we send you the application link. Buyers elsewhere can use their own bank or an equipment lender.' }] },
+    { q: 'Can I finance a Coffee Bike?', sections: [{ label: 'Canada', text: 'Yes. Canadian residents can apply through iFinance, on approved credit.' }, { label: 'United States', text: 'Yes. US buyers can apply through Equinox Funding, on approved credit. You enter Coffee Bike World as the vendor and your build total in US dollars.' }, { label: 'How It Works', text: 'Build your bike, send the build, and we send you the application link. Approval is not guaranteed; once you hear back, our specialist finalizes the order with you.' }] },
     { q: 'Coffee Bike vs. a coffee cart for sale: what is the difference?', sections: [{ label: 'Built for Real Mobility', text: 'A Coffee Bike is a fully electric mobile coffee business on a real e-bike frame, not a stationary cart with wheels. The motor handles steep hills even fully loaded, so you can actually move locations during the day instead of being stuck where you parked.' }, { label: 'Commercial-Grade Build', text: 'Coffee Bikes ship with a dual-fuel commercial espresso machine, full plumbing, refrigeration, and a 1-year manufacturer warranty. Refined by 8+ years of real operations and over 1.5 million cups served.' }, { label: 'Lower Total Cost', text: 'A fully equipped Coffee Bike starts at $15,850 USD ($22,500 CAD before tax). Comparable equipped coffee carts often range from $5,000 to $40,000 with hidden costs in equipment, branding, and shipping.' }] },
     { q: 'Is a Coffee Bike a coffee trike, an espresso cart or a mobile coffee cart?', sections: [{ label: 'All Three in One', text: 'In a way, yes. A Coffee Bike is a three-wheeled electric coffee trike with a complete espresso bar built in, so it works like a mobile coffee cart you can actually ride between locations. Buyers search for it as an espresso cart, coffee trike, coffee bicycle or mobile coffee cart, and all of those describe the same idea.' }, { label: 'Why the Electric Motor Matters', text: 'A push cart stays where you parked it. The Coffee Bike moves a fully loaded bar across town and up hills, so one bike can serve a morning market, a lunch crowd and an evening event in the same day.' }] },
     { q: 'Do you sell and ship Coffee Bikes in the USA?', sections: [{ label: 'Yes, Across the United States', text: 'Coffee Bikes are shipped to buyers across the US, crated, insured and tracked to your door. Owners already run Coffee Bikes in Florida, Arizona, Oregon and California.' }, { label: 'Pricing in USD', text: 'Prices on this page are shown in USD by default, and shipping is quoted for your city before you confirm your order.' }, { label: 'Timeline', text: 'Building takes about 4–6 weeks, then delivery takes about 2–4 weeks depending on your location.' }] },
@@ -968,122 +978,105 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
         </div>
       )}
 
-      {/* FINANCING MODAL */}
+      {/* FINANCING MODAL: the lender for the buyer's country and the amount to enter; the application link itself follows once the build is sent (Astra, 31 Oct 2026) */}
       {financingModalOpen && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6" style={{ zIndex: 9999 }} onClick={() => setFinancingModalOpen(false)}>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden relative flex flex-col modal-max-90" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-200 bg-white flex-shrink-0">
-              <div className="min-w-0 flex items-center gap-2">
-                <span className="text-xl">🍁</span>
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider font-bold mb-0.5" style={{ color: RED }}>Apply for Financing</div>
-                  <div className="text-base font-bold leading-tight">Canada Residents Only</div>
-                </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-wider font-bold mb-0.5" style={{ color: RED }}>Financing</div>
+                <div className="text-base font-bold leading-tight">How financing works, on approved credit</div>
               </div>
               <button onClick={() => setFinancingModalOpen(false)} aria-label="Close" className="w-9 h-9 rounded-full hover:bg-zinc-100 flex items-center justify-center transition flex-shrink-0">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto bg-white">
-              {!financingStarted ? (
-                <div className="p-5">
-                  <div className="mb-5 p-3 rounded-lg border-2 flex items-start gap-2.5" style={{ borderColor: RED, backgroundColor: RED_TINT }}>
-                    <Info className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: RED }} />
-                    <div className="text-xs leading-relaxed text-zinc-800">
-                      <strong>Financing is currently available for Canadian purchases and Canadian residents only.</strong> Applications outside Canada cannot be processed at this time.
-                    </div>
-                  </div>
-                  {basePackage ? (
-                    <div className="mb-5">
-                      <h3 className="text-sm font-bold mb-2">Your Coffee Bike Build</h3>
-                      <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 max-h-32 overflow-y-auto">
-                        <pre className="text-[11px] text-zinc-700 leading-relaxed whitespace-pre-wrap font-sans">{buildSummary}</pre>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="mb-5 p-3 rounded-lg border border-amber-200 bg-amber-50 text-xs text-amber-900 leading-relaxed">
-                      You haven't configured a build yet. You can still apply for financing — we'll work with you on the configuration after approval. Or close this and use the configurator first for a more accurate estimate.
-                    </div>
-                  )}
-                  <div className="mb-5">
-                    <h3 className="text-sm font-bold mb-2">Estimated Financing Total <span className="text-xs font-normal text-zinc-500">(in CAD)</span></h3>
-                    <div className="rounded-lg border border-zinc-200 overflow-hidden">
-                      <div className="px-4 py-2.5 flex items-center justify-between text-sm border-b border-zinc-100">
-                        <span className="text-zinc-700">Coffee Bike Build (Subtotal)</span>
-                        <span className="font-semibold">{fmtCAD(financingTotals.subtotalCAD)}</span>
-                      </div>
-                      <div className="px-4 py-2.5 flex items-center justify-between text-sm border-b border-zinc-100">
-                        <span className="text-zinc-700">GST / PST <span className="text-xs text-zinc-500">(12% combined)</span></span>
-                        <span className="font-semibold">+ {fmtCAD(financingTotals.tax)}</span>
-                      </div>
-                      <div className="px-4 py-2.5 flex items-center justify-between text-sm border-b border-zinc-100">
-                        <span className="text-zinc-700">Shipping <span className="text-xs text-zinc-500">(estimated, to be confirmed)</span></span>
-                        <span className="font-semibold">+ {fmtCAD(financingTotals.shipping)}</span>
-                      </div>
-                      <div className="px-4 py-3 flex items-center justify-between text-base bg-zinc-50">
-                        <span className="font-bold">Total to Finance</span>
-                        <span className="font-bold text-lg" style={{ color: RED }}>{fmtCAD(financingTotals.grandTotal)}</span>
-                      </div>
-                    </div>
-                    <div className="text-[10px] text-zinc-500 mt-2 leading-relaxed">Tax and shipping are estimates. Final figures will be confirmed with you before any payment is collected. Use the total above as a reference amount on your financing application.</div>
-                  </div>
-                  <div className="mb-5 rounded-lg border-2 p-4" style={{ borderColor: RED, backgroundColor: RED_TINT }}>
-                    <div className="flex items-start gap-2 mb-3">
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-bold mt-0.5" style={{ backgroundColor: RED }}>1</div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-bold mb-1">Copy financing amount</div>
-                        <div className="text-xs text-zinc-700 leading-relaxed mb-2">Use this number as the amount you want to finance when you fill out the iFinance Canada application.</div>
-                        <div className="bg-white border border-zinc-300 rounded p-2 mb-2 flex items-center justify-between">
-                          <code className="text-sm font-bold text-zinc-900">{financingTotals.grandTotal.toLocaleString()}</code>
-                          <span className="text-[10px] text-zinc-500 uppercase tracking-wider">CAD</span>
-                        </div>
-                        <button onClick={copyFinancingAmount} className={`inline-flex items-center gap-2 px-4 py-2 rounded text-xs font-bold uppercase tracking-wider transition ${financingAmountCopied ? 'bg-green-600 text-white' : 'bg-white border-2 hover:bg-zinc-50'}`} style={{ borderColor: financingAmountCopied ? undefined : RED, color: financingAmountCopied ? undefined : RED }}>
-                          {financingAmountCopied ? (<><Check className="w-3.5 h-3.5" strokeWidth={3} /> Copied!</>) : (<>📋 Copy Amount</>)}
-                        </button>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2 pt-3 border-t border-white/60">
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-bold mt-0.5" style={{ backgroundColor: RED }}>2</div>
-                      <div className="flex-1">
-                        <div className="text-sm font-bold mb-1">Complete the application</div>
-                        <div className="text-xs text-zinc-700 leading-relaxed">Opens iFinance Canada's secure online application in a new tab. Once approved, our team will coordinate with you on final order and payment.</div>
-                      </div>
-                    </div>
-                  </div>
-                  <button onClick={handleProceedToFinancing} className="block w-full text-white font-bold py-3.5 rounded text-sm hover:opacity-90 text-center transition flex items-center justify-center gap-2" style={{ backgroundColor: RED }}>
-                    Continue to iFinance Canada Application <ArrowRight className="w-4 h-4" />
-                  </button>
-                  <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[10px] text-zinc-500 mt-3">
-                    <span className="flex items-center gap-1">🍁 Canadian Applicants Only</span>
-                    <span>·</span>
-                    <span>Application is independent of Coffee Bike</span>
-                    <span>·</span>
-                    <span>Approval not guaranteed</span>
+            <div className="flex-1 overflow-y-auto bg-white p-5">
+              {!variant?.lender && (
+                <div className="mb-4 flex gap-2" role="group" aria-label="Where are you buying from?">
+                  {[['ca', 'Canada · iFinance'], ['us', 'United States · Equinox Funding']].map(([k, label]) => (
+                    <button key={k} type="button" onClick={() => setFinancingCountry(k)} className={`flex-1 rounded border-2 px-3 py-2 text-sm font-semibold transition ${financingCountry === k ? 'text-white' : 'bg-white text-zinc-800 border-zinc-300 hover:border-zinc-500'}`} style={financingCountry === k ? { backgroundColor: RED, borderColor: RED } : undefined}>{label}</button>
+                  ))}
+                </div>
+              )}
+              <p className="text-sm text-zinc-800 leading-relaxed mb-4">{lender.intro}</p>
+              {basePackage ? (
+                <div className="mb-4">
+                  <h3 className="text-sm font-bold mb-2">Your Coffee Bike build</h3>
+                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 max-h-32 overflow-y-auto">
+                    <pre className="text-[11px] text-zinc-700 leading-relaxed whitespace-pre-wrap font-sans">{buildSummary}</pre>
                   </div>
                 </div>
               ) : (
-                <div className="p-6 text-center">
-                  <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl" style={{ backgroundColor: RED_TINT }}>🍁</div>
-                  <h3 className="text-xl font-bold mb-2">Financing application opened in a new tab</h3>
-                  <p className="text-sm text-zinc-600 mb-5 leading-relaxed max-w-sm mx-auto">Complete your application with iFinance Canada in the new tab. Once you hear back, contact us so we can finalize your order together.</p>
-                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-left mb-5 max-w-sm mx-auto">
-                    <div className="text-[10px] uppercase tracking-wider font-bold text-zinc-500 mb-2">Quick reminder</div>
-                    <ul className="space-y-2 text-xs text-zinc-700">
-                      <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: RED }} strokeWidth={3} /><span>Use <strong>{fmtCAD(financingTotals.grandTotal)}</strong> as your reference financing amount</span></li>
-                      <li className="flex items-start gap-2"><Check className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: RED }} strokeWidth={3} /><span>After approval, email us at coffeebike@vladvik.com with your confirmation</span></li>
-                    </ul>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-2 justify-center max-w-sm mx-auto">
-                    <button onClick={() => setFinancingStarted(false)} className="flex-1 bg-white border border-zinc-300 hover:bg-zinc-50 text-zinc-700 font-semibold py-2.5 rounded text-sm transition">← Back</button>
-                    <button onClick={handleProceedToFinancing} className="flex-1 text-white font-semibold py-2.5 rounded text-sm hover:opacity-90 transition" style={{ backgroundColor: RED }}>Reopen Application</button>
-                  </div>
-                  <button onClick={() => setFinancingModalOpen(false)} className="mt-4 text-xs text-zinc-500 hover:text-zinc-900 underline">Close this window</button>
+                <div className="mb-4 p-3 rounded-lg border border-amber-200 bg-amber-50 text-xs text-amber-900 leading-relaxed">
+                  You haven't configured a build yet. Use the configurator first, so the amount you apply for matches the bike you want.
                 </div>
               )}
+              {lender.key === 'ca' ? (
+                <div className="mb-4">
+                  <h3 className="text-sm font-bold mb-2">Estimated amount to finance <span className="text-xs font-normal text-zinc-500">(in CAD)</span></h3>
+                  <div className="rounded-lg border border-zinc-200 overflow-hidden">
+                    <div className="px-4 py-2.5 flex items-center justify-between text-sm border-b border-zinc-100"><span className="text-zinc-700">Coffee Bike build (subtotal)</span><span className="font-semibold">{fmtCAD(financingTotals.subtotalCAD)}</span></div>
+                    <div className="px-4 py-2.5 flex items-center justify-between text-sm border-b border-zinc-100"><span className="text-zinc-700">Estimated tax <span className="text-xs text-zinc-500">(12%, BC; varies by province)</span></span><span className="font-semibold">+ {fmtCAD(financingTotals.tax)}</span></div>
+                    <div className="px-4 py-2.5 flex items-center justify-between text-sm border-b border-zinc-100"><span className="text-zinc-700">Shipping <span className="text-xs text-zinc-500">(estimated, confirmed before you order)</span></span><span className="font-semibold">+ {fmtCAD(financingTotals.shipping)}</span></div>
+                    <div className="px-4 py-3 flex items-center justify-between" style={{ backgroundColor: RED_TINT }}><span className="font-bold">Estimated total to finance</span><span className="font-bold text-lg" style={{ color: RED }}>{fmtCAD(financingTotals.grandTotal)}</span></div>
+                  </div>
+                  <div className="text-[10px] text-zinc-500 mt-2 leading-relaxed">Tax and shipping are estimates, and the lender decides what it finances. Final figures are confirmed with you before any payment.</div>
+                </div>
+              ) : (
+                <div className="mb-4">
+                  <h3 className="text-sm font-bold mb-2">Amount to enter on the application <span className="text-xs font-normal text-zinc-500">(in USD)</span></h3>
+                  <div className="rounded-lg border border-zinc-200 overflow-hidden">
+                    <div className="px-4 py-3 flex items-center justify-between" style={{ backgroundColor: RED_TINT }}><span className="font-bold">Build estimate</span><span className="font-bold text-lg" style={{ color: RED }}>${financingUsd.toLocaleString()} USD</span></div>
+                  </div>
+                  <div className="text-[10px] text-zinc-500 mt-2 leading-relaxed">Tax and shipping are not included, and the lender decides what it finances. This is an estimate, not approved funding.</div>
+                </div>
+              )}
+              <div className="mb-4 rounded-lg border-2 p-4" style={{ borderColor: RED, backgroundColor: RED_TINT }}>
+                <div className="flex items-start gap-2 mb-3">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-bold mt-0.5" style={{ backgroundColor: RED }}>1</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-bold mb-1">Copy your amount</div>
+                    <div className="text-xs text-zinc-700 leading-relaxed mb-2">{lender.amountHelp}</div>
+                    <div className="bg-white border border-zinc-300 rounded p-2 mb-2 flex items-center justify-between">
+                      <code className="text-sm font-bold text-zinc-900">{lender.amount.toLocaleString()}</code>
+                      <span className="text-[10px] text-zinc-500 uppercase tracking-wider">{lender.currency}</span>
+                    </div>
+                    <button onClick={() => copyFinancingAmount(lender.amount)} className={`inline-flex items-center gap-2 px-4 py-2 rounded text-xs font-bold uppercase tracking-wider transition ${financingAmountCopied ? 'bg-green-600 text-white' : 'bg-white border-2 hover:bg-zinc-50'}`} style={financingAmountCopied ? {} : { borderColor: RED, color: RED }}>
+                      {financingAmountCopied ? (<><Check className="w-3.5 h-3.5" strokeWidth={3} /> Copied</>) : 'Copy amount'}
+                    </button>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 pt-3 border-t border-white/60 mb-3">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-bold mt-0.5" style={{ backgroundColor: RED }}>2</div>
+                  <div className="flex-1">
+                    <div className="text-sm font-bold mb-1">Send your build</div>
+                    <div className="text-xs text-zinc-700 leading-relaxed">Send the inquiry form and your build goes to our team with your interest in financing noted. We then send you the {lender.name} application link.</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 pt-3 border-t border-white/60">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-bold mt-0.5" style={{ backgroundColor: RED }}>3</div>
+                  <div className="flex-1">
+                    <div className="text-sm font-bold mb-1">Apply with {lender.name}, on approved credit</div>
+                    <div className="text-xs text-zinc-700 leading-relaxed">{lender.applyHelp} Approval is not guaranteed. Once you hear back, our specialist finalizes the order with you.</div>
+                  </div>
+                </div>
+              </div>
+              <button onClick={sendBuildForFinancing} className="block w-full text-white font-bold py-3.5 rounded text-sm hover:opacity-90 text-center transition flex items-center justify-center gap-2" style={{ backgroundColor: RED }}>
+                Send my build <ArrowRight className="w-4 h-4" />
+              </button>
+              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[10px] text-zinc-500 mt-3">
+                <span>On approved credit</span>
+                <span>·</span>
+                <span>The application is with {lender.name}, independent of Coffee Bike World</span>
+                <span>·</span>
+                <span>Approval not guaranteed</span>
+              </div>
             </div>
           </div>
         </div>
       )}
+
 
       {/* PRESS MODAL */}
       {pressModalOpen && (
@@ -1292,8 +1285,9 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
   )}
 </OrderItem>
                 <div id="mobile-summary-ctas" className="border-t border-zinc-200 pt-3 mt-3 scroll-mt-4">
+                  <p className="text-[12px] text-zinc-800 leading-snug mb-2">Financing available, on approved credit. <button type="button" onClick={() => { setMobileSummaryOpen(false); openFinancing(); }} className="font-semibold underline decoration-dotted underline-offset-2">How it works</button></p>
                   <button onClick={() => { setMobileSummaryOpen(false); openInquiry(); }} className="w-full text-white font-bold py-2.5 rounded text-sm hover:opacity-90 flex items-center justify-center gap-2 mb-2" style={{ backgroundColor: RED }}>
-                  Send My Build & Get Quote <ArrowRight className="w-4 h-4" />
+                  Send my build <ArrowRight className="w-4 h-4" />
                   </button>
                   <button onClick={() => { setMobileSummaryOpen(false); openSchedule(); }} className="w-full bg-black text-white font-bold py-2.5 rounded text-sm">Schedule a Call</button>
                   <a href={whatsappHref} target="_blank" rel="noopener" onClick={() => trackWhatsApp('build_summary_mobile')} className="mt-2 w-full border-2 font-bold py-2 rounded text-sm flex items-center justify-center gap-2" style={{ borderColor: WHATSAPP_GREEN, color: '#128C4A' }}>
@@ -1303,10 +1297,6 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
                     <button onClick={() => { setMobileSummaryOpen(false); openDeposit(); }} className="block w-full text-center text-xs font-medium py-1.5 px-3 rounded hover:bg-zinc-50 transition group" style={{ color: RED }}>
                       <span className="border-b border-dashed group-hover:border-solid" style={{ borderColor: RED }}>Or reserve your spot with $250 deposit →</span>
                     </button>
-                    {!variant?.hideFinancing && (<button onClick={() => { setMobileSummaryOpen(false); openFinancing(); }} className="flex items-center justify-center gap-1.5 text-[11px] text-zinc-600 hover:text-black transition py-1 w-full">
-                      <span style={{ color: RED }}>🍁</span>
-                      <span className="underline decoration-dotted underline-offset-2">Apply for Financing (Canada Only)</span>
-                    </button>)}
                   </div>
                 </div>
               </div>
@@ -1467,7 +1457,8 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
               <EyebrowBadge className="mb-4">{variant ? variant.eyebrow : 'Welcome to Coffee Bike World'}</EyebrowBadge>
               <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold leading-[1.05] mb-4 sm:mb-5">{variant ? variant.h1 : 'Buy a Mobile Coffee Bike — Your Own Electric Coffee Business, Built, Branded & Shipped Worldwide'}</h1>
               <p className="text-zinc-300 text-base sm:text-lg mb-5 sm:mb-6 max-w-xl leading-relaxed">{variant ? variant.heroText : 'Launch a turnkey electric coffee cart business for a fraction of what a coffee truck or kiosk costs to start. No franchise fees. You own everything.'}</p>
-              {variant?.priceLine ? <p className="text-white text-base sm:text-lg font-bold mb-5 sm:mb-6 max-w-xl leading-snug">{variant.priceLine}</p> : null}
+              {variant?.priceLine ? <p className="text-white text-base sm:text-lg font-bold mb-2 max-w-xl leading-snug">{variant.priceLine}</p> : null}
+              <p className="text-zinc-200 text-sm sm:text-base mb-5 sm:mb-6 max-w-xl leading-snug">{variant ? variant.financingLine : 'Financing available in Canada through iFinance and in the US through Equinox Funding, on approved credit.'}</p>
               <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch gap-0 mb-6 sm:mb-7 rounded-lg border-2 overflow-hidden" style={{ borderColor: RED, backgroundColor: 'rgba(227,30,36,0.08)' }}>
 <div className="px-5 py-3 flex items-center gap-4 flex-shrink-0">
   <Zap className="w-5 h-5 text-red-500 flex-shrink-0" />
@@ -1537,7 +1528,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
             <p className="text-zinc-600 max-w-2xl mx-auto">{variant ? variant.whySub : 'A turnkey mobile coffee business with low overhead, a lower startup cost than a coffee truck or kiosk, and full ownership. No franchise fees, no royalties.'}</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10 max-w-7xl mx-auto">
-            <ValueCard icon={<DollarSign />} title="Low Entry Cost" desc={variant ? variant.lowEntryDesc : `Fully equipped from $15,850 USD ($22,500 CAD before tax) — a fraction of a brick-and-mortar café. Financing available in Canada.`} red={RED} tint={RED_TINT} />
+            <ValueCard icon={<DollarSign />} title="Low Entry Cost" desc={variant ? variant.lowEntryDesc : `Fully equipped from $15,850 USD ($22,500 CAD before tax) — a fraction of a brick-and-mortar café. Financing available in Canada and the US, on approved credit.`} red={RED} tint={RED_TINT} />
             <ValueCard icon={<Zap />} title="Low Running Costs" desc="No fuel, no engine maintenance, no storefront lease. Charging costs about a dollar a day (our estimate), and the bike rolls indoors in winter." red={RED} tint={RED_TINT} />
             <ValueCard icon={<Award />} title="No Franchise Fees or Obligations" desc="No royalties, no contracts, no strings attached. You own 100% of your brand and your profits — forever." red={RED} tint={RED_TINT} />
             <ValueCard icon={<Users />} title="Non-Obligatory Global Community" desc="Join a growing global network of Coffee Bike owners — all connected and supporting each other daily. New to coffee? We provide all the training you need to get started." red={RED} tint={RED_TINT} />
@@ -1644,6 +1635,14 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
     </div>
   </div>
 )}
+      {/* financing in plain words (founder, 31 Oct 2026: "mentioned on the configurator but also reflected somewhere separately") */}
+      <section className="py-10 px-6 bg-white">
+        <div className="max-w-3xl mx-auto">
+          <h3 className="text-xl sm:text-2xl font-bold mb-3">Financing your Coffee Bike</h3>
+          <p className="text-zinc-700 leading-relaxed">{variant?.lender === 'us' ? 'US buyers can apply for financing through Equinox Funding, on approved credit.' : 'Canadian residents can apply through iFinance, and US buyers through Equinox Funding, on approved credit.'} Build your bike below and send the build; we send you the application link, and our specialist goes through it with you on the call. Approval is not guaranteed.</p>
+        </div>
+      </section>
+
       <div id="configurator-section" className="py-12 px-6 bg-zinc-50 border-y border-zinc-200" style={{ scrollMarginTop: '80px' }}>
         <div className="max-w-[1400px] mx-auto">
           <div className="mb-6 text-center">
@@ -1998,12 +1997,14 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
     Select a base package to see your estimate
   </div>
 )}
-                  <p className="text-[11px] text-zinc-500 leading-snug mb-4">Shipping is not included in the estimated total. A final quote will be provided during final order confirmation.</p>
+                  <p className="text-[11px] text-zinc-500 leading-snug mb-2">Shipping is not included in the estimated total; it is quoted for your address before you confirm your order.</p>
+                  <p className="text-[12px] text-zinc-800 leading-snug mb-4">Financing available, on approved credit. <button type="button" onClick={openFinancing} className="font-semibold underline decoration-dotted underline-offset-2 hover:text-black">How it works</button></p>
                 </div>
                 <button onClick={openInquiry} className="w-full text-white font-bold py-3 rounded mb-2 hover:opacity-90 flex items-center justify-center gap-2 text-sm" style={{ backgroundColor: RED }}>
-                Send My Build & Get Quote <ArrowRight className="w-4 h-4" />
+                Send my build <ArrowRight className="w-4 h-4" />
                 </button>
-                <button onClick={openSchedule} className="w-full bg-black hover:bg-zinc-800 text-white font-bold py-3 rounded mb-2 text-sm">Schedule a Call With Our Team</button>
+                <p className="text-[11px] text-zinc-500 leading-snug mb-2 text-center">Our team gets back to you within one business day to review your build and shipping.</p>
+                <button onClick={openSchedule} className="w-full bg-black hover:bg-zinc-800 text-white font-bold py-3 rounded mb-2 text-sm">Schedule a call with our specialist</button>
                 <a href={whatsappHref} target="_blank" rel="noopener" onClick={() => trackWhatsApp('build_summary')} className="w-full border-2 font-bold py-2.5 rounded mb-4 text-sm flex items-center justify-center gap-2 hover:bg-green-50 transition" style={{ borderColor: WHATSAPP_GREEN, color: '#128C4A' }}>
                   <WhatsAppIcon className="w-4 h-4" /> Ask About This Build on WhatsApp
                 </a>
@@ -2014,10 +2015,6 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
                   <p className="text-center text-[11px] text-zinc-500 mt-1 leading-snug px-1">Lock in your production spot. Applied toward final order.</p>
                 </div>
                 <div className="border-t border-zinc-200 pt-3">
-                  {!variant?.hideFinancing && (<button onClick={openFinancing} className="flex w-full items-center justify-center gap-1.5 text-xs text-zinc-700 hover:text-black transition py-1.5">
-                    <span style={{ color: RED }}>🍁</span>
-                    <span className="underline decoration-dotted underline-offset-2">Apply for Financing (Canada Only)</span>
-                  </button>)}
                   <div className="flex items-center justify-center gap-1.5 text-[11px] text-zinc-500 mt-2">
                     <Lock className="w-3 h-3" /> Secure & Encrypted
                   </div>
@@ -2639,7 +2636,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
             <p className="text-sm lg:text-base text-zinc-300 mb-7 max-w-xl mx-auto leading-relaxed">Save your build and send an inquiry — our team will reach out within one business day to walk you through every detail.</p>
             <div className="flex flex-wrap gap-3 justify-center mb-6">
               <button onClick={openInquiry} className="text-white font-bold px-6 py-3 rounded text-sm hover:opacity-90 whitespace-nowrap flex items-center gap-2" style={{ backgroundColor: RED }}>
-              Send My Build & Get Quote <ArrowRight className="w-4 h-4" />
+              Send my build <ArrowRight className="w-4 h-4" />
               </button>
               <button onClick={openSchedule} className="bg-white text-black font-bold px-6 py-3 rounded text-sm hover:bg-zinc-100 whitespace-nowrap">Schedule a Call</button>
               <button onClick={openDeposit} className="border border-white/40 hover:border-white text-white font-bold px-6 py-3 rounded text-sm whitespace-nowrap transition">Reserve with $250</button>
