@@ -291,6 +291,7 @@ function Page({ intent, market }) {
               <span className="text-[26px] font-extrabold leading-none text-zinc-950" style={DISPLAY}>{M.heroPrice}</span>
               <span className="text-[15px] text-zinc-600">{M.heroPriceNote}</span>
             </div>
+            <p className="mt-1.5 text-[15px] font-semibold text-zinc-800">{M.financingNote}</p>
             <ul className="mt-4 hidden gap-1.5 text-[15px] text-zinc-800 md:grid">
               {['Sinks, hot water and a fridge on board', 'Goes where trucks can’t, where your permits allow, and indoors in winter', 'Yours outright: no franchise fees, no royalties'].map((x) => (
                 <li key={x} className="flex gap-2.5"><Check className="mt-0.5 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
@@ -615,7 +616,7 @@ function Page({ intent, market }) {
         <div className="mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 sm:px-6 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-3xl font-extrabold md:text-4xl" style={{ ...DISPLAY, ...BALANCE }}>See what your Coffee Bike would cost</h2>
-            <p className="mt-2 text-zinc-400">{M.heroPrice} {M.heroPriceNote}. We reply within one business day.</p>
+            <p className="mt-2 text-zinc-400">{M.heroPrice} {M.heroPriceNote}. {M.financingNote}</p>
           </div>
           <PriceButton where="footer" className="w-full md:w-auto">Get my price <ArrowRight className="h-5 w-5" /></PriceButton>
         </div>

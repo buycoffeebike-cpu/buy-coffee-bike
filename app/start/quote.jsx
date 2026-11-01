@@ -8,7 +8,7 @@
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Calendar, Check, FileText, Loader2, MessageCircle, PlayCircle, X } from 'lucide-react';
-import { ADS_CONVERSION, CALL_API, CALL_URL, DEPOSIT_URL, FINANCING_URL, INCLUDED, LEAD_API, MARKETS, PHONE_API, QUOTE_FORM_URL, SPEC_SHEET, whatsappLink } from './content';
+import { ADS_CONVERSION, CALL_API, CALL_URL, DEPOSIT_URL, INCLUDED, LEAD_API, MARKETS, PHONE_API, QUOTE_FORM_URL, SPEC_SHEET, whatsappLink } from './content';
 import TimePicker, { Walkthrough } from './TimePicker';
 
 export const RED = '#E31E24';
@@ -555,7 +555,7 @@ export function QuoteFlow({ where = 'inline' }) {
   };
   const blur = (k) => () => setBlurred((b) => ({ ...b, [k]: true }));
   const suggestion = emailFix(q.contact.email);
-  const title = key === 'fit' ? M.fitQuestion : key === 'contact' ? (q.wantsCall ? 'Who should we expect on the call?' : 'Where should we send your price?') : QUESTIONS[key].title;
+  const title = key === 'fit' ? M.fitQuestion : key === 'contact' ? (q.wantsCall ? 'Who should we expect on the call?' : 'Where should we send the details?') : QUESTIONS[key].title;
 
   return (
     <div className="text-left">
@@ -959,7 +959,7 @@ export function QuoteFullForm() {
         <p className="mb-3 rounded-xl bg-zinc-100 p-4 text-[15px] leading-relaxed text-zinc-800">{M.fitLine}</p>
         <Tiles name={M.fitQuestion} options={M.fit} value={q.answers.fit} onPick={(v) => pick('fit', v)} />
       </Question>
-      <Question n={5} innerRef={refs.contact} flash={flash === 'contact'} title="Where should we send your price?" data-contact="">
+      <Question n={5} innerRef={refs.contact} flash={flash === 'contact'} title="Where should we send the details?" data-contact="">
         <div className="grid gap-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Full name" error={show('name')} data-field="name">
@@ -1017,10 +1017,10 @@ function Thanks() {
     if (r.phone) p.set('phone', r.phone);
     return `${CALL_URL}?${p.toString()}`;
   }, [r.first, r.last, r.email, r.phone]);
-  // a Canadian who asked to apply for financing gets the iFinance application first (founder, 1 Oct 2026)
+  // whoever chose to explore financing gets the lender's application first, now that the lead is in (founder, 1 Oct 2026; US with Equinox since 31 Oct 2026)
   const next =
-    q.market === 'ca' && q.answers.fit === 'finance'
-      ? { t: 'Ready to apply for financing?', d: 'Canadian residents apply through iFinance, on approved credit.', href: FINANCING_URL, cta: 'Apply with iFinance', where: 'thanks_financing' }
+    q.answers.fit === 'finance'
+      ? { t: 'Explore financing', d: `${M.lender.name}, on approved credit. Applying is optional; our specialist can go through it with you on the call.`, href: M.lender.href, cta: `Continue to ${M.lender.name}`, where: 'thanks_financing' }
       : stage === 'invoice'
       ? { t: 'Want your spot now?', d: 'A US$250 deposit reserves a production spot and is applied in full to your order.', href: DEPOSIT_URL, cta: 'Reserve my spot', where: 'thanks_deposit' }
       : stage === 'comparing'
@@ -1036,7 +1036,7 @@ function Thanks() {
       <h3 className="mt-4 text-2xl font-extrabold leading-tight text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>
         Thank you{r.first ? `, ${r.first}` : ''}. {q.booking ? 'Your call is booked.' : q.wantsCall ? 'Now pick your time.' : 'Your request is in.'}
       </h3>
-      <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">{q.booking ? 'We’ll come to the call with your price and build options ready.' : q.wantsCall ? 'Your answers are in. Choose a time below and we’ll come to the call with your price and build options.' : 'We’ll reply within one business day with your price and build options, and we’ll message you if a quick question helps.'}</p>
+      <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">{q.booking ? 'We’ll come to the call with your price and build options ready.' : q.wantsCall ? 'Your answers are in. Choose a time below and we’ll come to the call with your price and build options.' : 'Our team gets back to you within one business day to answer your questions and go over your options.'}</p>
 
       {/* the call comes first: 8 of 9 buyers planned their build on one (Vlad, 7 Oct 2026). Once booked, the booking and
           the walkthrough stand on their own, full width, so the video starts as high on a phone as it can (13 Oct 2026) */}
@@ -1058,6 +1058,7 @@ function Thanks() {
       <div className="mt-4 rounded-xl bg-zinc-100 p-4">
         <p className="text-sm font-bold uppercase tracking-wider text-zinc-500">Your starting point</p>
         <p className="mt-1 text-[15px] leading-relaxed text-zinc-900"><strong>{M.thanksPrice}</strong> {M.thanksNote}</p>
+        {q.answers.fit !== 'finance' ? <p className="mt-1.5 text-sm text-zinc-700">{M.financingNote} Ask our specialist about it on the call.</p> : null}
         <ul className="mt-2 grid gap-1 text-sm text-zinc-700">
           {INCLUDED.slice(0, 5).map((x) => (
             <li key={x} className="flex gap-2"><Check className="mt-0.5 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
@@ -1184,9 +1185,9 @@ function SimpleForm({ where, innerRef }) {
   return (
     <form ref={innerRef} noValidate onSubmit={onSubmit} className="grid gap-5 text-left" aria-label="Get your Coffee Bike price">
       <div>
-        <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{q.wantsCall ? 'Book your 15-minute call' : 'Your Coffee Bike price'}</p>
-        <p className="mt-1 text-[22px] font-extrabold leading-tight text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>Get your price and delivery estimate</p>
-        <p className="mt-1 text-[14px] text-zinc-600">Your exact price with shipping to your city, within one business day. No payment, no obligation.</p>
+        <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{q.wantsCall ? 'Book your 15-minute call' : 'Almost done'}</p>
+        <p className="mt-1 text-[22px] font-extrabold leading-tight text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>Where should we send the details?</p>
+        <p className="mt-1 text-[14px] text-zinc-600">Our team gets back to you within one business day. No payment, no obligation.</p>
       </div>
       <fieldset ref={refs.contact} className={group('contact')} data-contact="">
         <div className="grid gap-3.5 sm:grid-cols-2">
@@ -1291,7 +1292,7 @@ function SimpleThanks({ where }) {
       <h3 className="mt-4 text-2xl font-extrabold leading-tight text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>
         Thank you{r.first ? `, ${r.first}` : ''}. {q.booking ? 'Your call is booked.' : 'Your request is in.'}
       </h3>
-      <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">{q.booking ? 'We’ll come to the call with your price and build options ready.' : 'We’ll reply within one business day with your price and build options.'}</p>
+      <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">{q.booking ? 'We’ll come to the call with your price and build options ready.' : 'Our team gets back to you within one business day to answer your questions and go over your options.'}</p>
 
       {q.booking ? (
         <div className="mt-5">{picker}</div>
@@ -1346,7 +1347,7 @@ export function QuoteModal() {
     <div className="fixed inset-0 z-[60] flex items-stretch justify-center bg-black/60 sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-label={q.wantsCall ? 'Book your 15-minute call' : 'Get your Coffee Bike price'} onClick={(e) => e.target === e.currentTarget && q.setOpen(false)}>
       <div className="relative flex max-h-full w-full flex-col overflow-y-auto bg-white px-5 pb-8 pt-4 sm:max-h-[92vh] sm:max-w-[520px] sm:rounded-2xl sm:px-7 sm:pb-7" style={{ paddingTop: 'max(16px, env(safe-area-inset-top))' }}>
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{q.wantsCall ? 'Book your 15-minute call' : 'Your Coffee Bike price'}</span>
+          <span className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{q.wantsCall ? 'Book your 15-minute call' : 'Almost done'}</span>
           <button type="button" onClick={() => q.setOpen(false)} aria-label="Close" className="-mr-2 rounded-full p-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900">
             <X className="h-6 w-6" />
           </button>
@@ -1389,13 +1390,13 @@ function HeroTiles() {
   if (q.step > 0) {
     return (
       <button type="button" onClick={() => q.openQuote('hero_resume')} className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-4 text-lg font-extrabold text-white shadow-sm hover:brightness-110 sm:w-auto" style={{ backgroundColor: RED }}>
-        Continue to your {q.wantsCall ? 'call' : 'price'} · step {q.step + 1} of 5 <ArrowRight className="h-5 w-5" />
+        Continue to your {q.wantsCall ? 'call' : 'request'} · step {q.step + 1} of 5 <ArrowRight className="h-5 w-5" />
       </button>
     );
   }
   return (
     <div>
-      <p className="text-[15px] font-bold leading-snug text-zinc-950">Get your exact price, shipping to your city and a launch plan. What are you planning?</p>
+      <p className="text-[15px] font-bold leading-snug text-zinc-950">Price, shipping to your city and financing, on approved credit: we go through it all with you. What are you planning?</p>
       <div className="mt-2.5 grid grid-cols-2 gap-2">
         {QUESTIONS.use.options.slice(0, 4).map((o) => (
           <button
