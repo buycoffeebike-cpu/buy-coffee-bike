@@ -444,7 +444,9 @@ export function QuoteProvider({ market, intent, extra, children }) {
     track('phone_code_change_number', { market, intent });
   }, [intent, market]);
 
-  // "Skip for now" on the code step (the simple form only, 21 Oct 2026): the request goes through unconfirmed. The OS
+  // "Skip for now" on the code step: its button went on 1 Nov 2026 (Vlad: the same check as Meta for everyone; a form
+  // whose code never comes back still reaches the CRM after 30 minutes, flagged for Kristel). A page still open with
+  // the old bundle can call this: the request goes through unconfirmed. The OS
   // marks it skipped and flags it for Kristel; Google gets a quarter-value conversion, Meta nothing.
   const skipCode = useCallback(async () => {
     if (!check || check.busy) return;
@@ -755,12 +757,6 @@ function PhoneCode({ where }) {
         <button type="button" onClick={q.changeNumber} className="font-bold text-zinc-800 underline underline-offset-2">
           Wrong number? Change it
         </button>
-        {/* the simple form (paid Google visitors) may skip the code (Vlad, 21 Oct 2026); the request still goes through, marked unconfirmed */}
-        {c.form === 'simple' ? (
-          <button type="button" onClick={q.skipCode} disabled={c.busy} className="font-bold text-zinc-800 underline underline-offset-2 disabled:text-zinc-400 disabled:no-underline">
-            Skip this step for now
-          </button>
-        ) : null}
       </div>
       <p className="text-xs text-zinc-500">We check the number so our reply reaches you. Message and data rates may apply.</p>
     </div>
