@@ -5,7 +5,7 @@
  * Vlad, 1 Nov 2026: "we just want to hook attention with relatively small monthly payments", "US starting from 299 and
  * for Canada starting from 475 CAD", "don't mention example", "make the entire financing section more nice looking with
  * some graphic banners". The numbers are arithmetic on the average build, never a lender's quote: US$20,000 with 10%
- * down over 84 months at 10% = US$299; CA$30,000 over 84 months at 8.5% APR = CA$475. Canadian cost-of-credit rules want
+ * down over 84 months at 10% = US$299; CA$30,000 over 84 months at 8.5% = CA$475. Canadian cost-of-credit rules want
  * the term and APR next to any payment amount, so the small line under the number carries them, without the word
  * "example". "On approved credit" stays on every mention (landing-page rules). The lender's link follows the lead
  * (Astra, 31 Oct 2026), so the button goes to the build or the quote form, never to the lender.
@@ -37,14 +37,14 @@ export const FINANCING = {
   ca: {
     from: "CA$475",
     lender: "iFinance",
-    line: "Financing from CA$475/month (up to 84 months, 8.5% APR) through iFinance, on approved credit.",
-    short: "Financing from CA$475/month (up to 84 months, 8.5% APR), on approved credit.",
+    line: "Financing from CA$475/month (up to 84 months) through iFinance, on approved credit.",
+    short: "Financing from CA$475/month (up to 84 months), on approved credit.",
     points: [
       { icon: Calendar, t: "Terms up to 84 months" },
       { icon: Percent, t: "No down payment" },
       { icon: ShieldCheck, t: "On approved credit" },
     ],
-    basis: "Based on CA$30,000 financed over 84 months at 8.5% APR, on approved credit. Your rate and term are set by iFinance.",
+    basis: "Based on CA$30,000 financed over 84 months at 8.5%, on approved credit. Your rate and term are set by iFinance.",
   },
 };
 
