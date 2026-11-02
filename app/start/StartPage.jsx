@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ArrowRight, BatteryCharging, Calendar, Check, ChevronDown, Clock, Coffee, CreditCard, Droplets, FileText, Info, Mail, MapPin, ShieldCheck, Snowflake, Sun, Users, X, ZoomIn } from 'lucide-react';
 import LiteYouTube from '../../components/LiteYouTube';
+import FinancingBanner from '../../components/FinancingBanner';
 import {
   ADDRESS, ADS_TAG, BASE_PATH, COMPARE_COLS, DEPOSIT_URL, EMAIL, FEATURES, INCLUDED, INTENTS, LOGO, MARKETS, OWNERS, PHOTOS, PRICING,
   SPEC_SHEET, SPECS, TRUST, WALKTHROUGH_ID, compareRows, faqs, steps, whatsappLink,
@@ -471,6 +472,7 @@ function Page({ intent, market }) {
             </div>
           </div>
         </div>
+        <FinancingBanner market={market} className="mt-6" cta={<PriceButton where="financing">Get my price <ArrowRight className="h-5 w-5" /></PriceButton>} />
       </Section>
 
       {/* the full form, every question visible (the price buttons open the step-by-step pop-up) */}

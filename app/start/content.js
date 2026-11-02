@@ -60,7 +60,7 @@ export const MARKETS = {
     heroPrice: "From US$15,850",
     heroPriceNote: "fully equipped, before tax. Shipping quoted to your address",
     sticky: { k: "Fully equipped from", v: "US$15,850" },
-    financingNote: "Financing available through Equinox Funding, on approved credit.",
+    financingNote: "Financing from US$299/month (84 months, 10% down) through Equinox Funding, on approved credit.",
     lender: { name: "Equinox Funding", href: EQUINOX_URL },
     fitLine: "A fully equipped Coffee Bike starts at US$15,850 before tax and shipping, and the price goes up with each upgrade you choose.",
     // financing is offered as "explore", never "apply" (Astra review, 31 Oct 2026): a buyer admits needing funding without facing a
@@ -88,7 +88,7 @@ export const MARKETS = {
     heroPrice: "From CA$22,500",
     heroPriceNote: "fully equipped, before tax. Shipping quoted to your address",
     sticky: { k: "Fully equipped from", v: "CA$22,500" },
-    financingNote: "Financing available through iFinance, on approved credit.",
+    financingNote: "Financing from CA$475/month (84 months, 8.5% APR) through iFinance, on approved credit.",
     lender: { name: "iFinance", href: FINANCING_URL },
     fitLine: "A fully equipped Coffee Bike starts at CA$22,500 before tax, and the price goes up with each upgrade you choose. Shipping is quoted for your address.",
     fit: [
@@ -347,7 +347,7 @@ export const PRICING = {
       { item: '2-day barista training', price: 'US$850', note: 'In Vancouver or by video call' },
       { item: 'Shipping', price: 'Quoted', note: 'Crated, palletized and insured to your door' },
     ],
-    payment: { t: 'Paying for it', d: 'Bank transfer or card once you approve your invoice, or financing through Equinox Funding, on approved credit. We send the application link once your request is in. Nothing is charged before you approve.' },
+    payment: { t: 'Paying for it', d: 'Bank transfer or card once you approve your invoice, or financing from US$299/month (84 months, 10% down) through Equinox Funding, on approved credit. We send the application link once your request is in. Nothing is charged before you approve.' },
   },
   ca: {
     big: 'CA$22,500',
@@ -360,7 +360,7 @@ export const PRICING = {
       { item: 'Training', note: 'A 2-day barista training in Vancouver or by video call' },
       { item: 'Shipping', note: 'Crated, palletized and insured to your door anywhere in Canada' },
     ],
-    payment: { t: 'Paying for it', d: 'Bank transfer (CAD or USD) or card once you approve your invoice, or financing through iFinance, on approved credit. We send the application link once your request is in.' },
+    payment: { t: 'Paying for it', d: 'Bank transfer (CAD or USD) or card once you approve your invoice, or financing from CA$475/month (84 months, 8.5% APR) through iFinance, on approved credit. We send the application link once your request is in.' },
   },
 };
 
@@ -376,8 +376,8 @@ export const steps = (market) => STEPS_BASE.map((x) => ({ t: x.t, d: typeof x.d 
 /** Questions buyers ask, answered for the visitor’s market (money and financing differ between Canada and the US). */
 const FAQ_BASE = [
   { q: "Do I need permits?", a: { us: "Yes, and the rules differ by city. Most health departments review your setup (sinks, water, food-safe surfaces) and inspect it, and many ask for a commissary or approved base. Permits often take 60–90 days, so owners apply while their bike is being built. Owners usually trade on private property (a deal with a landlord, market or venue) or in public space with a mobile vending permit where the city offers one.", ca: "Yes, and the rules differ by city and province. Most health authorities review your setup (sinks, water, food-safe surfaces) and inspect it, and many ask for a commissary or approved base. Permits often take 60–90 days, so owners apply while their bike is being built. Owners usually trade on private property (a deal with a landlord, market or venue) or in public space with a mobile vending permit where the city offers one." } },
-  { q: "What does a complete Coffee Bike cost?", a: { us: "A fully equipped Coffee Bike starts at US$15,850: the bike, branded body and canopy, sinks, fridge, batteries and a Fracino single-group espresso setup. A double-group setup, UL certification and add-ons raise the price, and shipping is quoted for your address.", ca: "A fully equipped Coffee Bike starts at CA$22,500 before tax: the bike, branded body and canopy, sinks, fridge, batteries and a Fracino single-group espresso setup. Certification, branding, add-ons and training raise the price. We quote every build in Canadian dollars, shipping is quoted for your address, and Canadian residents can apply for financing through iFinance." } },
-  { q: "Can I finance a Coffee Bike?", a: { us: "Yes. US buyers can apply through Equinox Funding, on approved credit: you enter Coffee Bike World as the vendor and your build total in US dollars. Approval is not guaranteed. Send your request first; we send you the application link and our specialist goes through it with you on the call.", ca: "Yes. Canadian residents can apply through iFinance, on approved credit. Approval is not guaranteed. Send your request first; we send you the application link and our specialist goes through it with you on the call." } },
+  { q: "What does a complete Coffee Bike cost?", a: { us: "A fully equipped Coffee Bike starts at US$15,850: the bike, branded body and canopy, sinks, fridge, batteries and a Fracino single-group espresso setup. A double-group setup, UL certification and add-ons raise the price, and shipping is quoted for your address.", ca: "A fully equipped Coffee Bike starts at CA$22,500 before tax: the bike, branded body and canopy, sinks, fridge, batteries and a Fracino single-group espresso setup. Certification, branding, add-ons and training raise the price. We quote every build in Canadian dollars, shipping is quoted for your address, and Canadian residents can apply for financing through iFinance, on approved credit." } },
+  { q: "Can I finance a Coffee Bike?", a: { us: "Yes, from US$299/month (84 months, 10% down). US buyers apply through Equinox Funding, on approved credit: you enter Coffee Bike World as the vendor and your build total in US dollars. Approval is not guaranteed. Send your request first; we send you the application link and our specialist goes through it with you on the call.", ca: "Yes, from CA$475/month (84 months, 8.5% APR). Canadian residents apply through iFinance, on approved credit. Approval is not guaranteed. Send your request first; we send you the application link and our specialist goes through it with you on the call." } },
   { q: "How soon can I open?", a: "A bike in stock ships right away. Made-to-order builds take about 4–6 weeks, and delivery typically adds 2–4 weeks depending on where you are. If you want to open for spring markets, ordering in winter gives you time to arrange permits and a spot." },
   { q: "What about winter and rain?", a: "Many owners move indoors in the cold months: office lobbies, hospitals, campuses, residential towers, grocery stores and gyms. The bike needs no build-out on the landlord’s side: it rolls in, plugs into a standard outlet and serves." },
   { q: "How far can it go, and can it handle hills?", a: "The electric motor climbs steep hills fully loaded, with twin hydraulic brakes and front and rear suspension. One battery pack covers about 10–15 km and two about 20–30 km, depending on the roads." },
