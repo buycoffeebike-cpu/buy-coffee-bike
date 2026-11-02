@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ArrowRight, BatteryCharging, Calendar, Check, ChevronDown, Clock, Coffee, CreditCard, Droplets, FileText, Info, Mail, MapPin, ShieldCheck, Snowflake, Sun, Users, X, ZoomIn } from 'lucide-react';
 import LiteYouTube from '../../components/LiteYouTube';
-import FinancingBanner from '../../components/FinancingBanner';
+import FinancingBanner, { FINANCING } from '../../components/FinancingBanner';
 import {
   ADDRESS, ADS_TAG, BASE_PATH, COMPARE_COLS, DEPOSIT_URL, EMAIL, FEATURES, INCLUDED, INTENTS, LOGO, MARKETS, OWNERS, PHOTOS, PRICING,
   SPEC_SHEET, SPECS, TRUST, WALKTHROUGH_ID, compareRows, faqs, steps, whatsappLink,
@@ -227,12 +227,14 @@ function Page({ intent, market }) {
     return () => io.disconnect();
   }, [intent, market]);
 
+  // paid Google visitors see the price bar after 200 px (variant A, 1 Nov 2026: most phones never reached 700 px); everyone else after 700
   useEffect(() => {
-    const onScroll = () => setSticky(window.scrollY > 700 && !quoteInView.current);
+    const at = q.variant === 'simple' ? 200 : 700;
+    const onScroll = () => setSticky(window.scrollY > at && !quoteInView.current);
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  }, [q.variant]);
 
   const vsCol = COMPARE_COLS.find((c) => c.key === vs) ?? COMPARE_COLS[1];
   const compareTitle = { truck: 'a coffee truck', trailer: 'a coffee trailer', cart: 'a coffee cart', cafe: 'a storefront café' }[I.compare] ?? 'a coffee truck';
@@ -253,7 +255,7 @@ function Page({ intent, market }) {
             <a href="#price" className="hidden text-sm font-semibold text-zinc-300 hover:text-white sm:inline">Pricing</a>
             <a href="#owners" className="hidden text-sm font-semibold text-zinc-300 hover:text-white sm:inline">Owners</a>
             <button type="button" onClick={() => q.openQuote('header')} className="rounded-md px-4 py-2 text-sm font-extrabold uppercase tracking-wide text-white hover:brightness-110" style={{ backgroundColor: RED }}>
-              Get my price
+              {q.variant === 'simple' ? 'Price list' : 'Get my price'}
             </button>
           </div>
         </div>
@@ -288,11 +290,29 @@ function Page({ intent, market }) {
               <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4" style={{ color: RED }} aria-hidden /> {M.ownersIn}</span>
               <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4" style={{ color: RED }} aria-hidden /> 1-year warranty</span>
             </div>
-            <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-              <span className="text-[26px] font-extrabold leading-none text-zinc-950" style={DISPLAY}>{M.heroPrice}</span>
-              <span className="text-[15px] text-zinc-600">{M.heroPriceNote}</span>
-            </div>
-            <p className="mt-1.5 text-[15px] font-semibold text-zinc-800">{M.financingNote}</p>
+            {/* paid Google visitors (variant A, local build 1 Nov 2026): the price card first, what most owners spend, and the monthly with
+                its term; everyone else the price line as before. Both in the HTML; globals.css shows one before the first paint and
+                React keeps one once it knows, as HeroQuestion does */}
+            {q.variant !== 'simple' ? (
+              <div className="cbw-steps">
+                <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                  <span className="text-[26px] font-extrabold leading-none text-zinc-950" style={DISPLAY}>{M.heroPrice}</span>
+                  <span className="text-[15px] text-zinc-600">{M.heroPriceNote}</span>
+                </div>
+                <p className="mt-1.5 text-[15px] font-semibold text-zinc-800">{M.financingNote}</p>
+              </div>
+            ) : null}
+            {q.variant !== 'steps' ? (
+              <div className="cbw-simple mt-3 overflow-hidden rounded-2xl bg-zinc-950 p-4 text-white sm:p-5" style={{ borderLeft: `5px solid ${RED}` }}>
+                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-400">Fully equipped, before tax and shipping</p>
+                <p className="mt-1 text-[34px] font-extrabold leading-none tabular-nums" style={DISPLAY}>{M.heroPrice}</p>
+                <dl className="mt-3 grid gap-1.5 border-t border-zinc-800 pt-3 text-[13.5px]">
+                  <div className="flex items-baseline justify-between gap-4"><dt className="text-zinc-300">{M.spend.k}</dt><dd className="whitespace-nowrap font-extrabold tabular-nums">{M.spend.v}</dd></div>
+                  <div className="flex items-baseline justify-between gap-4"><dt className="text-zinc-300">Build 4–6 weeks, delivery 2–4 weeks</dt><dd className="whitespace-nowrap font-extrabold">to your door</dd></div>
+                </dl>
+                <p className="mt-3 text-[13.5px] font-bold text-red-200">{FINANCING[market].short}</p>
+              </div>
+            ) : null}
             <ul className="mt-4 hidden gap-1.5 text-[15px] text-zinc-800 md:grid">
               {['Sinks, hot water and a fridge on board', 'Goes where trucks can’t, where your permits allow, and indoors in winter', 'Yours outright: no franchise fees, no royalties'].map((x) => (
                 <li key={x} className="flex gap-2.5"><Check className="mt-0.5 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
@@ -326,8 +346,8 @@ function Page({ intent, market }) {
         </div>
       </section>
 
-      {/* comparison */}
-      <Section id="compare">
+      {/* comparison (cbw-lean: off the Google page, variant A, 1 Nov 2026: price, what you get, the form, owners, the walkthrough and the FAQ stay) */}
+      <Section id="compare" className="cbw-lean">
         <Heading eyebrow="Before you buy" title={intent === 'bike' || intent === 'compare' ? 'How a Coffee Bike compares' : `A Coffee Bike or ${compareTitle}?`} sub="What it takes to start and run each way of selling coffee on the move." />
         <div className="mt-8 md:hidden">
           <div className="flex flex-wrap gap-2" role="tablist" aria-label="Compare the Coffee Bike with">
@@ -481,7 +501,7 @@ function Page({ intent, market }) {
           <div className="lg:sticky lg:top-24 lg:pt-6">
             <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>Your price</p>
             <h2 className="mt-2 text-3xl font-extrabold leading-tight md:text-5xl" style={{ ...DISPLAY, ...BALANCE }}>Get your price and build options</h2>
-            <p className="mt-3 text-lg text-zinc-300">{q.variant === 'simple' ? 'Your details and three quick questions, all in one form.' : 'Four quick questions and where to send your price, all in one form.'} We reply within one business day with pricing for your build.</p>
+            <p className="mt-3 text-lg text-zinc-300">{q.variant === 'simple' ? 'Your mobile and email, and the full price list is on its way.' : 'Four quick questions and where to send your price, all in one form.'} We reply within one business day with pricing for your build.</p>
             <ul className="mt-6 space-y-3 text-[15px] leading-relaxed text-zinc-300">
               {['A short call to plan your setup, branding and add-ons. No pressure.', 'Nothing is charged until you approve an invoice.', 'Opening for spring? Permits often take 60–90 days, so owners order in winter and apply while the bike is built.'].map((x) => (
                 <li key={x} className="flex gap-3"><Check className="mt-1 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
@@ -534,10 +554,10 @@ function Page({ intent, market }) {
         </div>
       </Section>
 
-      <DayAndWhere onOpen={openPhoto} />
+      <div className="cbw-lean"><DayAndWhere onOpen={openPhoto} /></div>
 
       {/* seasons */}
-      <Section id="seasons" tone="soft">
+      <Section id="seasons" tone="soft" className="cbw-lean">
         <div className="grid gap-10 lg:grid-cols-[1fr_0.8fr] lg:items-center">
           <div>
             <Heading eyebrow="All year" title="A business for all four seasons" sub={market === 'ca' ? 'The first question Canadians ask. Here is how owners answer it.' : 'The most common question from the northern US and Canada. Here is how owners answer it.'} />
@@ -561,7 +581,7 @@ function Page({ intent, market }) {
       </Section>
 
       {/* how buying works */}
-      <Section id="how" tone="soft">
+      <Section id="how" tone="soft" className="cbw-lean">
         <Heading eyebrow="How buying works" title="From your first message to your first customer" />
         <ol className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           {steps(market).map((s, i) => (
@@ -575,7 +595,7 @@ function Page({ intent, market }) {
       </Section>
 
       {/* founder */}
-      <Section id="founder">
+      <Section id="founder" className="cbw-lean">
         <div className="grid items-center gap-10 md:grid-cols-[1.1fr_1fr]">
           {/* the whole 3:2 photo: the founder and the open bike side by side */}
           <Photo photo={PHOTOS.founder} onOpen={openPhoto} sizes="(min-width: 1152px) 580px, (min-width: 768px) 52vw, 100vw" className="aspect-[3/2] rounded-xl bg-zinc-200" />
@@ -590,7 +610,7 @@ function Page({ intent, market }) {
         </div>
       </Section>
 
-      <Numbers intent={intent} market={market} />
+      <div className="cbw-lean"><Numbers intent={intent} market={market} /></div>
 
       {/* questions */}
       <Section id="faq">
@@ -647,10 +667,10 @@ function Page({ intent, market }) {
         <div className="flex items-center justify-between gap-3 px-4 py-3">
           <div className="leading-tight">
             <div className="text-xs text-zinc-500">{M.sticky.k}</div>
-            <div className="font-extrabold text-zinc-950">{M.sticky.v}</div>
+            <div className="font-extrabold text-zinc-950">{M.sticky.v}{q.variant === 'simple' ? <span className="font-semibold text-zinc-600"> · {M.stickyMonthly}</span> : null}</div>
           </div>
           <button type="button" onClick={() => q.openQuote('sticky')} className="flex-1 rounded-xl px-4 py-3 text-center font-extrabold text-white" style={{ backgroundColor: RED }}>
-            {q.status === 'done' ? 'Request sent ✓' : q.variant !== 'simple' && q.step > 0 ? `Continue · step ${q.step + 1} of 5` : 'Get my price'}
+            {q.status === 'done' ? 'Request sent ✓' : q.variant !== 'simple' && q.step > 0 ? `Continue · step ${q.step + 1} of 5` : q.variant === 'simple' ? 'Price list' : 'Get my price'}
           </button>
         </div>
       </div>

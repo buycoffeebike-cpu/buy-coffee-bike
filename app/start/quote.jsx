@@ -8,7 +8,7 @@
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Calendar, Check, FileText, Loader2, MessageCircle, PlayCircle, X } from 'lucide-react';
-import { ADS_CONVERSION, CALL_API, CALL_URL, DEPOSIT_URL, INCLUDED, LEAD_API, MARKETS, PHONE_API, QUOTE_FORM_URL, SPEC_SHEET, whatsappLink } from './content';
+import { ADS_CONVERSION, CALL_API, CALL_URL, DEPOSIT_URL, DETAILS_API, INCLUDED, LEAD_API, MARKETS, PHONE_API, QUOTE_FORM_URL, SPEC_SHEET, whatsappLink } from './content';
 import TimePicker, { Walkthrough } from './TimePicker';
 
 export const RED = '#E31E24';
@@ -474,13 +474,17 @@ export function QuoteProvider({ market, intent, extra, children }) {
       track('scroll_more_click', { market, intent, where });
       postLeadEvent(result?.id, 'scroll_more', where);
       setOpen(false);
-      setTimeout(() => document.getElementById('compare')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+      // the comparison is off the Google page (variant A, 1 Nov 2026): "what you get" is the next thing down there
+      setTimeout(() => {
+        const c = document.getElementById('compare');
+        (c && c.offsetParent !== null ? c : document.getElementById('build'))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 60);
     },
     [market, intent, result],
   );
 
   const value = useMemo(
-    () => ({ market, intent, step, setStep, answers, setAnswers, answer, contact, setContact, status, error, fails, submit, open, setOpen, openQuote, result, seasons, lastForm, begin, wantsCall, setWantsCall, booking, setBooking, check, confirmCode, resendCode, changeNumber, skipCode, typedIn, setTypedIn, fullFormRef, typing, finishRequest, variant, callSkipped, setCallSkipped, skipCall, learnMore, heroSimpleRef }),
+    () => ({ market, intent, step, setStep, answers, setAnswers, answer, contact, setContact, status, error, fails, submit, open, setOpen, openQuote, result, setResult, seasons, lastForm, begin, wantsCall, setWantsCall, booking, setBooking, check, confirmCode, resendCode, changeNumber, skipCode, typedIn, setTypedIn, fullFormRef, typing, finishRequest, variant, callSkipped, setCallSkipped, skipCall, learnMore, heroSimpleRef }),
     [market, intent, step, answers, answer, contact, status, error, fails, submit, open, openQuote, result, seasons, lastForm, begin, wantsCall, booking, check, confirmCode, resendCode, changeNumber, skipCode, typedIn, typing, finishRequest, variant, callSkipped, skipCall, learnMore],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
@@ -763,12 +767,12 @@ function PhoneCode({ where }) {
   );
 }
 
-function SendButton() {
+function SendButton({ label = 'Get my price' }) {
   const q = useQuote();
   return (
     <button type="submit" disabled={q.status === 'sending'} className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-4 text-lg font-extrabold text-white shadow-sm transition hover:brightness-110 disabled:opacity-70" style={{ backgroundColor: RED }}>
       {q.status === 'sending' ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
-      {q.status === 'sending' ? 'Sending…' : q.wantsCall ? 'Continue to the calendar' : 'Get my price'}
+      {q.status === 'sending' ? 'Sending…' : q.wantsCall ? 'Continue to the calendar' : label}
     </button>
   );
 }
@@ -1105,14 +1109,13 @@ function Pills({ name, options, value, onPick }) {
   );
 }
 
-const SIMPLE_PICKS = ['use', 'timeline', 'fit'];
-
 /**
  * The one-screen form paid Google visitors see in the hero, the pop-up and the page section (Adam's suggestion,
- * Vlad's go, 21 Oct 2026): their details, three quick choices (what for, how soon, does the price fit) and "Get my
- * price". No "where are you in the process" question: the call finds that out. Sent as form "simple" to the same
- * endpoint; the OS, the CRM note, the lead email and GA4 all say which form it was. A missing answer lights up and
- * scrolls into view, so nothing fails silently (Astra's condition).
+ * Vlad's go, 21 Oct 2026). Variant A (local build, 1 Nov 2026, after October's 417 visitors → 7 sends): the ask is the
+ * mobile number and the email, one optional "what are you planning", and the button promises the price list. Name and
+ * city moved to the thank-you, after the texted code (SimpleDetails). Sent as form "simple" to the same endpoint; the
+ * OS, the CRM note, the lead email and GA4 all say which form it was. A missing detail lights up and scrolls into view,
+ * so nothing fails silently (Astra's condition).
  */
 function SimpleForm({ where, innerRef }) {
   const q = useQuote();
@@ -1123,7 +1126,7 @@ function SimpleForm({ where, innerRef }) {
   const [askOpen, setAskOpen] = useState(false);
   const flashTimer = useRef(null);
   const startedRef = useRef(false);
-  const refs = { contact: useRef(null), use: useRef(null), timeline: useRef(null), fit: useRef(null) };
+  const refs = { contact: useRef(null), use: useRef(null) };
   useEffect(() => () => clearTimeout(flashTimer.current), []);
 
   const touch = (what) => {
@@ -1136,14 +1139,13 @@ function SimpleForm({ where, innerRef }) {
     touch(key);
     q.setAnswers((a) => ({ ...a, [key]: v }));
   };
+  // the mobile number and the email are the whole ask (variant A); the name and the city come on the thank-you
   const errs = {
-    name: q.contact.name.trim().length < 2 ? 'Please enter your name.' : '',
     email: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(q.contact.email.trim()) ? '' : 'Please enter a valid email.',
     phone: phoneProblem(q.contact.phone),
-    location: q.contact.location.trim().length < 2 ? 'Tell us the city where you want to run it.' : '',
   };
   const show = (k) => (tried || blurred[k]) && errs[k];
-  const contactOk = !errs.name && !errs.email && !errs.phone && !errs.location;
+  const contactOk = !errs.email && !errs.phone;
   const set = (k) => (e) => {
     touch(k);
     q.setTypedIn('simple');
@@ -1151,26 +1153,21 @@ function SimpleForm({ where, innerRef }) {
   };
   const blur = (k) => () => setBlurred((b) => ({ ...b, [k]: true }));
   const suggestion = emailFix(q.contact.email);
-  const missing = SIMPLE_PICKS.filter((k) => !q.answers[k]);
-  const pickError = (k) => (tried && !q.answers[k] ? 'Please pick one.' : '');
 
   const onSubmit = (e) => {
     e.preventDefault();
     setTried(true);
     if (q.status === 'sending') return;
-    if (!contactOk || missing.length) {
-      const first = !contactOk ? 'contact' : missing[0];
-      const box = refs[first].current;
+    if (!contactOk) {
+      const box = refs.contact.current;
       box?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setFlash(first);
+      setFlash('contact');
       clearTimeout(flashTimer.current);
       flashTimer.current = setTimeout(() => setFlash(null), 2500);
-      if (first === 'contact') {
-        const bad = ['name', 'phone', 'email', 'location'].find((k) => errs[k]);
-        setBlurred((b) => ({ ...b, [bad]: true }));
-        setTimeout(() => box?.querySelector(`[data-field="${bad}"] input`)?.focus({ preventScroll: true }), 400);
-      }
-      track('simple_form_incomplete', { missing: !contactOk ? 'contact' : missing.join(','), where, market: q.market, intent: q.intent });
+      const bad = ['phone', 'email'].find((k) => errs[k]);
+      setBlurred((b) => ({ ...b, [bad]: true }));
+      setTimeout(() => box?.querySelector(`[data-field="${bad}"] input`)?.focus({ preventScroll: true }), 400);
+      track('simple_form_incomplete', { missing: 'contact', where, market: q.market, intent: q.intent });
       return;
     }
     q.submit('simple');
@@ -1179,16 +1176,16 @@ function SimpleForm({ where, innerRef }) {
   const legend = 'text-[15px] font-bold leading-snug text-zinc-950';
 
   return (
-    <form ref={innerRef} noValidate onSubmit={onSubmit} className="grid gap-5 text-left" aria-label="Get your Coffee Bike price">
+    <form ref={innerRef} noValidate onSubmit={onSubmit} className="grid gap-5 text-left" aria-label="Get your Coffee Bike price list">
       <div>
-        <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{q.wantsCall ? 'Book your 15-minute call' : 'Almost done'}</p>
-        <p className="mt-1 text-[22px] font-extrabold leading-tight text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>Where should we send the details?</p>
-        <p className="mt-1 text-[14px] text-zinc-600">Our team gets back to you within one business day. No payment, no obligation.</p>
+        <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{q.wantsCall ? 'Book your 15-minute call' : 'Your price list'}</p>
+        <p className="mt-1 text-[22px] font-extrabold leading-tight text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>{q.wantsCall ? 'Where should we send the call details?' : 'Get the full price list and build sheet'}</p>
+        <p className="mt-1 text-[14px] text-zinc-600">Every option with its price, the spec PDF and the 6-minute walkthrough. One text, one email, no calls unless you ask.</p>
       </div>
       <fieldset ref={refs.contact} className={group('contact')} data-contact="">
         <div className="grid gap-3.5 sm:grid-cols-2">
-          <Field label="Your name" error={show('name')} data-field="name">
-            <input className={input} value={q.contact.name} onChange={set('name')} onBlur={blur('name')} autoComplete="name" placeholder="First and last name" />
+          <Field label="Mobile number" error={show('phone')} data-field="phone">
+            <input className={input} type="tel" inputMode="tel" value={q.contact.phone} onChange={set('phone')} onBlur={blur('phone')} autoComplete="tel" placeholder={M.phonePlaceholder} />
           </Field>
           <Field label="Email" error={show('email')} data-field="email">
             <input className={input} type="email" inputMode="email" value={q.contact.email} onChange={set('email')} onBlur={blur('email')} autoComplete="email" placeholder="you@example.com" />
@@ -1198,28 +1195,11 @@ function SimpleForm({ where, innerRef }) {
               </button>
             ) : null}
           </Field>
-          <Field label="Mobile number" hint="So we can text or call you back fast." error={show('phone')} data-field="phone">
-            <input className={input} type="tel" inputMode="tel" value={q.contact.phone} onChange={set('phone')} onBlur={blur('phone')} autoComplete="tel" placeholder={M.phonePlaceholder} />
-          </Field>
-          <Field label="City and province or state" hint="For your delivery cost." error={show('location')} data-field="location">
-            <input className={input} value={q.contact.location} onChange={set('location')} onBlur={blur('location')} autoComplete="address-level2" placeholder={M.cityPlaceholder} />
-          </Field>
         </div>
       </fieldset>
       <fieldset ref={refs.use} className={group('use')}>
-        <legend className={legend}>What will you use it for?</legend>
-        <div className="mt-2"><Pills name="What will you use it for?" options={QUESTIONS.use.options} value={q.answers.use} onPick={(v) => pick('use', v)} /></div>
-        {pickError('use') ? <p role="alert" className="mt-1.5 text-sm font-semibold text-red-700">{pickError('use')}</p> : null}
-      </fieldset>
-      <fieldset ref={refs.timeline} className={group('timeline')}>
-        <legend className={legend}>How soon do you want to be serving?</legend>
-        <div className="mt-2"><Pills name="How soon do you want to be serving?" options={q.seasons} value={q.answers.timeline} onPick={(v) => pick('timeline', v)} /></div>
-        {pickError('timeline') ? <p role="alert" className="mt-1.5 text-sm font-semibold text-red-700">{pickError('timeline')}</p> : null}
-      </fieldset>
-      <fieldset ref={refs.fit} className={group('fit')}>
-        <legend className={legend}>{M.fitQuestion}</legend>
-        <div className="mt-2"><Pills name={M.fitQuestion} options={M.fit} value={q.answers.fit} onPick={(v) => pick('fit', v)} /></div>
-        {pickError('fit') ? <p role="alert" className="mt-1.5 text-sm font-semibold text-red-700">{pickError('fit')}</p> : null}
+        <legend className={legend}>What are you planning? <span className="font-medium text-zinc-500">(optional)</span></legend>
+        <div className="mt-2"><Pills name="What are you planning?" options={QUESTIONS.use.options.slice(0, 4)} value={q.answers.use} onPick={(v) => pick('use', v)} /></div>
       </fieldset>
       {askOpen ? (
         <Field label="Your question or comment (optional)">
@@ -1237,13 +1217,59 @@ function SimpleForm({ where, innerRef }) {
           <input name="cbw_check" tabIndex={-1} autoComplete="off" data-1p-ignore data-lpignore="true" value={q.contact.hp} onChange={(e) => q.setContact((c) => ({ ...c, hp: e.target.value }))} />
         </label>
       </div>
-      {tried && (!contactOk || missing.length) ? <p role="alert" className="text-sm font-semibold text-red-700">A few answers are missing above. Please complete them and send again.</p> : null}
+      {tried && !contactOk ? <p role="alert" className="text-sm font-semibold text-red-700">Please check your mobile number and email, then send again.</p> : null}
       {q.status === 'error' && q.lastForm === 'simple' ? <SendError /> : null}
       <div className="grid gap-3">
-        <SendButton />
+        <SendButton label="Text me the price list" />
+        <p className="text-center text-[12.5px] leading-snug text-zinc-600">We text a 4-digit code to confirm your number, then the price list. No payment, no obligation.</p>
         <Reassurance />
         <Consent />
       </div>
+    </form>
+  );
+}
+
+/**
+ * Variant A (1 Nov 2026): the name and the city, asked once the lead is in (after the texted code), never before the
+ * price. Saved to the lead through the OS (DETAILS_API, to be built); the time picker then greets them by name.
+ */
+function SimpleDetails() {
+  const q = useQuote();
+  const M = MARKETS[q.market];
+  const r = q.result || {};
+  const [name, setName] = useState(q.contact.name || '');
+  const [location, setLocation] = useState(q.contact.location || '');
+  const [state, setState] = useState('idle'); // idle | saving | saved | error
+  const input = 'w-full rounded-xl border-2 border-zinc-300 bg-white px-3.5 py-3 text-[16px] text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none';
+  if (state === 'saved') return <p className="mt-4 text-sm font-bold text-emerald-800">Thanks{r.first ? `, ${r.first}` : ''}. Your details are on your request.</p>;
+  const save = async (e) => {
+    e.preventDefault();
+    if (name.trim().length < 2) return;
+    setState('saving');
+    try {
+      const res = await fetch(DETAILS_API, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ leadId: r.id, name: name.trim(), location: location.trim() || undefined }) });
+      if (!res.ok) throw new Error(String(res.status));
+      const [first, ...rest] = name.trim().split(/\s+/);
+      q.setContact((c) => ({ ...c, name: name.trim(), location: location.trim() }));
+      q.setResult((x) => ({ ...(x || {}), first, last: rest.join(' ') }));
+      track('simple_details_saved', { market: q.market, intent: q.intent, city: Boolean(location.trim()) });
+      setState('saved');
+    } catch {
+      setState('error');
+    }
+  };
+  return (
+    <form onSubmit={save} className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4" aria-label="Your name and city">
+      <p className="font-extrabold text-zinc-950">Who should we address the price list to?</p>
+      <p className="mt-0.5 text-sm text-zinc-600">Your name, and the city for your delivery cost.</p>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <input className={input} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="First and last name" aria-label="Your name" />
+        <input className={input} value={location} onChange={(e) => setLocation(e.target.value)} autoComplete="address-level2" placeholder={M.cityPlaceholder} aria-label="City and province or state" />
+      </div>
+      <button type="submit" disabled={state === 'saving'} className="mt-3 rounded-xl border-2 border-zinc-900 px-5 py-2.5 text-sm font-extrabold text-zinc-950 hover:bg-zinc-900 hover:text-white disabled:opacity-60">
+        {state === 'saving' ? 'Saving…' : 'Save'}
+      </button>
+      {state === 'error' ? <p role="alert" className="mt-2 text-sm font-semibold text-red-700">That did not save. Our team will ask on the call instead.</p> : null}
     </form>
   );
 }
@@ -1288,7 +1314,8 @@ function SimpleThanks({ where }) {
       <h3 className="mt-4 text-2xl font-extrabold leading-tight text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>
         Thank you{r.first ? `, ${r.first}` : ''}. {q.booking ? 'Your call is booked.' : 'Your request is in.'}
       </h3>
-      <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">{q.booking ? 'We’ll come to the call with your price and build options ready.' : 'Our team gets back to you within one business day to answer your questions and go over your options.'}</p>
+      <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">{q.booking ? 'We’ll come to the call with your price and build options ready.' : 'Your price list is on its way by text and email. Our team gets back to you within one business day for anything else.'}</p>
+      <SimpleDetails />
 
       {q.booking ? (
         <div className="mt-5">{picker}</div>
@@ -1343,7 +1370,7 @@ export function QuoteModal() {
     <div className="fixed inset-0 z-[60] flex items-stretch justify-center bg-black/60 sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-label={q.wantsCall ? 'Book your 15-minute call' : 'Get your Coffee Bike price'} onClick={(e) => e.target === e.currentTarget && q.setOpen(false)}>
       <div className="relative flex max-h-full w-full flex-col overflow-y-auto bg-white px-5 pb-8 pt-4 sm:max-h-[92vh] sm:max-w-[520px] sm:rounded-2xl sm:px-7 sm:pb-7" style={{ paddingTop: 'max(16px, env(safe-area-inset-top))' }}>
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{q.wantsCall ? 'Book your 15-minute call' : 'Almost done'}</span>
+          <span className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{q.wantsCall ? 'Book your 15-minute call' : q.variant === 'simple' ? 'Your price list' : 'Almost done'}</span>
           <button type="button" onClick={() => q.setOpen(false)} aria-label="Close" className="-mr-2 rounded-full p-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900">
             <X className="h-6 w-6" />
           </button>

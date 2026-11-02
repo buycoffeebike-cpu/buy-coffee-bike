@@ -40,6 +40,8 @@ export const LEAD_API = process.env.NEXT_PUBLIC_LEAD_API || 'https://coffee-bike
 export const CALL_API = LEAD_API.replace(/\/bike-inquiry$/, '');
 /** The same OS: the code step for visitors it checks by text (POST /phone-check: confirm the code, or text a new one). */
 export const PHONE_API = `${CALL_API}/phone-check`;
+/** The same OS, to be built: name and city added to a lead after the texted code (the Google page's variant A asks them on the thank-you). */
+export const DETAILS_API = `${CALL_API}/lead-details`;
 /** WhatsApp Business number connected to GoHighLevel (messages land in the CRM). Offered as WhatsApp only, never as a number to call. */
 export const WHATSAPP = 'https://wa.me/17786558631';
 export const whatsappLink = (market) => `${WHATSAPP}?text=${encodeURIComponent(`Hi Coffee Bike World! I have a question about a Coffee Bike (${market === 'ca' ? 'Canada' : 'US'}).`)}`;
@@ -60,6 +62,11 @@ export const MARKETS = {
     heroPrice: "From US$15,850",
     heroPriceNote: "fully equipped, before tax. Shipping quoted to your address",
     sticky: { k: "Fully equipped from", v: "US$15,850" },
+    // the Google page's price card (variant A, local build 1 Nov 2026): what configured builds came to in the bike registry
+    // (median CA$27,300 since 2025; the US rows read as CAD ≈ US$19,800), in line with the financing banner's US$20,000
+    // basis. A range of what owners spend, never a second from-price.
+    spend: { k: "What most owners spend, with upgrades", v: "US$18,000–22,000" },
+    stickyMonthly: "from US$299/mo",
     financingNote: "Financing from US$299/month (84 months, 10% down) through Equinox Funding, on approved credit.",
     lender: { name: "Equinox Funding", href: EQUINOX_URL },
     fitLine: "A fully equipped Coffee Bike starts at US$15,850 before tax and shipping, and the price goes up with each upgrade you choose.",
@@ -88,6 +95,8 @@ export const MARKETS = {
     heroPrice: "From CA$22,500",
     heroPriceNote: "fully equipped, before tax. Shipping quoted to your address",
     sticky: { k: "Fully equipped from", v: "CA$22,500" },
+    spend: { k: "What most owners spend, with upgrades", v: "CA$25,000–32,000" },
+    stickyMonthly: "from CA$475/mo",
     financingNote: "Financing from CA$475/month (84 months, 8.5% APR) through iFinance, on approved credit.",
     lender: { name: "iFinance", href: FINANCING_URL },
     fitLine: "A fully equipped Coffee Bike starts at CA$22,500 before tax, and the price goes up with each upgrade you choose. Shipping is quoted for your address.",

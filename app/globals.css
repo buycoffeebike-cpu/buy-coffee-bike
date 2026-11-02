@@ -99,3 +99,10 @@ html:not([data-cbw-form="simple"]) .cbw-simple { display: none; }
   /* the tall form spans three rows: with the last row flexible, the text rows keep their own height and the photo sits right under the bullets */
   html[data-cbw-form="simple"] .hero-grid { grid-template-rows: auto auto 1fr; }
 }
+/* Variant A of the Google page (local build, 1 Nov 2026): on phones the price card and the form come before the photo,
+   and the sections that are not about the price, the proof or the call stay off the page for paid Google visitors. */
+@media (max-width: 767px) {
+  html[data-cbw-form="simple"] .hero-photo { order: 9; }
+  html[data-cbw-form="simple"] .hero-photo-box { aspect-ratio: 16 / 9; }
+}
+html[data-cbw-form="simple"] .cbw-lean { display: none; }
