@@ -1220,7 +1220,7 @@ function SimpleForm({ where, innerRef }) {
       {tried && !contactOk ? <p role="alert" className="text-sm font-semibold text-red-700">Please check your mobile number and email, then send again.</p> : null}
       {q.status === 'error' && q.lastForm === 'simple' ? <SendError /> : null}
       <div className="grid gap-3">
-        <SendButton label="Text me the price" />
+        <SendButton label="Send me the price" />
         <p className="text-center text-[12.5px] leading-snug text-zinc-600">We text a 4-digit code to confirm your number, then the price and your builder link. No payment, no obligation.</p>
         <Reassurance />
         <Consent />

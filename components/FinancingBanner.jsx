@@ -25,14 +25,14 @@ export const FINANCING = {
   us: {
     from: "US$299",
     lender: "Equinox Funding",
-    line: "Financing from US$299/month (84 months, 10% down) through Equinox Funding, on approved credit.",
-    short: "Financing from US$299/month (84 months, 10% down), on approved credit.",
+    line: "Financing from US$299/month (84 months) through Equinox Funding, on approved credit.",
+    short: "Financing from US$299/month (84 months), on approved credit.",
     points: [
       { icon: Calendar, t: "Terms up to 84 months" },
-      { icon: Percent, t: "From 10% down" },
+      { icon: Percent, t: "Business equipment lease" },
       { icon: ShieldCheck, t: "On approved credit" },
     ],
-    basis: "Based on a US$20,000 build with 10% down, financed over 84 months at 10%, on approved credit. Your rate and term are set by Equinox Funding.",
+    basis: "Based on US$18,000 financed over 84 months at 10%, on approved credit. Your rate and term are set by Equinox Funding.",
   },
   ca: {
     from: "CA$475",
