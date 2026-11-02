@@ -1184,7 +1184,7 @@ function SimpleForm({ where, innerRef }) {
       <div>
         <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{q.wantsCall ? 'Book your 15-minute call' : 'Your price'}</p>
         <p className="mt-1 text-[22px] font-extrabold leading-tight text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>{q.wantsCall ? 'Where should we send the call details?' : 'Get the price and build your bike'}</p>
-        <p className="mt-1 text-[14px] text-zinc-600">The price, the financing options and the builder that shows every option with its price. One text, one email, no calls unless you ask.</p>
+        <p className="mt-1 text-[14px] text-zinc-600">The price, the financing options and the builder that shows every option with its price, by text and email. Our team follows up to answer your questions.</p>
       </div>
       <fieldset ref={refs.contact} className={group('contact')} data-contact="">
         <div className="grid gap-3.5 sm:grid-cols-2">
