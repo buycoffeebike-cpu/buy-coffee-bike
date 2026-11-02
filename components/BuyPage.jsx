@@ -1637,7 +1637,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
   </div>
 )}
       {/* financing in plain words (founder, 31 Oct 2026: "mentioned on the configurator but also reflected somewhere separately") */}
-      <section className="py-10 px-6 bg-white">
+      <section id="financing" className="py-10 px-6 bg-white" style={{ scrollMarginTop: '80px' }}>
         <div className="max-w-5xl mx-auto">
           <FinancingBanner
             market={quoteMarket}
