@@ -671,8 +671,9 @@ function PhoneCode({ where }) {
   const ref = useRef(null);
 
   useEffect(() => {
-    // the page's own copies stay quiet while the pop-up is open: the code box there gets the keyboard
-    if ((where === 'inline' || where === 'hero') && q.open) return;
+    // every copy on the page stays quiet while the pop-up is open: the code box in the pop-up gets the keyboard, and the
+    // page behind it never scrolls to its own copy (Vlad, 2 Nov 2026: the header form "jumps me to the middle page form")
+    if (q.open && where !== 'modal') return;
     ref.current?.focus({ preventScroll: where !== 'full' });
     // the page section's copy, and the simple form's (a long form just left the screen): bring the code box into view
     if (where === 'full' || c.form === 'simple') ref.current?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
@@ -1140,14 +1141,15 @@ function SimpleForm({ where, innerRef }) {
     q.setAnswers((a) => ({ ...a, [key]: v }));
   };
   // the mobile number and the email are the whole ask (variant A); the name and the city come on the thank-you
-  // name, mobile and email (Vlad, 2 Nov 2026: "add name field 100%"); the city comes on the thank-you
+  // name, mobile, email and city (Vlad, 2 Nov 2026: "add name field 100%", "we need to keep location in the form")
   const errs = {
     name: q.contact.name.trim().length < 2 ? 'Please enter your name.' : '',
     email: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(q.contact.email.trim()) ? '' : 'Please enter a valid email.',
     phone: phoneProblem(q.contact.phone),
+    location: q.contact.location.trim().length < 2 ? 'Tell us the city where you want to run it.' : '',
   };
   const show = (k) => (tried || blurred[k]) && errs[k];
-  const contactOk = !errs.name && !errs.email && !errs.phone;
+  const contactOk = !errs.name && !errs.email && !errs.phone && !errs.location;
   const set = (k) => (e) => {
     touch(k);
     q.setTypedIn('simple');
@@ -1166,7 +1168,7 @@ function SimpleForm({ where, innerRef }) {
       setFlash('contact');
       clearTimeout(flashTimer.current);
       flashTimer.current = setTimeout(() => setFlash(null), 2500);
-      const bad = ['name', 'phone', 'email'].find((k) => errs[k]);
+      const bad = ['name', 'phone', 'email', 'location'].find((k) => errs[k]);
       setBlurred((b) => ({ ...b, [bad]: true }));
       setTimeout(() => box?.querySelector(`[data-field="${bad}"] input`)?.focus({ preventScroll: true }), 400);
       track('simple_form_incomplete', { missing: 'contact', where, market: q.market, intent: q.intent });
@@ -1200,6 +1202,9 @@ function SimpleForm({ where, innerRef }) {
               </button>
             ) : null}
           </Field>
+          <Field label="City and province or state" hint="For your delivery cost." error={show('location')} data-field="location">
+            <input className={input} value={q.contact.location} onChange={set('location')} onBlur={blur('location')} autoComplete="address-level2" placeholder={M.cityPlaceholder} />
+          </Field>
         </div>
       </fieldset>
       <fieldset ref={refs.use} className={group('use')}>
@@ -1222,7 +1227,7 @@ function SimpleForm({ where, innerRef }) {
           <input name="cbw_check" tabIndex={-1} autoComplete="off" data-1p-ignore data-lpignore="true" value={q.contact.hp} onChange={(e) => q.setContact((c) => ({ ...c, hp: e.target.value }))} />
         </label>
       </div>
-      {tried && !contactOk ? <p role="alert" className="text-sm font-semibold text-red-700">Please check your name, mobile number and email, then send again.</p> : null}
+      {tried && !contactOk ? <p role="alert" className="text-sm font-semibold text-red-700">Please check your name, mobile number, email and city, then send again.</p> : null}
       {q.status === 'error' && q.lastForm === 'simple' ? <SendError /> : null}
       <div className="grid gap-3">
         <SendButton label="Send me the price" />
@@ -1245,8 +1250,10 @@ function SimpleDetails() {
   const [name, setName] = useState(q.contact.name || '');
   const [location, setLocation] = useState(q.contact.location || '');
   const [state, setState] = useState('idle'); // idle | saving | saved | error
-  // the form asks the name since 2 Nov 2026: here only the city is missing
+  // the form asks the name and the city since 2 Nov 2026: this card only appears for a lead that somehow lacks one
   const haveName = (q.contact.name || '').trim().length >= 2;
+  const haveLocation = (q.contact.location || '').trim().length >= 2;
+  if (haveName && haveLocation) return null;
   const input = 'w-full rounded-xl border-2 border-zinc-300 bg-white px-3.5 py-3 text-[16px] text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none';
   if (state === 'saved') return <p className="mt-4 text-sm font-bold text-emerald-800">Thanks{r.first ? `, ${r.first}` : ''}. Your details are on your request.</p>;
   const save = async (e) => {
@@ -1308,7 +1315,8 @@ function SimpleThanks({ where }) {
   }, [r.first, r.last, r.email, r.phone]);
   // a long form just left the screen: the thank-you starts at the top of what the visitor sees
   useEffect(() => {
-    if (where === 'hero' && q.open) return;
+    // the pop-up's own thank-you is already on screen; the copies behind it must not pull the page down to themselves
+    if (q.open && where !== 'modal') return;
     headRef.current?.scrollIntoView?.({ block: 'start', behavior: 'smooth' });
   }, [where]); // eslint-disable-line react-hooks/exhaustive-deps
   const more = () => q.learnMore(q.booking ? 'after_booking' : q.callSkipped ? 'after_skip' : 'thanks');
