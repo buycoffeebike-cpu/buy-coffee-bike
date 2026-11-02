@@ -1140,12 +1140,14 @@ function SimpleForm({ where, innerRef }) {
     q.setAnswers((a) => ({ ...a, [key]: v }));
   };
   // the mobile number and the email are the whole ask (variant A); the name and the city come on the thank-you
+  // name, mobile and email (Vlad, 2 Nov 2026: "add name field 100%"); the city comes on the thank-you
   const errs = {
+    name: q.contact.name.trim().length < 2 ? 'Please enter your name.' : '',
     email: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(q.contact.email.trim()) ? '' : 'Please enter a valid email.',
     phone: phoneProblem(q.contact.phone),
   };
   const show = (k) => (tried || blurred[k]) && errs[k];
-  const contactOk = !errs.email && !errs.phone;
+  const contactOk = !errs.name && !errs.email && !errs.phone;
   const set = (k) => (e) => {
     touch(k);
     q.setTypedIn('simple');
@@ -1164,7 +1166,7 @@ function SimpleForm({ where, innerRef }) {
       setFlash('contact');
       clearTimeout(flashTimer.current);
       flashTimer.current = setTimeout(() => setFlash(null), 2500);
-      const bad = ['phone', 'email'].find((k) => errs[k]);
+      const bad = ['name', 'phone', 'email'].find((k) => errs[k]);
       setBlurred((b) => ({ ...b, [bad]: true }));
       setTimeout(() => box?.querySelector(`[data-field="${bad}"] input`)?.focus({ preventScroll: true }), 400);
       track('simple_form_incomplete', { missing: 'contact', where, market: q.market, intent: q.intent });
@@ -1184,6 +1186,9 @@ function SimpleForm({ where, innerRef }) {
       </div>
       <fieldset ref={refs.contact} className={group('contact')} data-contact="">
         <div className="grid gap-3.5 sm:grid-cols-2">
+          <Field label="Your name" error={show('name')} data-field="name">
+            <input className={input} value={q.contact.name} onChange={set('name')} onBlur={blur('name')} autoComplete="name" placeholder="First and last name" />
+          </Field>
           <Field label="Mobile number" error={show('phone')} data-field="phone">
             <input className={input} type="tel" inputMode="tel" value={q.contact.phone} onChange={set('phone')} onBlur={blur('phone')} autoComplete="tel" placeholder={M.phonePlaceholder} />
           </Field>
@@ -1217,7 +1222,7 @@ function SimpleForm({ where, innerRef }) {
           <input name="cbw_check" tabIndex={-1} autoComplete="off" data-1p-ignore data-lpignore="true" value={q.contact.hp} onChange={(e) => q.setContact((c) => ({ ...c, hp: e.target.value }))} />
         </label>
       </div>
-      {tried && !contactOk ? <p role="alert" className="text-sm font-semibold text-red-700">Please check your mobile number and email, then send again.</p> : null}
+      {tried && !contactOk ? <p role="alert" className="text-sm font-semibold text-red-700">Please check your name, mobile number and email, then send again.</p> : null}
       {q.status === 'error' && q.lastForm === 'simple' ? <SendError /> : null}
       <div className="grid gap-3">
         <SendButton label="Send me the price" />
@@ -1240,11 +1245,13 @@ function SimpleDetails() {
   const [name, setName] = useState(q.contact.name || '');
   const [location, setLocation] = useState(q.contact.location || '');
   const [state, setState] = useState('idle'); // idle | saving | saved | error
+  // the form asks the name since 2 Nov 2026: here only the city is missing
+  const haveName = (q.contact.name || '').trim().length >= 2;
   const input = 'w-full rounded-xl border-2 border-zinc-300 bg-white px-3.5 py-3 text-[16px] text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none';
   if (state === 'saved') return <p className="mt-4 text-sm font-bold text-emerald-800">Thanks{r.first ? `, ${r.first}` : ''}. Your details are on your request.</p>;
   const save = async (e) => {
     e.preventDefault();
-    if (name.trim().length < 2) return;
+    if (name.trim().length < 2 || (haveName && location.trim().length < 2)) return;
     setState('saving');
     try {
       const res = await fetch(DETAILS_API, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ leadId: r.id, name: name.trim(), location: location.trim() || undefined }) });
@@ -1260,10 +1267,10 @@ function SimpleDetails() {
   };
   return (
     <form onSubmit={save} className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4" aria-label="Your name and city">
-      <p className="font-extrabold text-zinc-950">Who should we address it to?</p>
-      <p className="mt-0.5 text-sm text-zinc-600">Your name, and the city for your delivery cost.</p>
+      <p className="font-extrabold text-zinc-950">{haveName ? 'Which city will you run it in?' : 'Who should we address it to?'}</p>
+      <p className="mt-0.5 text-sm text-zinc-600">{haveName ? 'For your delivery cost.' : 'Your name, and the city for your delivery cost.'}</p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        <input className={input} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="First and last name" aria-label="Your name" />
+        {haveName ? null : <input className={input} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="First and last name" aria-label="Your name" />}
         <input className={input} value={location} onChange={(e) => setLocation(e.target.value)} autoComplete="address-level2" placeholder={M.cityPlaceholder} aria-label="City and province or state" />
       </div>
       <button type="submit" disabled={state === 'saving'} className="mt-3 rounded-xl border-2 border-zinc-900 px-5 py-2.5 text-sm font-extrabold text-zinc-950 hover:bg-zinc-900 hover:text-white disabled:opacity-60">
