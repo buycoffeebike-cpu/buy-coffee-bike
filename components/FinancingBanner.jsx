@@ -25,8 +25,8 @@ export const FINANCING = {
   us: {
     from: "US$299",
     lender: "Equinox Funding",
-    line: "Financing from US$299/month (84 months) through Equinox Funding, on approved credit.",
-    short: "Financing from US$299/month (84 months), on approved credit.",
+    line: "Financing from US$299/month (up to 84 months) through Equinox Funding, on approved credit.",
+    short: "Financing from US$299/month (up to 84 months), on approved credit.",
     points: [
       { icon: Calendar, t: "Terms up to 84 months" },
       { icon: Percent, t: "Business equipment lease" },
@@ -37,8 +37,8 @@ export const FINANCING = {
   ca: {
     from: "CA$475",
     lender: "iFinance",
-    line: "Financing from CA$475/month (84 months, 8.5% APR) through iFinance, on approved credit.",
-    short: "Financing from CA$475/month (84 months, 8.5% APR), on approved credit.",
+    line: "Financing from CA$475/month (up to 84 months, 8.5% APR) through iFinance, on approved credit.",
+    short: "Financing from CA$475/month (up to 84 months, 8.5% APR), on approved credit.",
     points: [
       { icon: Calendar, t: "Terms up to 84 months" },
       { icon: Percent, t: "No down payment" },
