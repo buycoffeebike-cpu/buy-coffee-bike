@@ -255,7 +255,7 @@ function Page({ intent, market }) {
             <a href="#price" className="hidden text-sm font-semibold text-zinc-300 hover:text-white sm:inline">Pricing</a>
             <a href="#owners" className="hidden text-sm font-semibold text-zinc-300 hover:text-white sm:inline">Owners</a>
             <button type="button" onClick={() => q.openQuote('header')} className="rounded-md px-4 py-2 text-sm font-extrabold uppercase tracking-wide text-white hover:brightness-110" style={{ backgroundColor: RED }}>
-              {q.variant === 'simple' ? 'Price list' : 'Get my price'}
+              {q.variant === 'simple' ? 'Get the price' : 'Get my price'}
             </button>
           </div>
         </div>
@@ -501,7 +501,7 @@ function Page({ intent, market }) {
           <div className="lg:sticky lg:top-24 lg:pt-6">
             <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>Your price</p>
             <h2 className="mt-2 text-3xl font-extrabold leading-tight md:text-5xl" style={{ ...DISPLAY, ...BALANCE }}>Get your price and build options</h2>
-            <p className="mt-3 text-lg text-zinc-300">{q.variant === 'simple' ? 'Your mobile and email, and the full price list is on its way.' : 'Four quick questions and where to send your price, all in one form.'} We reply within one business day with pricing for your build.</p>
+            <p className="mt-3 text-lg text-zinc-300">{q.variant === 'simple' ? 'Your mobile and email, and the price and builder link are on their way.' : 'Four quick questions and where to send your price, all in one form.'} We reply within one business day with pricing for your build.</p>
             <ul className="mt-6 space-y-3 text-[15px] leading-relaxed text-zinc-300">
               {['A short call to plan your setup, branding and add-ons. No pressure.', 'Nothing is charged until you approve an invoice.', 'Opening for spring? Permits often take 60–90 days, so owners order in winter and apply while the bike is built.'].map((x) => (
                 <li key={x} className="flex gap-3"><Check className="mt-1 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
@@ -670,7 +670,7 @@ function Page({ intent, market }) {
             <div className="font-extrabold text-zinc-950">{M.sticky.v}{q.variant === 'simple' ? <span className="font-semibold text-zinc-600"> · {M.stickyMonthly}</span> : null}</div>
           </div>
           <button type="button" onClick={() => q.openQuote('sticky')} className="flex-1 rounded-xl px-4 py-3 text-center font-extrabold text-white" style={{ backgroundColor: RED }}>
-            {q.status === 'done' ? 'Request sent ✓' : q.variant !== 'simple' && q.step > 0 ? `Continue · step ${q.step + 1} of 5` : q.variant === 'simple' ? 'Price list' : 'Get my price'}
+            {q.status === 'done' ? 'Request sent ✓' : q.variant !== 'simple' && q.step > 0 ? `Continue · step ${q.step + 1} of 5` : q.variant === 'simple' ? 'Get the price' : 'Get my price'}
           </button>
         </div>
       </div>

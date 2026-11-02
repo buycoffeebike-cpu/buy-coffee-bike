@@ -1112,7 +1112,7 @@ function Pills({ name, options, value, onPick }) {
 /**
  * The one-screen form paid Google visitors see in the hero, the pop-up and the page section (Adam's suggestion,
  * Vlad's go, 21 Oct 2026). Variant A (local build, 1 Nov 2026, after October's 417 visitors → 7 sends): the ask is the
- * mobile number and the email, one optional "what are you planning", and the button promises the price list. Name and
+ * mobile number and the email, one optional "what are you planning", and the button promises the price (what the welcome text and Email #1 carry: price, financing, the builder link). Name and
  * city moved to the thank-you, after the texted code (SimpleDetails). Sent as form "simple" to the same endpoint; the
  * OS, the CRM note, the lead email and GA4 all say which form it was. A missing detail lights up and scrolls into view,
  * so nothing fails silently (Astra's condition).
@@ -1176,11 +1176,11 @@ function SimpleForm({ where, innerRef }) {
   const legend = 'text-[15px] font-bold leading-snug text-zinc-950';
 
   return (
-    <form ref={innerRef} noValidate onSubmit={onSubmit} className="grid gap-5 text-left" aria-label="Get your Coffee Bike price list">
+    <form ref={innerRef} noValidate onSubmit={onSubmit} className="grid gap-5 text-left" aria-label="Get your Coffee Bike price">
       <div>
-        <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{q.wantsCall ? 'Book your 15-minute call' : 'Your price list'}</p>
-        <p className="mt-1 text-[22px] font-extrabold leading-tight text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>{q.wantsCall ? 'Where should we send the call details?' : 'Get the full price list and build sheet'}</p>
-        <p className="mt-1 text-[14px] text-zinc-600">Every option with its price, the spec PDF and the 6-minute walkthrough. One text, one email, no calls unless you ask.</p>
+        <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{q.wantsCall ? 'Book your 15-minute call' : 'Your price'}</p>
+        <p className="mt-1 text-[22px] font-extrabold leading-tight text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>{q.wantsCall ? 'Where should we send the call details?' : 'Get the price and build your bike'}</p>
+        <p className="mt-1 text-[14px] text-zinc-600">The price, the financing options and the builder that shows every option with its price. One text, one email, no calls unless you ask.</p>
       </div>
       <fieldset ref={refs.contact} className={group('contact')} data-contact="">
         <div className="grid gap-3.5 sm:grid-cols-2">
@@ -1220,8 +1220,8 @@ function SimpleForm({ where, innerRef }) {
       {tried && !contactOk ? <p role="alert" className="text-sm font-semibold text-red-700">Please check your mobile number and email, then send again.</p> : null}
       {q.status === 'error' && q.lastForm === 'simple' ? <SendError /> : null}
       <div className="grid gap-3">
-        <SendButton label="Text me the price list" />
-        <p className="text-center text-[12.5px] leading-snug text-zinc-600">We text a 4-digit code to confirm your number, then the price list. No payment, no obligation.</p>
+        <SendButton label="Text me the price" />
+        <p className="text-center text-[12.5px] leading-snug text-zinc-600">We text a 4-digit code to confirm your number, then the price and your builder link. No payment, no obligation.</p>
         <Reassurance />
         <Consent />
       </div>
@@ -1260,7 +1260,7 @@ function SimpleDetails() {
   };
   return (
     <form onSubmit={save} className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4" aria-label="Your name and city">
-      <p className="font-extrabold text-zinc-950">Who should we address the price list to?</p>
+      <p className="font-extrabold text-zinc-950">Who should we address it to?</p>
       <p className="mt-0.5 text-sm text-zinc-600">Your name, and the city for your delivery cost.</p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <input className={input} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="First and last name" aria-label="Your name" />
@@ -1314,7 +1314,7 @@ function SimpleThanks({ where }) {
       <h3 className="mt-4 text-2xl font-extrabold leading-tight text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>
         Thank you{r.first ? `, ${r.first}` : ''}. {q.booking ? 'Your call is booked.' : 'Your request is in.'}
       </h3>
-      <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">{q.booking ? 'We’ll come to the call with your price and build options ready.' : 'Your price list is on its way by text and email. Our team gets back to you within one business day for anything else.'}</p>
+      <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">{q.booking ? 'We’ll come to the call with your price and build options ready.' : 'Your price and builder link are on their way by text and email. Our team gets back to you within one business day for anything else.'}</p>
       <SimpleDetails />
 
       {q.booking ? (
@@ -1370,7 +1370,7 @@ export function QuoteModal() {
     <div className="fixed inset-0 z-[60] flex items-stretch justify-center bg-black/60 sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-label={q.wantsCall ? 'Book your 15-minute call' : 'Get your Coffee Bike price'} onClick={(e) => e.target === e.currentTarget && q.setOpen(false)}>
       <div className="relative flex max-h-full w-full flex-col overflow-y-auto bg-white px-5 pb-8 pt-4 sm:max-h-[92vh] sm:max-w-[520px] sm:rounded-2xl sm:px-7 sm:pb-7" style={{ paddingTop: 'max(16px, env(safe-area-inset-top))' }}>
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{q.wantsCall ? 'Book your 15-minute call' : q.variant === 'simple' ? 'Your price list' : 'Almost done'}</span>
+          <span className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{q.wantsCall ? 'Book your 15-minute call' : q.variant === 'simple' ? 'Your price' : 'Almost done'}</span>
           <button type="button" onClick={() => q.setOpen(false)} aria-label="Close" className="-mr-2 rounded-full p-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900">
             <X className="h-6 w-6" />
           </button>
