@@ -18,6 +18,8 @@ export function middleware(request) {
   if (!/^\/start(\/|$)/.test(path) || /^\/start\/ca(\/|$)/.test(path)) return NextResponse.next();
   const canadian = path.replace(/^\/start/, '/start/ca');
   url.pathname = hadBase ? `${BASE}${canadian}` : canadian;
+  // the page records the redirect in GA4 with this country (geo_redirect), so a visitor sent to the wrong prices is visible
+  url.searchParams.set('cbwgeo', country);
   return NextResponse.redirect(url, 307);
 }
 

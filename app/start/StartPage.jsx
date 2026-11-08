@@ -1,8 +1,9 @@
 'use client';
 
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { ArrowRight, BatteryCharging, Calendar, Check, ChevronDown, Clock, Coffee, CreditCard, Droplets, FileText, Info, Mail, MapPin, ShieldCheck, Snowflake, Sun, Users, X, ZoomIn } from 'lucide-react';
+import { ArrowRight, BatteryCharging, Calendar, Check, ChevronDown, Clock, Coffee, CreditCard, Droplets, FileText, Info, Mail, MapPin, ShieldCheck, Snowflake, Sun, Users, ZoomIn } from 'lucide-react';
 import LiteYouTube from '../../components/LiteYouTube';
 import FinancingBanner, { FINANCING } from '../../components/FinancingBanner';
 import {
@@ -13,6 +14,8 @@ import { FinishBar, HeroQuestion, QuoteFullForm, QuoteModal, QuoteProvider, RED,
 
 const DISPLAY = { fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' };
 const BALANCE = { textWrap: 'balance' };
+// the full-screen photo view arrives only when a photo is opened (7 Nov 2026 speed work)
+const Lightbox = dynamic(() => import('./Lightbox'), { ssr: false });
 
 const track = (name, params) => {
   try {
@@ -95,31 +98,6 @@ function Photo({ photo, caption, onOpen, sizes, imgClassName = 'object-cover', s
   );
 }
 
-/** The full-screen view: the whole photo, uncropped, its caption, and a tap anywhere or Escape to close. */
-function Lightbox({ photo, onClose }) {
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKey = (e) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => {
-      document.body.style.overflow = prev;
-      window.removeEventListener('keydown', onKey);
-    };
-  }, [onClose]);
-  return (
-    <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center bg-black/95 p-3 sm:p-6" role="dialog" aria-modal="true" aria-label={photo.caption} onClick={onClose}>
-      <button type="button" onClick={onClose} aria-label="Close" className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20" style={{ top: 'max(12px, env(safe-area-inset-top))' }}>
-        <X className="h-6 w-6" />
-      </button>
-      <div className="relative h-[76vh] w-full max-w-5xl">
-        <Image src={photo.src} alt={photo.alt} fill sizes="100vw" className="object-contain" priority />
-      </div>
-      <p className="mt-3 max-w-xl px-2 text-center text-sm font-semibold text-zinc-200">{photo.caption}</p>
-    </div>
-  );
-}
-
 /** Every "book a call" button: the four questions first, then the calendar, so a booking is a lead with its answers (founder, 3 Oct 2026). */
 function CallButton({ where, className = '', style, children }) {
   const q = useQuote();
@@ -193,6 +171,18 @@ function Page({ intent, market }) {
     if (!window.__cbwLive) return;
     window.gtag?.('config', ADS_TAG, { allow_enhanced_conversions: true });
   }, []);
+
+  // the page's own code is running: the layout may now load the tag libraries (7 Nov 2026 speed work), and a visit
+  // the middleware sent here from the other country's page is recorded with the country Cloudflare reported, so a
+  // wrong redirect (a US visitor on the Canadian prices) shows up in GA4 next to market_mismatch
+  useEffect(() => {
+    window.__cbwReady = 1;
+    window.dispatchEvent(new Event('cbw:ready'));
+    try {
+      const geo = new URLSearchParams(window.location.search).get('cbwgeo');
+      if (geo) track('geo_redirect', { to: market, country: geo, intent });
+    } catch {}
+  }, [market, intent]);
 
   // sitelinks land with ?s=: open the form, or scroll to prices or owners
   useEffect(() => {
@@ -306,11 +296,12 @@ function Page({ intent, market }) {
               <div className="cbw-simple mt-3 overflow-hidden rounded-2xl bg-zinc-950 p-4 text-white sm:p-5" style={{ borderLeft: `5px solid ${RED}` }}>
                 <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-400">Fully equipped, before tax and shipping</p>
                 <p className="mt-1 text-[34px] font-extrabold leading-none tabular-nums" style={DISPLAY}>{M.heroPrice}</p>
-                <dl className="mt-3 grid gap-1.5 border-t border-zinc-800 pt-3 text-[13.5px]">
+                {/* phones (7 Nov 2026): the card is the price and the monthly only, so the form's button is within reach; the two detail rows sit under the form */}
+                <dl className="mt-3 hidden gap-1.5 border-t border-zinc-800 pt-3 text-[13.5px] sm:grid">
                   <div className="flex items-baseline justify-between gap-4"><dt className="text-zinc-300">{M.spend.k}</dt><dd className="whitespace-nowrap font-extrabold tabular-nums">{M.spend.v}</dd></div>
                   <div className="flex items-baseline justify-between gap-4"><dt className="text-zinc-300">Build 4–6 weeks, delivery 2–4 weeks</dt><dd className="whitespace-nowrap font-extrabold">to your door</dd></div>
                 </dl>
-                <p className="mt-3 text-[13.5px] font-bold text-red-200">{FINANCING[market].short}</p>
+                <p className="mt-2 text-[13.5px] font-bold text-red-200 sm:mt-3">{FINANCING[market].short}</p>
               </div>
             ) : null}
             <ul className="mt-4 hidden gap-1.5 text-[15px] text-zinc-800 md:grid">
@@ -321,6 +312,12 @@ function Page({ intent, market }) {
           </div>
           <div className="hero-form md:col-start-1 md:row-start-3">
             <HeroQuestion />
+            {q.variant !== 'steps' ? (
+              <dl className="cbw-simple mt-3 grid gap-1 text-[13px] text-zinc-600 sm:hidden">
+                <div className="flex items-baseline justify-between gap-4"><dt>{M.spend.k}</dt><dd className="whitespace-nowrap font-bold text-zinc-900 tabular-nums">{M.spend.v}</dd></div>
+                <div className="flex items-baseline justify-between gap-4"><dt>Build 4–6 weeks, delivery 2–4 weeks</dt><dd className="whitespace-nowrap font-bold text-zinc-900">to your door</dd></div>
+              </dl>
+            ) : null}
             <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1">
               <CallButton where="hero_call" className="inline-flex items-center gap-2 py-1 text-[15px] font-bold text-zinc-800 underline underline-offset-4">
                 <Calendar className="h-4 w-4" aria-hidden /> Prefer to talk? Book a 15-minute call

@@ -76,6 +76,9 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
   const [plusOne, setPlusOne] = useState(false);
   useEffect(() => {
     try { setPlusOne(PLUS_ONE_ZONES.test(Intl.DateTimeFormat().resolvedOptions().timeZone || '')); } catch {}
+    // the page's own code is running: the layout may now load the tag libraries (7 Nov 2026)
+    window.__cbwReady = 1;
+    window.dispatchEvent(new Event('cbw:ready'));
   }, []);
 
   // Prices in the visitor's currency: ?currency=CAD|USD|EUR in the link wins (each Meta ad set links with its

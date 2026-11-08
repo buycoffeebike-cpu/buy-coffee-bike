@@ -8,8 +8,13 @@
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Calendar, Check, FileText, Loader2, MessageCircle, PlayCircle, X } from 'lucide-react';
-import { ADS_CONVERSION, CALL_API, CALL_URL, DEPOSIT_URL, DETAILS_API, INCLUDED, LEAD_API, MARKETS, PHONE_API, QUOTE_FORM_URL, SPEC_SHEET, whatsappLink } from './content';
-import TimePicker, { Walkthrough } from './TimePicker';
+import dynamic from 'next/dynamic';
+import { ADS_CONVERSION, CALL_API, CALL_URL, DEPOSIT_URL, DETAILS_API, INCLUDED, LEAD_API, MARKETS, OWNERS, PHONE_API, QUOTE_FORM_URL, SPEC_SHEET, whatsappLink } from './content';
+
+// the call-time picker and the walkthrough are needed only once a request is in: they load then, not with the first
+// screen (7 Nov 2026 speed work)
+const TimePicker = dynamic(() => import('./TimePicker'), { ssr: false, loading: () => <p className="py-3 text-sm text-zinc-500">Loading the free times…</p> });
+const Walkthrough = dynamic(() => import('./TimePicker').then((m) => m.Walkthrough), { ssr: false });
 
 export const RED = '#E31E24';
 const STEP_KEYS = ['use', 'timeline', 'stage', 'fit', 'contact'];
@@ -1157,6 +1162,21 @@ function SimpleForm({ where, innerRef }) {
   };
   const blur = (k) => () => setBlurred((b) => ({ ...b, [k]: true }));
   const suggestion = emailFix(q.contact.email);
+  // how many paid visitors ever see the hero form (7 Nov 2026: 2 of 159 started it; nobody knew how many reached it)
+  useEffect(() => {
+    const el = innerRef?.current;
+    if (where !== 'hero' || !el || typeof IntersectionObserver === 'undefined') return undefined;
+    const io = new IntersectionObserver(
+      (xs) => {
+        if (!xs.some((x) => x.isIntersecting)) return;
+        track('hero_form_visible', { market: q.market, intent: q.intent });
+        io.disconnect();
+      },
+      { threshold: 0.3 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -1183,8 +1203,8 @@ function SimpleForm({ where, innerRef }) {
     <form ref={innerRef} noValidate onSubmit={onSubmit} className="grid gap-5 text-left" aria-label="Get your Coffee Bike price">
       <div>
         <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{q.wantsCall ? 'Book your 15-minute call' : 'Your price'}</p>
-        <p className="mt-1 text-[22px] font-extrabold leading-tight text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>{q.wantsCall ? 'Where should we send the call details?' : 'Get the price and build your bike'}</p>
-        <p className="mt-1 text-[14px] text-zinc-600">The price, the financing options and the builder that shows every option with its price, by text and email. Our team follows up to answer your questions.</p>
+        <p className="mt-1 text-[22px] font-extrabold leading-tight text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>{q.wantsCall ? 'Where should we send the call details?' : 'Get your exact build price and financing'}</p>
+        <p className="mt-1 text-[14px] text-zinc-600">The builder shows every option with its price, so you see your own total. Your financing options come with it, by text and email, and our team follows up to answer your questions.</p>
       </div>
       <fieldset ref={refs.contact} className={group('contact')} data-contact="">
         <div className="grid gap-3.5 sm:grid-cols-2">
@@ -1207,10 +1227,6 @@ function SimpleForm({ where, innerRef }) {
           </Field>
         </div>
       </fieldset>
-      <fieldset ref={refs.use} className={group('use')}>
-        <legend className={legend}>What are you planning? <span className="font-medium text-zinc-500">(optional)</span></legend>
-        <div className="mt-2"><Pills name="What are you planning?" options={QUESTIONS.use.options.slice(0, 4)} value={q.answers.use} onPick={(v) => pick('use', v)} /></div>
-      </fieldset>
       {askOpen ? (
         <Field label="Your question or comment (optional)">
           <textarea className={`${input} min-h-[80px]`} value={q.contact.question} onChange={set('question')} maxLength={2000} placeholder="Your plans, where you'd serve, anything you want answered in our reply" autoFocus />
@@ -1232,10 +1248,32 @@ function SimpleForm({ where, innerRef }) {
       <div className="grid gap-3">
         <SendButton label="Send me the price" />
         <p className="text-center text-[12.5px] leading-snug text-zinc-600">We text a 4-digit code to confirm your number, then the price and your builder link. No payment, no obligation.</p>
+      </div>
+      {/* the optional question follows the button (7 Nov 2026): on a phone the button must come right after the four fields */}
+      <fieldset ref={refs.use} className={group('use')}>
+        <legend className={`${legend} text-[14px]`}>What are you planning? <span className="font-medium text-zinc-500">(optional)</span></legend>
+        <div className="mt-2"><Pills name="What are you planning?" options={QUESTIONS.use.options.slice(0, 4)} value={q.answers.use} onPick={(v) => pick('use', v)} /></div>
+      </fieldset>
+      <div className="grid gap-3">
         <Reassurance />
+        <OwnerWords market={q.market} />
         <Consent />
       </div>
     </form>
+  );
+}
+
+/** One owner's own words under the form (7 Nov 2026), from the owners section's quotes: a local owner for each market. */
+function OwnerWords({ market }) {
+  const o = OWNERS.find((x) => x.name === (market === 'ca' ? 'Colby' : 'Tom'));
+  if (!o) return null;
+  // the first sentence or two of their quote; the full quote is in the owners section below (no lookbehind: older iPhones would refuse the whole module)
+  const m = o.quote.match(market === 'ca' ? /^.*?[.!?…](?=\s|$)/ : /^.*?[.!?…]\s+.*?[.!?…](?=\s|$)/);
+  const words = m ? m[0] : o.quote;
+  return (
+    <p className="text-center text-[12.5px] leading-snug text-zinc-600">
+      “{words}” <span className="font-bold text-zinc-800">{o.name}</span>, {o.place}
+    </p>
   );
 }
 
