@@ -1028,7 +1028,7 @@ function Thanks() {
     q.answers.fit === 'finance'
       ? { t: 'Explore financing', d: `${M.lender.name}, on approved credit. Applying is optional; our specialist can go through it with you on the call.`, href: M.lender.href, cta: `Continue to ${M.lender.name}`, where: 'thanks_financing' }
       : stage === 'invoice'
-      ? { t: 'Want your spot now?', d: 'A US$250 deposit reserves a production spot and is applied in full to your order.', href: DEPOSIT_URL, cta: 'Reserve my spot', where: 'thanks_deposit' }
+      ? { t: 'Want your spot now?', d: 'A $250 deposit reserves a production spot and is applied in full to your order.', href: DEPOSIT_URL, cta: 'Reserve my spot', where: 'thanks_deposit' }
       : stage === 'research'
           ? { t: 'Starting your research?', d: 'The health inquiry package tells you what your city will ask for.', href: SPEC_SHEET, cta: 'Get the permit package (PDF)', where: 'thanks_permits' }
           : null;
@@ -1048,6 +1048,13 @@ function Thanks() {
         <div className="mt-5">
           <TimePicker leadId={r.id} calendar="discovery" fallbackUrl={booking} market={q.market} intent={q.intent} booked={q.booking} onBooked={q.setBooking} />
         </div>
+      ) : q.callSkipped ? (
+        <div className="mt-5">
+          <Walkthrough leadId={r.id} market={q.market} intent={q.intent} where="after_skip" eyebrow="Instead of the call" title="Watch the full 6-minute walkthrough" text="Every part of the Coffee Bike up close, from the espresso machine to the batteries and the canopy." />
+          <button type="button" onClick={() => q.setCallSkipped(false)} className="mt-3 text-sm font-bold text-zinc-700 underline underline-offset-2">
+            Changed your mind? Pick a time for the call
+          </button>
+        </div>
       ) : (
         <div className="mt-5 rounded-xl border-2 border-zinc-900 p-4">
           <p className="flex items-center gap-2 font-extrabold text-zinc-950"><Calendar className="h-5 w-5" aria-hidden /> One more option: book a 15-minute call</p>
@@ -1056,6 +1063,9 @@ function Thanks() {
           <div className="mt-3">
             <TimePicker leadId={r.id} calendar="discovery" fallbackUrl={booking} market={q.market} intent={q.intent} booked={q.booking} onBooked={q.setBooking} />
           </div>
+          <button type="button" onClick={q.skipCall} className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-zinc-200 px-4 py-3 text-center text-sm font-bold text-zinc-700 hover:border-zinc-400">
+            <PlayCircle className="h-5 w-5 flex-none" aria-hidden /> Skip the call and watch the 6-minute walkthrough instead
+          </button>
         </div>
       )}
 
@@ -1084,7 +1094,7 @@ function Thanks() {
           <FileText className="h-5 w-5 flex-none" /> Specs and health inquiry package (PDF)
         </a>
         {/* once booked, the walkthrough plays right under the booking (TimePicker), so no second link to it */}
-        {q.booking ? null : (
+        {q.booking || q.callSkipped ? null : (
           <a href="#walkthrough" onClick={() => q.setOpen(false)} className="flex items-center gap-3 rounded-xl border-2 border-zinc-200 px-4 py-3.5 font-bold text-zinc-900 hover:border-zinc-400">
             <PlayCircle className="h-5 w-5 flex-none" /> Watch the 6-minute walkthrough
           </a>
@@ -1412,7 +1422,7 @@ export function QuoteModal() {
   }, [q.open]);
   if (!q.open) return null;
   return (
-    <div className="fixed inset-0 z-[60] flex items-stretch justify-center bg-black/60 sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-label={q.wantsCall ? 'Book your 15-minute call' : 'Get your Coffee Bike price'} onClick={(e) => e.target === e.currentTarget && q.setOpen(false)}>
+    <div className="fixed inset-0 z-[60] flex items-stretch justify-center bg-black/60 sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-label={q.wantsCall ? 'Book your 15-minute call' : 'Get in touch'} onClick={(e) => e.target === e.currentTarget && q.setOpen(false)}>
       <div className="relative flex max-h-full w-full flex-col overflow-y-auto bg-white px-5 pb-8 pt-4 sm:max-h-[92vh] sm:max-w-[520px] sm:rounded-2xl sm:px-7 sm:pb-7" style={{ paddingTop: 'max(16px, env(safe-area-inset-top))' }}>
         <div className="mb-3 flex items-center justify-between">
           <span className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{q.wantsCall ? 'Book your 15-minute call' : q.variant === 'simple' ? 'Your price' : 'Almost done'}</span>
@@ -1443,29 +1453,29 @@ export function HeroQuestion() {
         </div>
       ) : null}
       {q.variant !== 'simple' ? (
-        <div className="cbw-steps"><HeroTiles /></div>
+        <div className="cbw-steps"><QuestionTiles /></div>
       ) : null}
     </>
   );
 }
 
 /** The first question right under the headline; answering opens the rest in the pop-up. */
-function HeroTiles() {
+export function QuestionTiles({ where = 'hero', intro = true }) {
   const q = useQuote();
   if (q.status === 'done') {
     return <div className="rounded-xl bg-emerald-50 p-4 font-semibold text-emerald-900">Thank you. Your request is in: our team member will be in touch within 1 business day or sooner.</div>;
   }
   if (q.step > 0) {
     return (
-      <button type="button" onClick={() => q.openQuote('hero_resume')} className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-4 text-lg font-extrabold text-white shadow-sm hover:brightness-110 sm:w-auto" style={{ backgroundColor: RED }}>
+      <button type="button" onClick={() => q.openQuote(`${where}_resume`)} className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-4 text-lg font-extrabold text-white shadow-sm hover:brightness-110 sm:w-auto" style={{ backgroundColor: RED }}>
         Continue to your {q.wantsCall ? 'call' : 'request'} · step {q.step + 1} of 5 <ArrowRight className="h-5 w-5" />
       </button>
     );
   }
   return (
     <div>
-      <p className="text-[15px] leading-snug text-zinc-800">See your custom build options and prices, the full specs PDF and the financing link. Fill in the quick step-by-step form below to get in touch.</p>
-      <p className="mt-2.5 text-[16px] font-extrabold leading-snug text-zinc-950">{QUESTIONS.use.title}</p>
+      {intro ? <p className="hidden text-[15px] leading-snug text-zinc-800 sm:block">See your custom build options and prices, the full specs PDF and the financing link. Fill in the quick step-by-step form below to get in touch.</p> : null}
+      <p className={`${intro ? 'sm:mt-2.5 ' : ''}text-[16px] font-extrabold leading-snug text-zinc-950`}>{QUESTIONS.use.title}</p>
       <div className="mt-2.5 grid grid-cols-2 gap-2">
         {QUESTIONS.use.options.slice(0, 4).map((o) => (
           <button
@@ -1473,7 +1483,7 @@ function HeroTiles() {
             type="button"
             onClick={() => {
               q.answer('use', o.v);
-              q.openQuote('hero_question');
+              q.openQuote(`${where}_question`);
             }}
             className="flex min-h-[64px] items-center justify-between gap-2 rounded-xl border-2 border-zinc-300 bg-white px-3 py-2.5 text-left text-[14px] font-bold leading-snug text-zinc-950 transition hover:border-[#E31E24] focus:outline-none focus-visible:ring-4 focus-visible:ring-red-200 sm:px-4 sm:text-[15px]"
           >
@@ -1482,6 +1492,8 @@ function HeroTiles() {
           </button>
         ))}
       </div>
+      {/* phones: the first question comes before this line, so it is on the first screen (10 Nov 2026) */}
+      {intro ? <p className="mt-2.5 text-[14px] font-semibold leading-snug text-zinc-800 sm:hidden">You get your custom build options and prices, the full specs PDF and the financing link.</p> : null}
       <p className="mt-2 text-[13px] text-zinc-600">About a minute. No payment, no obligation. Email, SMS and WhatsApp messages are sent right away, and our team member will be in touch within 1 business day or sooner.</p>
     </div>
   );

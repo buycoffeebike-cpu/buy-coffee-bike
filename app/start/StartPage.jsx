@@ -10,7 +10,7 @@ import {
   ADDRESS, ADS_TAG, BASE_PATH, DEPOSIT_URL, EMAIL, FEATURES, INCLUDED, INTENTS, LOGO, MARKETS, OWNERS, PHOTOS, PRICING,
   SPECS, TRUST, WALKTHROUGH_ID, faqs, steps, whatsappLink,
 } from './content';
-import { FinishBar, HeroQuestion, QuoteFullForm, QuoteModal, QuoteProvider, RED, useQuote } from './quote';
+import { FinishBar, HeroQuestion, QuestionTiles, QuoteModal, QuoteProvider, RED, useQuote } from './quote';
 
 const DISPLAY = { fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' };
 const BALANCE = { textWrap: 'balance' };
@@ -194,7 +194,7 @@ function Page({ intent, market }) {
         if (v && !seen) {
           seen = true;
           // the full form's views, against its submissions (generate_lead with form_variant "full")
-          track('full_form_view', { intent, market });
+          track('quote_section_view', { intent, market });
         }
       },
       { threshold: 0.15 },
@@ -243,7 +243,7 @@ function Page({ intent, market }) {
 
       {/* hero */}
       <section className="bg-[#F4F4F3]">
-        <div className="hero-grid mx-auto grid max-w-6xl gap-x-12 gap-y-4 px-4 pb-8 pt-6 sm:px-6 md:grid-cols-[1fr_1fr] md:pb-16 md:pt-14">
+        <div className="hero-grid mx-auto grid max-w-6xl gap-x-12 gap-y-3 px-4 pb-8 pt-4 sm:px-6 sm:gap-y-4 sm:pt-6 md:grid-cols-[1fr_1fr] md:pb-16 md:pt-14">
           <div className="md:col-start-1 md:row-start-1">
             <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{I.eyebrow}</p>
             <h1 className="mt-2 text-[2.15rem] font-extrabold leading-[1.02] tracking-tight text-zinc-950 md:text-[3.6rem]" style={{ ...DISPLAY, ...BALANCE }}>{I.h1}</h1>
@@ -251,8 +251,8 @@ function Page({ intent, market }) {
           </div>
           {/* hero-photo / hero-form (globals.css): for paid Google visitors the one-screen form takes this column on wide screens and the photo moves under the text, as in the approved design (21 Oct 2026) */}
           <div className="hero-photo relative md:col-start-2 md:row-span-3 md:row-start-1 md:self-start">
-            <div className="hero-photo-box relative aspect-square overflow-hidden rounded-2xl bg-zinc-200 md:aspect-square">
-              <Image src={PHOTOS.hero.src} alt={PHOTOS.hero.alt} fill priority sizes="(min-width: 768px) 50vw, 100vw" className="object-cover object-center" />
+            <div className="hero-photo-box relative aspect-[8/7] overflow-hidden rounded-2xl bg-zinc-200 md:aspect-square">
+              <Image src={PHOTOS.hero.src} alt={PHOTOS.hero.alt} fill priority sizes="(min-width: 768px) 50vw, 100vw" className="object-cover object-[50%_38%]" />
             </div>
             <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
               <span className="rounded-md bg-white/95 px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-zinc-900 shadow-sm">As seen on Dragons’ Den</span>
@@ -260,9 +260,9 @@ function Page({ intent, market }) {
           </div>
           <div className="md:col-start-1 md:row-start-2">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[14px] font-semibold text-zinc-800">
-              <span className="inline-flex items-center gap-1.5"><Users className="h-4 w-4" style={{ color: RED }} aria-hidden /> 49 bikes sold to 36 owners</span>
+              <span className="hidden items-center gap-1.5 sm:inline-flex"><Users className="h-4 w-4" style={{ color: RED }} aria-hidden /> 49 bikes sold to 36 owners</span>
               <span className="inline-flex items-center gap-1.5"><Check className="h-4 w-4" style={{ color: RED }} aria-hidden /> Custom branding, no franchise or any other obligations</span>
-              <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4" style={{ color: RED }} aria-hidden /> 1-year warranty</span>
+              <span className="hidden items-center gap-1.5 sm:inline-flex"><ShieldCheck className="h-4 w-4" style={{ color: RED }} aria-hidden /> 1-year warranty</span>
             </div>
             {/* paid Google visitors (variant A, local build 1 Nov 2026): the price card first, what most owners spend, and the monthly with
                 its term; everyone else the price line as before. Both in the HTML; globals.css shows one before the first paint and
@@ -323,6 +323,36 @@ function Page({ intent, market }) {
           </dl>
         </div>
       </section>
+
+      {/* owners */}
+      <Section id="owners" tone="dark">
+        <Heading dark eyebrow="Owners" title="49 bikes. 36 owners. Here are some of them." sub="First businesses, second careers, cafés and roasteries adding a mobile bar, and brands that take their coffee to the crowd. Several owners run two or three bikes." />
+        {/* the reviews as the main sales page shows them: each owner's own photo, then their words */}
+        <div className="-mx-4 mt-8 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:scroll-px-6 sm:px-6" onScroll={onOwnersScroll}>
+          {owners.map((o) => (
+            <figure key={o.name} className="flex w-[260px] flex-none snap-start flex-col overflow-hidden rounded-xl bg-zinc-900">
+              <div className="relative aspect-[4/5] bg-zinc-800">
+                <Image src={o.img} alt={`${o.name}, ${o.biz}`} fill sizes="260px" className="object-cover" />
+              </div>
+              <figcaption className="flex flex-1 flex-col p-4">
+                <div className="font-bold text-white">{o.name}</div>
+                <div className="text-sm text-zinc-400">{o.place} · {o.biz}</div>
+                <div className="mt-0.5 text-xs text-zinc-500">Owner for {o.months >= 12 ? `${Math.floor(o.months / 12)}+ year${o.months >= 24 ? 's' : ''}` : `${o.months} months`}</div>
+                <blockquote className="mt-3 text-[14px] italic leading-relaxed text-zinc-200">“{o.quote}”</blockquote>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+        <p className="mt-2 text-sm text-zinc-400">Swipe for more owners →</p>
+      </Section>
+
+      {/* walkthrough */}
+      <Section id="walkthrough">
+        <Heading eyebrow="See it" title="Walk around the bike in six minutes" sub="Every compartment, the espresso machine, the batteries and how it rides." />
+        <div className="relative mt-8 aspect-video overflow-hidden rounded-xl bg-zinc-900">
+          <LiteYouTube videoId={WALKTHROUGH_ID} title="Coffee Bike full walkthrough" trackingName="coffee_bike_walkthrough_start_page" caption="Full walkthrough · 6:32" />
+        </div>
+      </Section>
 
       {/* what you get */}
       <Section id="build" tone="soft">
@@ -401,7 +431,7 @@ function Page({ intent, market }) {
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {[
                 { icon: CreditCard, ...P.payment },
-                { icon: Calendar, t: 'Reserve with US$250', d: 'Holds a production spot and is applied in full to your order. Invoiced by Coffee Bike World, Vancouver, BC.', href: DEPOSIT_URL, cta: 'Reserve' },
+                { icon: Calendar, t: 'Reserve with $250', d: 'Holds a production spot and is applied in full to your order. Invoiced by Coffee Bike World, Vancouver, BC.', href: DEPOSIT_URL, cta: 'Reserve' },
               ].map(({ icon: Icon, t, d, href, cta }) => (
                 <div key={t} className="rounded-xl border border-zinc-200 p-4">
                   <Icon className="h-5 w-5" style={{ color: RED }} aria-hidden />
@@ -418,13 +448,13 @@ function Page({ intent, market }) {
         <FinancingBanner market={market} className="mt-6" cta={<PriceButton where="financing">Get in touch <ArrowRight className="h-5 w-5" /></PriceButton>} />
       </Section>
 
-      {/* the full form, every question visible (the price buttons open the step-by-step pop-up) */}
+      {/* the same first question as the hero; the pop-up carries the rest (10 Nov 2026: the full form here ran four phone screens) */}
       <section id="quote" ref={quoteRef} className="scroll-mt-14 bg-zinc-950 py-14 text-white md:py-20">
         <div className="mx-auto grid max-w-6xl items-start gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_minmax(0,600px)]">
           <div className="lg:sticky lg:top-24 lg:pt-6">
             <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>Get in touch</p>
             <h2 className="mt-2 text-3xl font-extrabold leading-tight md:text-5xl" style={{ ...DISPLAY, ...BALANCE }}>See your custom build options and prices</h2>
-            <p className="mt-3 text-lg text-zinc-300">Fill in the quick form and we send you the builder with every option and its price, the full specs PDF and the financing link. Email, SMS and WhatsApp messages are sent right away, and our team member will be in touch within 1 business day or sooner.</p>
+            <p className="mt-3 text-lg text-zinc-300">Answer four quick questions, add your contact details, and we send you the builder with every option and its price, the full specs PDF and the financing link. Email, SMS and WhatsApp messages are sent right away, and our team member will be in touch within 1 business day or sooner.</p>
             <ul className="mt-6 space-y-3 text-[15px] leading-relaxed text-zinc-300">
               {['You choose your build in the builder; your price follows from the options you pick.', 'Nothing is charged until you approve an invoice.', 'Opening for spring? Current lead time is around 8 to 10 weeks, so account for that and an extra 1–2 months to establish your business once you receive your Coffee Bike. A start-up does not happen overnight, so plan accordingly and order sooner rather than later.'].map((x) => (
                 <li key={x} className="flex gap-3"><Check className="mt-1 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
@@ -432,40 +462,10 @@ function Page({ intent, market }) {
             </ul>
           </div>
           <div className="w-full rounded-2xl bg-white p-5 text-zinc-900 shadow-xl sm:p-7">
-            <QuoteFullForm />
+            <QuestionTiles where="section" intro={false} />
           </div>
         </div>
       </section>
-
-      {/* owners */}
-      <Section id="owners" tone="dark">
-        <Heading dark eyebrow="Owners" title="49 bikes. 36 owners. Here are some of them." sub="First businesses, second careers, cafés and roasteries adding a mobile bar, and brands that take their coffee to the crowd. Several owners run two or three bikes." />
-        {/* the reviews as the main sales page shows them: each owner's own photo, then their words */}
-        <div className="-mx-4 mt-8 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:scroll-px-6 sm:px-6" onScroll={onOwnersScroll}>
-          {owners.map((o) => (
-            <figure key={o.name} className="flex w-[260px] flex-none snap-start flex-col overflow-hidden rounded-xl bg-zinc-900">
-              <div className="relative aspect-[4/5] bg-zinc-800">
-                <Image src={o.img} alt={`${o.name}, ${o.biz}`} fill sizes="260px" className="object-cover" />
-              </div>
-              <figcaption className="flex flex-1 flex-col p-4">
-                <div className="font-bold text-white">{o.name}</div>
-                <div className="text-sm text-zinc-400">{o.place} · {o.biz}</div>
-                <div className="mt-0.5 text-xs text-zinc-500">Owner for {o.months >= 12 ? `${Math.floor(o.months / 12)}+ year${o.months >= 24 ? 's' : ''}` : `${o.months} months`}</div>
-                <blockquote className="mt-3 text-[14px] italic leading-relaxed text-zinc-200">“{o.quote}”</blockquote>
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-        <p className="mt-2 text-sm text-zinc-400">Swipe for more owners →</p>
-      </Section>
-
-      {/* walkthrough */}
-      <Section id="walkthrough">
-        <Heading eyebrow="See it" title="Walk around the bike in six minutes" sub="Every compartment, the espresso machine, the batteries and how it rides." />
-        <div className="relative mt-8 aspect-video overflow-hidden rounded-xl bg-zinc-900">
-          <LiteYouTube videoId={WALKTHROUGH_ID} title="Coffee Bike full walkthrough" trackingName="coffee_bike_walkthrough_start_page" caption="Full walkthrough · 6:32" />
-        </div>
-      </Section>
 
       {/* founder */}
       <Section id="founder">
