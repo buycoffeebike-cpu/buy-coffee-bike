@@ -8,15 +8,12 @@ const UsCartSection = dynamic(() => import('./UsCartSection'));
 import { VARIANTS, ownersFirst } from './buyVariants';
 import FinancingBanner, { FINANCING } from './FinancingBanner';
 import CallGate from './CallGate';
+import InquiryForm from './InquiryForm';
 import { FinishBar, QuoteProvider } from '../app/start/quote';
 import { ChevronDown, ChevronLeft, ChevronRight, Edit2, Check, Info, Lock, Search, Leaf, Globe, Clock, Award, Mail, MapPin, Play, TrendingUp, DollarSign, Calendar, Users, Zap, Coffee, Star, ArrowRight, Sparkles, ZoomIn, X, Eye } from 'lucide-react';
 
 /** WhatsApp Business number connected to GoHighLevel: chats land straight in the CRM. Offered as WhatsApp only. */
 const WHATSAPP_NUMBER = '17786558631';
-// Device clocks of the +1 countries (US, Canada, the Caribbean members of the North American plan, Bermuda, Guam); the
-// same list as the OS's scripts/_ghl_form_clock.ts for the WordPress forms. Mexico and the rest of the Americas have
-// their own codes and are left out on purpose.
-const PLUS_ONE_ZONES = new RegExp('^(America[/](New_York|Detroit|Kentucky[/].*|Indiana[/].*|Chicago|Menominee|North_Dakota[/].*|Denver|Boise|Phoenix|Los_Angeles|Anchorage|Juneau|Sitka|Metlakatla|Yakutat|Nome|Adak|Toronto|Vancouver|Edmonton|Winnipeg|Halifax|St_Johns|Regina|Montreal|Moncton|Glace_Bay|Goose_Bay|Whitehorse|Dawson|Dawson_Creek|Fort_Nelson|Creston|Yellowknife|Inuvik|Iqaluit|Rankin_Inlet|Resolute|Cambridge_Bay|Swift_Current|Atikokan|Blanc-Sablon|Nipigon|Thunder_Bay|Rainy_River|Pangnirtung|Puerto_Rico|Jamaica|Nassau|Santo_Domingo|Port_of_Spain|Barbados|St_Thomas|Tortola|Grand_Turk|Cayman|Antigua|Anguilla|St_Kitts|Dominica|Grenada|St_Lucia|St_Vincent|Montserrat|Virgin)|Pacific[/](Honolulu|Guam|Saipan)|Atlantic[/]Bermuda|US[/].*|Canada[/].*)$');
 const WHATSAPP_GREEN = '#25D366';
 function WhatsAppIcon({ className = '', style }) {
   return (
@@ -31,6 +28,8 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
   const variant = variantKey ? VARIANTS[variantKey] : null;
   const [currency, setCurrency] = useState('USD');
   const [isGetInTouchOpen, setIsGetInTouchOpen] = useState(false);
+  // which pop-up form was opened last (call, build, touch): the "Finish my request" bar reopens that one
+  const lastFormRef = useRef('call');
   const [basePackage, setBasePackage] = useState(null);
   const [baseCustomInquiry, setBaseCustomInquiry] = useState('');
   const [setup, setSetup] = useState(null);
@@ -68,14 +67,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
   const [flashStep, setFlashStep] = useState(null);
   const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
   const [inConfigurator, setInConfigurator] = useState(false);
-  // The GoHighLevel forms (Save My Build, Get In Touch) guess the visitor's country from their IP and refuse a North
-  // American number typed from anywhere else (13 Oct 2026: "it forces a 0 at the start"). A phone box that opens with
-  // "+1 " is read as +1 whatever the guess, so the forms get that prefill when the device clock is in a +1 country
-  // (US, Canada, the Caribbean members of the North American plan; Mexico and the rest of the Americas have their own
-  // codes). A visitor in London or Mexico City keeps GoHighLevel's own guess, which is right for them.
-  const [plusOne, setPlusOne] = useState(false);
   useEffect(() => {
-    try { setPlusOne(PLUS_ONE_ZONES.test(Intl.DateTimeFormat().resolvedOptions().timeZone || '')); } catch {}
     // the page's own code is running: the layout may now load the tag libraries (7 Nov 2026)
     window.__cbwReady = 1;
     window.dispatchEvent(new Event('cbw:ready'));
@@ -92,6 +84,12 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
       if (!variant && /^America\/(Toronto|Vancouver|Edmonton|Winnipeg|Halifax|St_Johns|Regina|Montreal|Moncton|Glace_Bay|Goose_Bay|Whitehorse|Dawson|Dawson_Creek|Fort_Nelson|Creston|Yellowknife|Inuvik|Iqaluit|Rankin_Inlet|Resolute|Cambridge_Bay|Swift_Current|Atikokan|Blanc-Sablon|Nipigon|Thunder_Bay|Rainy_River|Pangnirtung)$/.test(tz)) setCurrency('CAD');
     } catch {}
   }, []);
+
+  useEffect(() => {
+    if (scheduleModalOpen) lastFormRef.current = 'call';
+    else if (inquiryModalOpen) lastFormRef.current = 'build';
+    else if (isGetInTouchOpen) lastFormRef.current = 'touch';
+  }, [scheduleModalOpen, inquiryModalOpen, isGetInTouchOpen]);
 
   const advancedRef = useRef({ step1: false, step2: false, step3: false, step4: false });
 
@@ -128,13 +126,13 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
   }, []);
 
   useEffect(() => {
-    if (!inquiryModalOpen && !scheduleModalOpen && !isGetInTouchOpen) return;    if (document.getElementById('ghl-form-embed-script')) return;
+    if (!scheduleModalOpen) return;    if (document.getElementById('ghl-form-embed-script')) return;
     const s = document.createElement('script');
     s.id = 'ghl-form-embed-script';
     s.src = 'https://link.coffeebike.ca/js/form_embed.js';
     s.async = true;
     document.body.appendChild(s);
-  }, [inquiryModalOpen, scheduleModalOpen, isGetInTouchOpen]);
+  }, [scheduleModalOpen]);
   useEffect(() => {
     if (inquiryModalOpen || scheduleModalOpen || depositModalOpen || financingModalOpen || pressModalOpen) {
       const y = window.scrollY;
@@ -370,13 +368,6 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
     return code;
   }, [basePackage, setup, ulCertifiedMap, color, colorInput, pantoneInput, addOns, extraBatteryType, support, total, currency]);
 
-  const iframeUrl = useMemo(() => {
-    const baseUrl = `https://link.coffeebike.ca/widget/form/xnay3GGsJKCfqhvw55Yx${plusOne ? '?phone=%2B1%20' : ''}`;
-    const body = [buildSummary && basePackage ? buildSummary : '', financingInterest ? `Financing interest: ${financingInterest}, on approved credit` : ''].filter(Boolean).join('\n');
-    if (!body) return baseUrl;
-    return `${baseUrl}${plusOne ? '&' : '?'}coffee_bike_build=${encodeURIComponent(body)}`;
-  }, [buildSummary, basePackage, plusOne, financingInterest]);
-  const getInTouchUrl = `https://link.coffeebike.ca/widget/form/xnay3GGsJKCfqhvw55Yx${plusOne ? '?phone=%2B1%20' : ''}`;
 
   const bookingUrl = useMemo(() => {
     const baseUrl = 'https://link.coffeebike.ca/widget/booking/RdfoeipljDAc8l0StvxS';
@@ -414,7 +405,13 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
   // the quote questions inside "Schedule a Call": Canadian dollars = the Canadian form (financing), everyone else = US
   const quoteMarket = variantKey === 'us' ? 'us' : currency === 'CAD' ? 'ca' : 'us';
   // the configured build travels with the quote request (CRM note + lead email) instead of the calendar form
-  const quoteExtra = useMemo(() => ({ build: buildSummary || undefined }), [buildSummary]);
+  // the configured build and the financing interest go with every request from this page, as they did in the old Save
+  // My Build form (Vlad, 10 Nov 2026: "submit my build as well, and it should record the build")
+  const quoteExtra = useMemo(() => {
+    const build = [buildSummary && basePackage ? buildSummary : '', financingInterest ? `Financing interest: ${financingInterest}, on approved credit` : ''].filter(Boolean).join('\n');
+    // the OS takes up to 2,000 characters; a longer build must never block the request
+    return { build: build ? build.slice(0, 1990) : undefined };
+  }, [buildSummary, basePackage, financingInterest]);
   const openDeposit = () => { setBuildCopied(false); setPaymentStarted(false); setDepositModalOpen(true); };
   const openFinancing = () => { setFinancingAmountCopied(false); setFinancingCountry(variantKey === 'us' ? 'us' : currency === 'CAD' ? 'ca' : 'us'); setFinancingModalOpen(true); };
 
@@ -794,7 +791,8 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
   return (
     <QuoteProvider market={quoteMarket} intent="buy-page" extra={quoteExtra}>
     {/* typed their details in the call form and closed it: one tap back (11 Oct 2026) */}
-    <FinishBar hidden={scheduleModalOpen || inConfigurator} onFinish={() => setScheduleModalOpen(true)} />
+    {/* typed their details into one of the page's forms and closed it: one tap back to that same form */}
+    <FinishBar hidden={scheduleModalOpen || inquiryModalOpen || isGetInTouchOpen || inConfigurator} onFinish={() => (lastFormRef.current === 'build' ? setInquiryModalOpen(true) : lastFormRef.current === 'touch' ? setIsGetInTouchOpen(true) : setScheduleModalOpen(true))} />
     <div className="min-h-screen bg-white font-sans text-zinc-900 pb-20 sm:pb-0">
       {zoomImg && (
         <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-6 cursor-zoom-out" onClick={() => setZoomImg(null)}>
@@ -843,8 +841,8 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
     </div>
   </div>
 )}
-<div className="modal-embed flex-1 min-h-0 overflow-hidden bg-white px-3 sm:px-5 pb-4">
-  <iframe src={iframeUrl} style={{ width: '100%', height: '100%', border: 'none', borderRadius: 0, display: 'block' }} scrolling="yes" id="inline-xnay3GGsJKCfqhvw55Yx" title="Save My Build"></iframe>
+<div className="flex-1 min-h-0 overflow-y-auto bg-white px-5 py-5 sm:px-6">
+  <InquiryForm onClose={() => setInquiryModalOpen(false)} />
 </div>
 </div>
 </div>
@@ -1633,8 +1631,8 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
         </button>
       </div>
 
-      <div className="modal-embed h-[78dvh] overflow-hidden bg-white">
-        <iframe src={getInTouchUrl} style={{ width: '100%', height: '100%', border: 'none', borderRadius: '0px' }} scrolling="yes" id="inline-xnay3GGsJKCfqhvw55Yx" data-layout="{'id':'INLINE'}" data-trigger-type="alwaysShow" data-trigger-value="" data-activation-type="alwaysActivated" data-activation-value="" data-deactivation-type="neverDeactivate" data-deactivation-value="" data-form-name="Save My Build" data-height="1423" data-layout-iframe-id="inline-xnay3GGsJKCfqhvw55Yx" data-form-id="xnay3GGsJKCfqhvw55Yx" title="Save My Build" />
+      <div className="max-h-[calc(92dvh-90px)] overflow-y-auto bg-white px-5 py-5 sm:px-6" style={{ overscrollBehavior: 'contain' }}>
+        <InquiryForm onClose={() => setIsGetInTouchOpen(false)} />
       </div>
     </div>
   </div>
