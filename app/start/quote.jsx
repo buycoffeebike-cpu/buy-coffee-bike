@@ -143,14 +143,11 @@ export function postLeadEvent(leadId, event, where) {
  * the step-by-step one. Meta and organic visitors see nothing new. The layout's inline script makes the same call
  * before the page paints, so the hero never swaps forms in front of the visitor.
  */
-const PAID_MEDIUM = /^(cpc|ppc|paid|paidsearch|paid_search|paid-search)$/i;
 export function simpleVariant() {
   try {
-    const f = new URLSearchParams(window.location.search).get('form');
-    if (f === 'simple') return true;
-    if (f === 'steps') return false;
-    const a = readAttribution();
-    return Boolean(a.click.gclid || a.click.gbraid || a.click.wbraid || (/^google$/i.test(a.utm.source || '') && PAID_MEDIUM.test(a.utm.medium || '')));
+    // Paid Google visitors get the step-by-step flow again (Vlad, 10 Nov 2026): with the one-screen form 202 clicks made
+    // 1 lead, against 8 from 401 in October on the steps. The one-screen form stays reachable with ?form=simple.
+    return new URLSearchParams(window.location.search).get('form') === 'simple';
   } catch {
     return false;
   }
@@ -566,7 +563,7 @@ export function QuoteFlow({ where = 'inline' }) {
   };
   const blur = (k) => () => setBlurred((b) => ({ ...b, [k]: true }));
   const suggestion = emailFix(q.contact.email);
-  const title = key === 'fit' ? M.fitQuestion : key === 'contact' ? (q.wantsCall ? 'Who should we expect on the call?' : 'Where should we send the details?') : QUESTIONS[key].title;
+  const title = key === 'fit' ? M.fitQuestion : key === 'contact' ? (q.wantsCall ? 'Who should we expect on the call?' : 'Where should we send your price breakdown and builder link?') : QUESTIONS[key].title;
 
   return (
     <div className="text-left">
@@ -965,7 +962,7 @@ export function QuoteFullForm() {
         <p className="mb-3 rounded-xl bg-zinc-100 p-4 text-[15px] leading-relaxed text-zinc-800">{M.fitLine}</p>
         <Tiles name={M.fitQuestion} options={M.fit} value={q.answers.fit} onPick={(v) => pick('fit', v)} />
       </Question>
-      <Question n={5} innerRef={refs.contact} flash={flash === 'contact'} title="Where should we send the details?" data-contact="">
+      <Question n={5} innerRef={refs.contact} flash={flash === 'contact'} title="Where should we send your price breakdown and builder link?" data-contact="">
         <div className="grid gap-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Full name" error={show('name')} data-field="name">
@@ -1042,7 +1039,7 @@ function Thanks() {
       <h3 className="mt-4 text-2xl font-extrabold leading-tight text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>
         Thank you{r.first ? `, ${r.first}` : ''}. {q.booking ? 'Your call is booked.' : q.wantsCall ? 'Now pick your time.' : 'Your request is in.'}
       </h3>
-      <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">{q.booking ? 'We’ll come to the call with your price and build options ready.' : q.wantsCall ? 'Your answers are in. Choose a time below and we’ll come to the call with your price and build options.' : 'Our team gets back to you within one business day to answer your questions and go over your options.'}</p>
+      <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">{q.booking ? 'We’ll come to the call with your price and build options ready.' : q.wantsCall ? 'Your answers are in. Choose a time below and we’ll come to the call with your price and build options.' : 'Your price breakdown, builder link, specs PDF and financing options are on their way by email. Our team gets back to you within one business day to answer your questions.'}</p>
 
       {/* the call comes first: 8 of 9 buyers planned their build on one (Vlad, 7 Oct 2026). Once booked, the booking and
           the walkthrough stand on their own, full width, so the video starts as high on a phone as it can (13 Oct 2026) */}
@@ -1472,7 +1469,14 @@ function HeroTiles() {
   }
   return (
     <div>
-      <p className="text-[15px] font-bold leading-snug text-zinc-950">Price, shipping to your city and financing, on approved credit: we go through it all with you. What are you planning?</p>
+      {/* what they get for answering (Vlad, 10 Nov 2026): the welcome email and the thank-you screen carry all four */}
+      <p className="text-[15px] font-bold leading-snug text-zinc-950">Answer 4 quick questions and we send you:</p>
+      <ul className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1 text-[13px] font-semibold leading-snug text-zinc-800">
+        {['Your price breakdown', 'Your own builder link', 'The full specs PDF', `Financing options in ${q.market === 'ca' ? 'Canada' : 'the US'}`].map((x) => (
+          <li key={x} className="flex gap-1.5"><Check className="mt-0.5 h-3.5 w-3.5 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
+        ))}
+      </ul>
+      <p className="mt-3 text-[15px] font-bold leading-snug text-zinc-950">What are you planning?</p>
       <div className="mt-2.5 grid grid-cols-2 gap-2">
         {QUESTIONS.use.options.slice(0, 4).map((o) => (
           <button
@@ -1489,7 +1493,10 @@ function HeroTiles() {
           </button>
         ))}
       </div>
-      <p className="mt-2 text-[13px] text-zinc-600">About a minute. No payment, no obligation. We reply within one business day.</p>
+      <p className="mt-2 text-[13px] text-zinc-600">About a minute. No payment, no obligation. Financing on approved credit.</p>
+      <button type="button" onClick={() => q.openQuote('hero_get_in_touch', { call: true })} className="mt-2 inline-flex items-center gap-1 text-[14px] font-bold text-zinc-950 underline underline-offset-4 hover:text-[#E31E24]">
+        Or get in touch: talk to our team <ArrowRight className="h-4 w-4" />
+      </button>
     </div>
   );
 }
