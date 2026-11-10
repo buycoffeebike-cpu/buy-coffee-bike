@@ -1493,7 +1493,8 @@ export function QuestionTiles({ where = 'hero', intro = true }) {
         ))}
       </div>
       {/* phones: the first question comes before this line, so it is on the first screen (10 Nov 2026) */}
-      {intro ? <p className="mt-2.5 text-[14px] font-semibold leading-snug text-zinc-800 sm:hidden">You get your custom build options and prices, the full specs PDF and the financing link.</p> : null}
+      {intro ? <p className="mt-2.5 flex gap-2 text-[14px] font-semibold leading-snug text-zinc-800 sm:hidden"><Check className="mt-0.5 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />Custom branding, no franchise or any other obligations</p> : null}
+      {intro ? <p className="mt-2 text-[14px] font-semibold leading-snug text-zinc-800 sm:hidden">You get your custom build options and prices, the full specs PDF and the financing link.</p> : null}
       <p className="mt-2 text-[13px] text-zinc-600">About a minute. No payment, no obligation. Email, SMS and WhatsApp messages are sent right away, and our team member will be in touch within 1 business day or sooner.</p>
     </div>
   );

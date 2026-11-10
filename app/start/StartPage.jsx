@@ -172,7 +172,7 @@ function Page({ intent, market }) {
         timer = setInterval(() => {
           if (!ownersAuto.current || document.hidden) return stop();
           ownersStep(1);
-        }, 4000);
+        }, 7000);
       }
     }, { threshold: 0.5 });
     io.observe(el);
@@ -295,7 +295,8 @@ function Page({ intent, market }) {
             </div>
           </div>
           <div className="md:col-start-1 md:row-start-2">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[14px] font-semibold text-zinc-800">
+            {/* phones (10 Nov 2026): the proof line sits under the tiles and the price block is two short lines, so the first question is on the first screen even with the browser bar showing */}
+            <div className="hidden flex-wrap items-center gap-x-4 gap-y-1.5 text-[14px] font-semibold text-zinc-800 sm:flex">
               <span className="hidden items-center gap-1.5 sm:inline-flex"><Users className="h-4 w-4" style={{ color: RED }} aria-hidden /> 49 bikes sold to 36 owners</span>
               <span className="inline-flex items-center gap-1.5"><Check className="h-4 w-4" style={{ color: RED }} aria-hidden /> Custom branding, no franchise or any other obligations</span>
               <span className="hidden items-center gap-1.5 sm:inline-flex"><ShieldCheck className="h-4 w-4" style={{ color: RED }} aria-hidden /> 1-year warranty</span>
@@ -305,11 +306,13 @@ function Page({ intent, market }) {
                 React keeps one once it knows, as HeroQuestion does */}
             {q.variant !== 'simple' ? (
               <div className="cbw-steps">
-                <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 sm:mt-3">
                   <span className="text-[26px] font-extrabold leading-none text-zinc-950" style={DISPLAY}>{M.heroPrice}</span>
-                  <span className="text-[15px] text-zinc-600">{M.heroPriceNote}</span>
+                  <span className="hidden text-[15px] text-zinc-600 sm:inline">{M.heroPriceNote}</span>
+                  <span className="text-[14px] text-zinc-600 sm:hidden">before tax and shipping</span>
                 </div>
-                <p className="mt-1.5 text-[15px] font-semibold text-zinc-800">{M.financingNote}</p>
+                <p className="mt-1.5 hidden text-[15px] font-semibold text-zinc-800 sm:block">{M.financingNote}</p>
+                <p className="mt-1 text-[13.5px] font-semibold leading-snug text-zinc-800 sm:hidden">{FINANCING[market].short}</p>
               </div>
             ) : null}
             {q.variant !== 'steps' ? (
