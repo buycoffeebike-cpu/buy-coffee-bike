@@ -586,6 +586,13 @@ export function QuoteFlow({ where = 'inline' }) {
       <h3 ref={headRef} tabIndex={-1} className="mt-5 text-[22px] font-extrabold leading-tight text-zinc-950 focus:outline-none" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif', textWrap: 'balance' }}>
         {title}
       </h3>
+      {key === 'contact' && !q.wantsCall ? (
+        <ul className="mt-2.5 grid gap-1 text-[14px] font-semibold leading-snug text-zinc-800">
+          {['Your price breakdown and your own builder link', 'The full specs PDF', `Financing options in ${q.market === 'ca' ? 'Canada' : 'the US'}, on approved credit`, 'A team member to answer your questions'].map((x) => (
+            <li key={x} className="flex gap-2"><Check className="mt-0.5 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
+          ))}
+        </ul>
+      ) : null}
 
       <div className="mt-4">
         {key === 'use' || key === 'stage' ? <Tiles name={title} options={QUESTIONS[key].options} value={q.answers[key]} onPick={(v) => q.answer(key, v)} /> : null}
@@ -770,7 +777,7 @@ function PhoneCode({ where }) {
   );
 }
 
-function SendButton({ label = 'Get my price' }) {
+function SendButton({ label = 'Get in touch' }) {
   const q = useQuote();
   return (
     <button type="submit" disabled={q.status === 'sending'} className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-4 text-lg font-extrabold text-white shadow-sm transition hover:brightness-110 disabled:opacity-70" style={{ backgroundColor: RED }}>
@@ -1469,14 +1476,7 @@ function HeroTiles() {
   }
   return (
     <div>
-      {/* what they get for answering (Vlad, 10 Nov 2026): the welcome email and the thank-you screen carry all four */}
-      <p className="text-[15px] font-bold leading-snug text-zinc-950">Answer 4 quick questions and we send you:</p>
-      <ul className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1 text-[13px] font-semibold leading-snug text-zinc-800">
-        {['Your price breakdown', 'Your own builder link', 'The full specs PDF', `Financing options in ${q.market === 'ca' ? 'Canada' : 'the US'}`].map((x) => (
-          <li key={x} className="flex gap-1.5"><Check className="mt-0.5 h-3.5 w-3.5 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
-        ))}
-      </ul>
-      <p className="mt-3 text-[15px] font-bold leading-snug text-zinc-950">What are you planning?</p>
+      <p className="text-[15px] font-bold leading-snug text-zinc-950">Get your price breakdown, your own builder link, the specs PDF and financing options, on approved credit. What are you planning?</p>
       <div className="mt-2.5 grid grid-cols-2 gap-2">
         {QUESTIONS.use.options.slice(0, 4).map((o) => (
           <button
@@ -1493,10 +1493,7 @@ function HeroTiles() {
           </button>
         ))}
       </div>
-      <p className="mt-2 text-[13px] text-zinc-600">About a minute. No payment, no obligation. Financing on approved credit.</p>
-      <button type="button" onClick={() => q.openQuote('hero_get_in_touch', { call: true })} className="mt-2 inline-flex items-center gap-1 text-[14px] font-bold text-zinc-950 underline underline-offset-4 hover:text-[#E31E24]">
-        Or get in touch: talk to our team <ArrowRight className="h-4 w-4" />
-      </button>
+      <p className="mt-2 text-[13px] text-zinc-600">About a minute. No payment, no obligation. We reply within one business day.</p>
     </div>
   );
 }

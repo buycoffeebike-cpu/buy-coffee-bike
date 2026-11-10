@@ -267,8 +267,8 @@ function Page({ intent, market }) {
           </div>
           {/* hero-photo / hero-form (globals.css): for paid Google visitors the one-screen form takes this column on wide screens and the photo moves under the text, as in the approved design (21 Oct 2026) */}
           <div className="hero-photo relative md:col-start-2 md:row-span-3 md:row-start-1 md:self-start">
-            <div className="hero-photo-box relative aspect-[4/3] overflow-hidden rounded-2xl bg-zinc-200 md:aspect-[4/5]">
-              <Image src={PHOTOS.hero.src} alt={PHOTOS.hero.alt} fill priority sizes="(min-width: 768px) 50vw, 100vw" className="object-cover object-[50%_42%] md:object-[50%_50%]" />
+            <div className="hero-photo-box relative aspect-square overflow-hidden rounded-2xl bg-zinc-200 md:aspect-square">
+              <Image src={PHOTOS.hero.src} alt={PHOTOS.hero.alt} fill priority sizes="(min-width: 768px) 50vw, 100vw" className="object-cover object-center" />
             </div>
             <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
               <span className="rounded-md bg-white/95 px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-zinc-900 shadow-sm">As seen on Dragons’ Den</span>

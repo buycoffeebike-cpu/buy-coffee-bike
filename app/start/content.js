@@ -9,7 +9,8 @@ export const HERO = IMG('2026/05/open-ready.jpg.jpg');
 // Coffee Bike Vol. 2 only (founder, 29 Sept 2026): the founder with the red bike, the bike in the city and indoors,
 // and the three studio sides. Every photo appears once (the founder photo was the indoor shot reframed).
 export const PHOTOS = {
-  hero: { src: IMG("2025/05/Coffee-Bike-Vlad-Header-scaled.jpeg"), w: 1707, h: 2560, alt: "Vlad Priadko, founder of Coffee Bike World, with a red Coffee Bike espresso bar open for service" },
+  // the hero shows the whole bike (Vlad, 10 Nov 2026: "where Coffee Bike is shown better"): the studio customer-side photo
+  hero: { src: IMG("2025/05/Coffee-Bike-Customer-Side-scaled.jpg"), w: 2560, h: 2499, alt: "Coffee Bike Vol. 2: a red espresso bar on an electric cargo bike, canopy open, Espresso Bar sign up" },
   founder: { src: IMG("2025/05/IMG_3409-scaled.jpeg"), w: 2560, h: 1707, alt: "Vlad Priadko, founder of Coffee Bike World, beside an open red Coffee Bike in downtown Vancouver" },
   boardwalk: { src: IMG("2025/05/Coffee-Bike-Vol.-2-1-scaled.jpg"), w: 1920, h: 2560, alt: "A red Coffee Bike open for service on a waterfront boardwalk" },
   indoors: { src: IMG("2025/05/IMG_3403-scaled.jpeg"), w: 1707, h: 2560, alt: "A red Coffee Bike riding indoors, closed for the move" },
