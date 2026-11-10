@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, Calendar, Check, ChevronDown, Coffee, CreditCard, Mail, MapPin, ShieldCheck, Users, ZoomIn } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, Check, ChevronDown, Coffee, CreditCard, Mail, MapPin, ShieldCheck, Users, ZoomIn } from 'lucide-react';
 import LiteYouTube from '../../components/LiteYouTube';
 import FinancingBanner, { FINANCING } from '../../components/FinancingBanner';
 import {
@@ -138,11 +138,47 @@ function Page({ intent, market }) {
     return [...OWNERS].sort((a, b) => Number(!local(a.place)) - Number(!local(b.place)));
   }, [market]);
   const ownersSeen = useRef(false);
-  const onOwnersScroll = () => {
+  // the owners row (10 Nov 2026): arrows that move exactly one owner, and a slow advance of its own while the row is on
+  // screen. The first touch, wheel or arrow press hands the row to the visitor for good; reduced-motion visitors get no auto move
+  const ownersRow = useRef(null);
+  const ownersAuto = useRef(true);
+  const ownersTouched = () => {
+    ownersAuto.current = false;
     if (ownersSeen.current) return;
     ownersSeen.current = true;
     track('owners_more', { intent, market });
   };
+  const ownersStep = (dir) => {
+    const el = ownersRow.current;
+    if (!el || !el.firstElementChild) return;
+    const step = el.firstElementChild.getBoundingClientRect().width + 16;
+    const max = el.scrollWidth - el.clientWidth;
+    // whole frames only: the next (or previous) owner's left edge, wrapping at either end
+    let left;
+    if (dir > 0 && el.scrollLeft >= max - 4) left = 0;
+    else if (dir < 0 && el.scrollLeft <= 4) left = max;
+    else left = Math.min(max, Math.max(0, (Math.round(el.scrollLeft / step) + dir) * step));
+    el.scrollTo({ left, behavior: 'smooth' });
+  };
+  useEffect(() => {
+    const el = ownersRow.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return undefined;
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined;
+    let timer = null;
+    const stop = () => { if (timer) { clearInterval(timer); timer = null; } };
+    const io = new IntersectionObserver(([e]) => {
+      stop();
+      if (e.isIntersecting && ownersAuto.current) {
+        timer = setInterval(() => {
+          if (!ownersAuto.current || document.hidden) return stop();
+          ownersStep(1);
+        }, 4000);
+      }
+    }, { threshold: 0.5 });
+    io.observe(el);
+    return () => { stop(); io.disconnect(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const featuresSeen = useRef(false);
   const onFeaturesScroll = () => {
     if (featuresSeen.current) return;
@@ -328,7 +364,8 @@ function Page({ intent, market }) {
       <Section id="owners" tone="dark">
         <Heading dark eyebrow="Owners" title="49 bikes. 36 owners. Here are some of them." sub="First businesses, second careers, cafés and roasteries adding a mobile bar, and brands that take their coffee to the crowd. Several owners run two or three bikes." />
         {/* the reviews as the main sales page shows them: each owner's own photo, then their words */}
-        <div className="-mx-4 mt-8 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:scroll-px-6 sm:px-6" onScroll={onOwnersScroll}>
+        <div className="relative">
+        <div ref={ownersRow} className="-mx-4 mt-8 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:-mx-6 sm:scroll-px-6 sm:px-6 [&::-webkit-scrollbar]:hidden" onTouchStart={ownersTouched} onPointerDown={ownersTouched} onWheel={ownersTouched}>
           {owners.map((o) => (
             <figure key={o.name} className="flex w-[260px] flex-none snap-start flex-col overflow-hidden rounded-xl bg-zinc-900">
               <div className="relative aspect-[4/5] bg-zinc-800">
@@ -343,7 +380,14 @@ function Page({ intent, market }) {
             </figure>
           ))}
         </div>
-        <p className="mt-2 text-sm text-zinc-400">Swipe for more owners →</p>
+          <button type="button" aria-label="Previous owner" onClick={() => { ownersTouched(); ownersStep(-1); }} className="absolute left-0 top-[172px] flex h-11 w-11 -translate-x-1 items-center justify-center rounded-full bg-white text-zinc-950 shadow-lg ring-1 ring-black/10 hover:bg-zinc-100 sm:-translate-x-3">
+            <ArrowLeft className="h-5 w-5" aria-hidden />
+          </button>
+          <button type="button" aria-label="Next owner" onClick={() => { ownersTouched(); ownersStep(1); }} className="absolute right-0 top-[172px] flex h-11 w-11 translate-x-1 items-center justify-center rounded-full bg-white text-zinc-950 shadow-lg ring-1 ring-black/10 hover:bg-zinc-100 sm:translate-x-3">
+            <ArrowRight className="h-5 w-5" aria-hidden />
+          </button>
+        </div>
+        <p className="mt-3 text-sm text-zinc-400">{owners.length} owners. Use the arrows or swipe.</p>
       </Section>
 
       {/* walkthrough */}
