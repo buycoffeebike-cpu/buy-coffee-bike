@@ -2,13 +2,13 @@
 
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { ArrowRight, BatteryCharging, Calendar, Check, ChevronDown, Clock, Coffee, CreditCard, Droplets, FileText, Info, Mail, MapPin, ShieldCheck, Snowflake, Sun, Users, ZoomIn } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowRight, Calendar, Check, ChevronDown, Coffee, CreditCard, Mail, MapPin, ShieldCheck, Users, ZoomIn } from 'lucide-react';
 import LiteYouTube from '../../components/LiteYouTube';
 import FinancingBanner, { FINANCING } from '../../components/FinancingBanner';
 import {
-  ADDRESS, ADS_TAG, BASE_PATH, COMPARE_COLS, DEPOSIT_URL, EMAIL, FEATURES, INCLUDED, INTENTS, LOGO, MARKETS, OWNERS, PHOTOS, PRICING,
-  SPEC_SHEET, SPECS, TRUST, WALKTHROUGH_ID, compareRows, faqs, steps, whatsappLink,
+  ADDRESS, ADS_TAG, BASE_PATH, DEPOSIT_URL, EMAIL, FEATURES, INCLUDED, INTENTS, LOGO, MARKETS, OWNERS, PHOTOS, PRICING,
+  SPECS, TRUST, WALKTHROUGH_ID, faqs, steps, whatsappLink,
 } from './content';
 import { FinishBar, HeroQuestion, QuoteFullForm, QuoteModal, QuoteProvider, RED, useQuote } from './quote';
 
@@ -98,16 +98,6 @@ function Photo({ photo, caption, onOpen, sizes, imgClassName = 'object-cover', s
   );
 }
 
-/** Every "book a call" button: the four questions first, then the calendar, so a booking is a lead with its answers (founder, 3 Oct 2026). */
-function CallButton({ where, className = '', style, children }) {
-  const q = useQuote();
-  return (
-    <button type="button" onClick={() => q.openQuote(where, { call: true })} className={className} style={style}>
-      {children}
-    </button>
-  );
-}
-
 export default function StartPage({ intent = 'bike', market = 'us' }) {
   return (
     <QuoteProvider market={market} intent={intent}>
@@ -122,9 +112,6 @@ function Page({ intent, market }) {
   const M = MARKETS[market];
   const P = PRICING[market];
   const q = useQuote();
-  const [vs, setVs] = useState(I.compare);
-  // phones get the three rows that matter most (cost, running costs, moving it); the rest on request
-  const [allRows, setAllRows] = useState(false);
   const [allFaq, setAllFaq] = useState(false);
   const [sticky, setSticky] = useState(false);
   // the photo open full screen, if any
@@ -144,7 +131,6 @@ function Page({ intent, market }) {
   }, [market, intent]);
   const quoteRef = useRef(null);
   const quoteInView = useRef(false);
-  const rows = useMemo(() => compareRows(market), [market]);
   // local owners first: Canadian provinces on the Canadian page, US states on the US page
   const owners = useMemo(() => {
     const ca = (p) => /, (BC|AB|SK|MB|ON|QC|NB|NS|PE|NL|YT|NT|NU)$/.test(p);
@@ -226,8 +212,6 @@ function Page({ intent, market }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, [q.variant]);
 
-  const vsCol = COMPARE_COLS.find((c) => c.key === vs) ?? COMPARE_COLS[1];
-  const compareTitle = { truck: 'a coffee truck', trailer: 'a coffee trailer', cart: 'a coffee cart', cafe: 'a storefront café' }[I.compare] ?? 'a coffee truck';
   return (
     <div className="bg-white text-zinc-900 antialiased">
       {/* header: no way off the page except the footer; WhatsApp one tap away */}
@@ -238,14 +222,14 @@ function Page({ intent, market }) {
             <Image src={LOGO} alt="Coffee Bike" width={50} height={32} quality={90} loading="eager" className="h-8 w-auto" />
           </a>
           <div className="flex items-center gap-1 sm:gap-5">
-            <a href={whatsappLink(market)} target="_blank" rel="noopener" onClick={() => track('whatsapp_click', { where: 'header', intent, market })} className="inline-flex items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold text-zinc-300 hover:text-white" aria-label="Message us on WhatsApp">
+            <a href={whatsappLink(market)} target="_blank" rel="noopener" onClick={(e) => { const g = document.documentElement.getAttribute('data-cbw-paid') === 'google'; if (g) e.currentTarget.href = whatsappLink(market, 'google'); track('whatsapp_click', { where: 'header', intent, market, source: g ? 'google_ad' : 'other' }); }} className="inline-flex items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold text-zinc-300 hover:text-white" aria-label="Message us on WhatsApp">
               <WhatsAppIcon className="h-5 w-5" />
               <span className="text-[13px] md:text-sm">WhatsApp</span>
             </a>
             <a href="#price" className="hidden text-sm font-semibold text-zinc-300 hover:text-white sm:inline">Pricing</a>
             <a href="#owners" className="hidden text-sm font-semibold text-zinc-300 hover:text-white sm:inline">Owners</a>
             <button type="button" onClick={() => q.openQuote('header')} className="rounded-md px-4 py-2 text-sm font-extrabold uppercase tracking-wide text-white hover:brightness-110" style={{ backgroundColor: RED }}>
-              {q.variant === 'simple' ? 'Get the price' : 'Get my price'}
+              Get in touch
             </button>
           </div>
         </div>
@@ -277,7 +261,7 @@ function Page({ intent, market }) {
           <div className="md:col-start-1 md:row-start-2">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[14px] font-semibold text-zinc-800">
               <span className="inline-flex items-center gap-1.5"><Users className="h-4 w-4" style={{ color: RED }} aria-hidden /> 49 bikes sold to 36 owners</span>
-              <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4" style={{ color: RED }} aria-hidden /> {M.ownersIn}</span>
+              <span className="inline-flex items-center gap-1.5"><Check className="h-4 w-4" style={{ color: RED }} aria-hidden /> Custom branding, no franchise or any other obligations</span>
               <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4" style={{ color: RED }} aria-hidden /> 1-year warranty</span>
             </div>
             {/* paid Google visitors (variant A, local build 1 Nov 2026): the price card first, what most owners spend, and the monthly with
@@ -319,9 +303,6 @@ function Page({ intent, market }) {
               </dl>
             ) : null}
             <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1">
-              <CallButton where="hero_call" className="inline-flex items-center gap-2 py-1 text-[15px] font-bold text-zinc-800 underline underline-offset-4">
-                <Calendar className="h-4 w-4" aria-hidden /> Prefer to talk? Book a 15-minute call
-              </CallButton>
               <a href="#walkthrough" onClick={() => track('cta_click', { where: 'hero_video', intent, market })} className="inline-flex items-center gap-2 py-1 text-[15px] font-bold text-zinc-800 underline underline-offset-4">
                 Watch the 6-minute walkthrough
               </a>
@@ -342,59 +323,6 @@ function Page({ intent, market }) {
           </dl>
         </div>
       </section>
-
-      {/* comparison (cbw-lean: off the Google page, variant A, 1 Nov 2026: price, what you get, the form, owners, the walkthrough and the FAQ stay) */}
-      <Section id="compare" className="cbw-lean">
-        <Heading eyebrow="Before you buy" title={intent === 'bike' || intent === 'compare' ? 'How a Coffee Bike compares' : `A Coffee Bike or ${compareTitle}?`} sub="What it takes to start and run each way of selling coffee on the move." />
-        <div className="mt-8 md:hidden">
-          <div className="flex flex-wrap gap-2" role="tablist" aria-label="Compare the Coffee Bike with">
-            {COMPARE_COLS.filter((c) => c.key !== 'bike').map((c) => (
-              <button key={c.key} role="tab" aria-selected={vs === c.key} onClick={() => { setVs(c.key); track('compare_switch', { to: c.key, intent, market }); }} className={`rounded-full border px-3.5 py-2 text-sm font-semibold ${vs === c.key ? 'border-zinc-900 bg-zinc-900 text-white' : 'border-zinc-300 bg-white text-zinc-700'}`}>
-                {c.label}
-              </button>
-            ))}
-          </div>
-          <div className="mt-4 divide-y divide-zinc-200 rounded-xl border border-zinc-200">
-            {(allRows ? rows : rows.slice(0, 3)).map((r) => (
-              <div key={r.label} className="grid gap-2 p-4">
-                <div className="text-xs font-bold uppercase tracking-wider text-zinc-500">{r.label}</div>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="rounded-md bg-red-50 p-2.5"><div className="text-[11px] font-bold uppercase" style={{ color: RED }}>Coffee Bike</div><div className="mt-0.5 font-semibold text-zinc-900">{r.bike}</div></div>
-                  <div className="rounded-md bg-zinc-50 p-2.5"><div className="text-[11px] font-bold uppercase text-zinc-500">{vsCol.label}</div><div className="mt-0.5 text-zinc-700">{r[vs]}</div></div>
-                </div>
-              </div>
-            ))}
-          </div>
-          {!allRows ? (
-            <button type="button" onClick={() => { setAllRows(true); track('compare_more', { intent, market }); }} className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-zinc-800 underline underline-offset-4">
-              Show all {rows.length} differences <ChevronDown className="h-4 w-4" aria-hidden />
-            </button>
-          ) : null}
-        </div>
-        <div className="mt-10 hidden overflow-x-auto rounded-xl border border-zinc-200 md:block">
-          <table className="w-full min-w-[860px] border-collapse text-left text-sm">
-            <thead>
-              <tr className="bg-zinc-50">
-                <th className="w-44 p-4" />
-                {COMPARE_COLS.map((c) => (
-                  <th key={c.key} className={`p-4 text-sm font-bold ${c.key === 'bike' ? 'text-white' : c.key === I.compare ? 'text-zinc-950' : 'text-zinc-600'}`} style={c.key === 'bike' ? { backgroundColor: RED } : undefined}>{c.label}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.label} className="border-t border-zinc-200 align-top">
-                  <th scope="row" className="p-4 text-xs font-bold uppercase tracking-wider text-zinc-500">{r.label}</th>
-                  {COMPARE_COLS.map((c) => (
-                    <td key={c.key} className={`p-4 ${c.key === 'bike' ? 'bg-red-50 font-semibold text-zinc-950' : c.key === I.compare ? 'bg-zinc-50 text-zinc-800' : 'text-zinc-600'}`}>{r[c.key]}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <PriceButton where="compare" className="mt-8 w-full sm:w-auto">Get my price <ArrowRight className="h-5 w-5" /></PriceButton>
-      </Section>
 
       {/* what you get */}
       <Section id="build" tone="soft">
@@ -437,9 +365,6 @@ function Page({ intent, market }) {
             ))}
           </ul>
         </div>
-        <a href={SPEC_SHEET} target="_blank" rel="noopener" onClick={() => track('spec_sheet', { where: 'build', intent, market })} className="mt-6 inline-flex items-center gap-2 py-2 font-semibold text-zinc-800 underline underline-offset-4">
-          <FileText className="h-5 w-5" /> Specs and health inquiry package (PDF)
-        </a>
       </Section>
 
       {/* price */}
@@ -457,7 +382,8 @@ function Page({ intent, market }) {
                 <li key={x} className="flex gap-3"><Check className="mt-0.5 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
               ))}
             </ul>
-            <PriceButton where="price" className="mt-7 w-full">Get my exact price <ArrowRight className="h-5 w-5" /></PriceButton>
+            <p className="mt-4 text-[15px] leading-snug text-zinc-300">Layout customizations are possible upon request.</p>
+            <PriceButton where="price" className="mt-6 w-full">Get in touch <ArrowRight className="h-5 w-5" /></PriceButton>
           </div>
           <div>
             <h3 className="text-lg font-extrabold text-zinc-950">What changes the price</h3>
@@ -489,31 +415,21 @@ function Page({ intent, market }) {
             </div>
           </div>
         </div>
-        <FinancingBanner market={market} className="mt-6" cta={<PriceButton where="financing">Get my price <ArrowRight className="h-5 w-5" /></PriceButton>} />
+        <FinancingBanner market={market} className="mt-6" cta={<PriceButton where="financing">Get in touch <ArrowRight className="h-5 w-5" /></PriceButton>} />
       </Section>
 
       {/* the full form, every question visible (the price buttons open the step-by-step pop-up) */}
       <section id="quote" ref={quoteRef} className="scroll-mt-14 bg-zinc-950 py-14 text-white md:py-20">
         <div className="mx-auto grid max-w-6xl items-start gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_minmax(0,600px)]">
           <div className="lg:sticky lg:top-24 lg:pt-6">
-            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>Your price</p>
-            <h2 className="mt-2 text-3xl font-extrabold leading-tight md:text-5xl" style={{ ...DISPLAY, ...BALANCE }}>Get your price and build options</h2>
-            <p className="mt-3 text-lg text-zinc-300">{q.variant === 'simple' ? 'Your mobile and email, and the price and builder link are on their way.' : 'Four quick questions and where to send your price, all in one form.'} We reply within one business day with pricing for your build.</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>Get in touch</p>
+            <h2 className="mt-2 text-3xl font-extrabold leading-tight md:text-5xl" style={{ ...DISPLAY, ...BALANCE }}>See your custom build options and prices</h2>
+            <p className="mt-3 text-lg text-zinc-300">Fill in the quick form and we send you the builder with every option and its price, the full specs PDF and the financing link. Email, SMS and WhatsApp messages are sent right away, and our team member will be in touch within 1 business day or sooner.</p>
             <ul className="mt-6 space-y-3 text-[15px] leading-relaxed text-zinc-300">
-              {['A short call to plan your setup, branding and add-ons. No pressure.', 'Nothing is charged until you approve an invoice.', 'Opening for spring? Permits often take 60–90 days, so owners order in winter and apply while the bike is built.'].map((x) => (
+              {['You choose your build in the builder; your price follows from the options you pick.', 'Nothing is charged until you approve an invoice.', 'Opening for spring? Current lead time is around 8 to 10 weeks, so account for that and an extra 1–2 months to establish your business once you receive your Coffee Bike. A start-up does not happen overnight, so plan accordingly and order sooner rather than later.'].map((x) => (
                 <li key={x} className="flex gap-3"><Check className="mt-1 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
               ))}
             </ul>
-            <div className="mt-8 grid gap-3 sm:grid-cols-2">
-              <CallButton where="book_call" className="block w-full rounded-xl border border-zinc-700 p-4 text-left hover:border-zinc-400">
-                <div className="flex items-center gap-2 font-bold"><Calendar className="h-4 w-4" aria-hidden /> Prefer to talk first?</div>
-                <div className="mt-1 text-sm text-zinc-400">Book a discovery call →</div>
-              </CallButton>
-              <a href={whatsappLink(market)} target="_blank" rel="noopener" onClick={() => track('whatsapp_click', { where: 'quote', intent, market })} className="block rounded-xl border border-zinc-700 p-4 hover:border-zinc-400">
-                <div className="flex items-center gap-2 font-bold"><WhatsAppIcon className="h-4 w-4" /> Message us on WhatsApp</div>
-                <div className="mt-1 text-sm text-zinc-400">Straight to our team →</div>
-              </a>
-            </div>
           </div>
           <div className="w-full rounded-2xl bg-white p-5 text-zinc-900 shadow-xl sm:p-7">
             <QuoteFullForm />
@@ -551,48 +467,8 @@ function Page({ intent, market }) {
         </div>
       </Section>
 
-      <div className="cbw-lean"><DayAndWhere onOpen={openPhoto} /></div>
-
-      {/* seasons */}
-      <Section id="seasons" tone="soft" className="cbw-lean">
-        <div className="grid gap-10 lg:grid-cols-[1fr_0.8fr] lg:items-center">
-          <div>
-            <Heading eyebrow="All year" title="A business for all four seasons" sub={market === 'ca' ? 'The first question Canadians ask. Here is how owners answer it.' : 'The most common question from the northern US and Canada. Here is how owners answer it.'} />
-            <div className="mt-8 grid gap-4">
-              {[
-                { icon: Sun, t: 'Spring to fall', d: 'Farmers markets, festivals, sports games, weddings and private events.' },
-                { icon: Snowflake, t: 'Winter, indoors', d: 'Office lobbies, hospitals, campuses, residential towers, grocery stores and gyms. Landlords need no build-out: the bike rolls in, plugs into a standard outlet and serves.' },
-              ].map(({ icon: Icon, t, d }) => (
-                <div key={t} className="flex gap-4 rounded-xl bg-white p-5">
-                  <Icon className="mt-0.5 h-6 w-6 flex-none" style={{ color: RED }} aria-hidden />
-                  <div>
-                    <h3 className="text-lg font-bold text-zinc-950">{t}</h3>
-                    <p className="mt-1 leading-relaxed text-zinc-600">{d}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <Photo photo={PHOTOS.indoors} onOpen={openPhoto} sizes="(min-width: 1024px) 40vw, 100vw" imgClassName="object-cover object-[50%_60%]" className="aspect-square rounded-2xl bg-zinc-200" />
-        </div>
-      </Section>
-
-      {/* how buying works */}
-      <Section id="how" tone="soft" className="cbw-lean">
-        <Heading eyebrow="How buying works" title="From your first message to your first customer" />
-        <ol className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-          {steps(market).map((s, i) => (
-            <li key={s.t} className="rounded-xl bg-white p-6">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-extrabold text-white" style={{ backgroundColor: RED }}>{i + 1}</div>
-              <h3 className="mt-4 text-lg font-bold text-zinc-950">{s.t}</h3>
-              <p className="mt-1.5 leading-relaxed text-zinc-600">{s.d}</p>
-            </li>
-          ))}
-        </ol>
-      </Section>
-
       {/* founder */}
-      <Section id="founder" className="cbw-lean">
+      <Section id="founder">
         <div className="grid items-center gap-10 md:grid-cols-[1.1fr_1fr]">
           {/* the whole 3:2 photo: the founder and the open bike side by side */}
           <Photo photo={PHOTOS.founder} onOpen={openPhoto} sizes="(min-width: 1152px) 580px, (min-width: 768px) 52vw, 100vw" className="aspect-[3/2] rounded-xl bg-zinc-200" />
@@ -606,8 +482,6 @@ function Page({ intent, market }) {
           </div>
         </div>
       </Section>
-
-      <div className="cbw-lean"><Numbers intent={intent} market={market} /></div>
 
       {/* questions */}
       <Section id="faq">
@@ -634,10 +508,10 @@ function Page({ intent, market }) {
       <section className="bg-black py-14 text-white">
         <div className="mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 sm:px-6 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-3xl font-extrabold md:text-4xl" style={{ ...DISPLAY, ...BALANCE }}>See what your Coffee Bike would cost</h2>
+            <h2 className="text-3xl font-extrabold md:text-4xl" style={{ ...DISPLAY, ...BALANCE }}>See your custom build options and prices</h2>
             <p className="mt-2 text-zinc-400">{M.heroPrice} {M.heroPriceNote}. {M.financingNote}</p>
           </div>
-          <PriceButton where="footer" className="w-full md:w-auto">Get my price <ArrowRight className="h-5 w-5" /></PriceButton>
+          <PriceButton where="footer" className="w-full md:w-auto">Get in touch <ArrowRight className="h-5 w-5" /></PriceButton>
         </div>
       </section>
 
@@ -647,7 +521,6 @@ function Page({ intent, market }) {
             <div className="font-bold text-zinc-200">Coffee Bike World</div>
             <div className="flex items-start gap-2"><MapPin className="mt-0.5 h-4 w-4 flex-none" aria-hidden />{ADDRESS}</div>
             <div className="flex flex-wrap gap-x-5 gap-y-2">
-              <a href={whatsappLink(market)} target="_blank" rel="noopener" onClick={() => track('whatsapp_click', { where: 'footer', intent, market })} className="inline-flex items-center gap-2 hover:text-white"><WhatsAppIcon className="h-4 w-4" />WhatsApp</a>
               <a href={`mailto:${EMAIL}`} className="inline-flex items-center gap-2 hover:text-white"><Mail className="h-4 w-4" aria-hidden />{EMAIL}</a>
             </div>
           </div>
@@ -667,175 +540,12 @@ function Page({ intent, market }) {
             <div className="font-extrabold text-zinc-950">{M.sticky.v}{q.variant === 'simple' ? <span className="font-semibold text-zinc-600"> · {M.stickyMonthly}</span> : null}</div>
           </div>
           <button type="button" onClick={() => q.openQuote('sticky')} className="flex-1 rounded-xl px-4 py-3 text-center font-extrabold text-white" style={{ backgroundColor: RED }}>
-            {q.status === 'done' ? 'Request sent ✓' : q.variant !== 'simple' && q.step > 0 ? `Continue · step ${q.step + 1} of 5` : q.variant === 'simple' ? 'Get the price' : 'Get my price'}
+            {q.status === 'done' ? 'Request sent ✓' : q.variant !== 'simple' && q.step > 0 ? `Continue · step ${q.step + 1} of 5` : 'Get in touch'}
           </button>
         </div>
       </div>
       <FinishBar />
       {zoom ? <Lightbox photo={zoom} onClose={closePhoto} /> : null}
-    </div>
-  );
-}
-
-/**
- * Day-to-day running, what the bike can do and where owners sell (together 42% of the questions buyers send us).
- * General advice only: the page never promises venues, events or customers (a business-opportunity claim).
- */
-function DayAndWhere({ onOpen }) {
-  const day = [
-    { icon: Clock, t: 'Open in minutes', d: 'Ride in, open the canopy, start the machine: propane outdoors, a standard outlet indoors.' },
-    { icon: Coffee, t: 'Keeps up with a line', d: 'About 60–100 drinks an hour, depending on your menu and barista.' },
-    { icon: Droplets, t: 'Water on board', d: '50 L fresh, 60 L waste, hot and cold on demand.' },
-    { icon: BatteryCharging, t: 'Power and storage', d: 'Batteries, a 2,000 W inverter and a solar roof; overnight in a garage or partner venue with an outlet.' },
-  ];
-  const where = ['Farmers markets', 'Weddings and private events', 'Office lobbies', 'Campuses and hospitals', 'Sports games', 'Brand launches', 'Partner venues'];
-  return (
-    <Section id="day">
-      <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
-        <div>
-          <Heading eyebrow="Day to day" title="A day with a Coffee Bike" />
-          <dl className="mt-6 grid gap-4">
-            {day.map(({ icon: Icon, t, d }) => (
-              <div key={t} className="flex gap-3.5">
-                <Icon className="mt-0.5 h-5 w-5 flex-none" style={{ color: RED }} aria-hidden />
-                <div>
-                  <dt className="font-bold text-zinc-950">{t}</dt>
-                  <dd className="text-[15px] leading-relaxed text-zinc-600">{d}</dd>
-                </div>
-              </div>
-            ))}
-          </dl>
-          <h3 className="mt-8 font-bold text-zinc-950">Where owners sell</h3>
-          <ul className="mt-2.5 flex flex-wrap gap-2">
-            {where.map((x) => (
-              <li key={x} className="inline-flex items-center gap-1.5 rounded-full bg-[#F4F4F3] px-3 py-1.5 text-sm font-semibold text-zinc-900"><MapPin className="h-3.5 w-3.5 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
-            ))}
-          </ul>
-          <p className="mt-3 text-sm text-zinc-500">Your permits decide where you can vend, so every city is different.</p>
-        </div>
-        <Photo photo={PHOTOS.boardwalk} onOpen={onOpen} sizes="(min-width: 1024px) 45vw, 100vw" imgClassName="object-cover object-[50%_45%]" className="aspect-[4/3] rounded-2xl bg-zinc-200" />
-      </div>
-    </Section>
-  );
-}
-
-/**
- * The main sales page's earnings calculator (the founder prefers it, 29 Sept 2026): the same sliders, starting values,
- * cost-of-goods rates and results, in the visitor's currency, with payback against the typical build for their market.
- * The sales page's owner-earnings box stays off this page (an income claim); the fine print says what the estimate
- * leaves out.
- */
-function Numbers({ intent, market }) {
-  const cur = market === 'ca' ? 'CA$' : 'US$';
-  const build = market === 'ca' ? 22500 : 15850;
-  const [mode, setMode] = useState('retail');
-  const [cups, setCups] = useState(50);
-  const [cupPrice, setCupPrice] = useState(5.5);
-  const [days, setDays] = useState(18);
-  const [events, setEvents] = useState(4);
-  const [fee, setFee] = useState(900);
-  const used = useRef(false);
-  const touch = () => {
-    if (!used.current) {
-      used.current = true;
-      track('calculator_use', { intent, market });
-    }
-  };
-  const set = (fn) => (v) => {
-    touch();
-    fn(v);
-  };
-  const r = useMemo(() => {
-    const retail = mode === 'retail';
-    const revenue = retail ? cups * cupPrice * days : events * fee;
-    const cogs = revenue * (retail ? 0.25 : 0.15);
-    const net = revenue - cogs;
-    // as on the sales page: 11 selling months a year for daily sales, 12 for catering
-    return { revenue, cogs, net, annual: net * (retail ? 11 : 12), payback: build / net };
-  }, [mode, cups, cupPrice, days, events, fee, build]);
-  const money = (n) => `${cur}${Math.round(n).toLocaleString('en-US')}`;
-  const cents = (n) => `${cur}${n.toFixed(2)}`;
-  return (
-    <Section id="numbers" tone="soft">
-      <Heading eyebrow="Run the numbers" title="Coffee cart business calculator" sub="Move the sliders to match your market. The starting values are examples, not typical owner results." />
-      <div className="mt-8 overflow-hidden rounded-2xl border border-zinc-200 bg-white">
-        <div className="grid grid-cols-2 border-b border-zinc-200" role="tablist" aria-label="Estimate from">
-          {[
-            { k: 'retail', icon: Coffee, t: 'Daily cup sales' },
-            { k: 'catering', icon: Calendar, t: 'Catering & events' },
-          ].map(({ k, icon: Icon, t }) => (
-            <button key={k} type="button" role="tab" aria-selected={mode === k} onClick={() => { touch(); setMode(k); }} className={`flex items-center justify-center gap-2 px-2 py-4 text-[13px] font-extrabold uppercase tracking-wide transition sm:text-sm ${mode === k ? 'text-white' : 'bg-white text-zinc-600 hover:bg-zinc-50'}`} style={mode === k ? { backgroundColor: RED } : undefined}>
-              <Icon className="hidden h-4 w-4 flex-none sm:block" aria-hidden /> {t}
-            </button>
-          ))}
-        </div>
-        <div className="flex flex-col lg:flex-row">
-          <div className="grid flex-1 content-start gap-6 p-5 sm:p-8">
-            {mode === 'retail' ? (
-              <>
-                <Slider label="Cups sold per day" value={cups} onChange={set(setCups)} min={20} max={250} format={(v) => `${v} cups`} hint="Example: 60–120 cups a day at a busy spot" />
-                <Slider label="Average price per cup" value={cupPrice} onChange={set(setCupPrice)} min={3} max={10} step={0.5} format={cents} hint={`Example: ${cur}5–7 for specialty coffee`} />
-                <Slider label="Working days per month" value={days} onChange={set(setDays)} min={8} max={28} format={(v) => `${v} days`} hint="Example: 18–22 days a month for a full-time schedule" />
-              </>
-            ) : (
-              <>
-                <Slider label="Catering events per month" value={events} onChange={set(setEvents)} min={1} max={20} format={(v) => `${v} event${v === 1 ? '' : 's'}`} hint="Example: 4–10 events a month" />
-                <Slider label="Average fee per event (pre-paid)" value={fee} onChange={set(setFee)} min={300} max={3500} step={50} format={money} hint={`Example: ${cur}800–1,800 for a 2–3-hour event`} />
-              </>
-            )}
-            <p className="flex gap-3 rounded-xl bg-red-50 p-4 text-xs leading-relaxed text-zinc-700">
-              <Info className="h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />
-              <span>
-                <strong className="text-zinc-950">Estimates only, based on the numbers you enter.</strong> Not typical owner results or a promise of income. The amounts leave out your pay, staff, permits, insurance, site or event fees, maintenance and taxes; cost of goods is assumed at {mode === 'retail' ? '25% for specialty coffee retail' : '15% for pre-paid catering'}.
-              </span>
-            </p>
-          </div>
-          <div className="bg-zinc-950 p-6 text-white sm:p-8 lg:w-[40%]">
-            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>Your estimate</p>
-            <h3 className="mt-1 text-2xl font-extrabold" style={DISPLAY}>Based on your numbers</h3>
-            <dl className="mt-5">
-              <Result label="Monthly revenue" value={money(r.revenue)} />
-              <Result label="Assumed cost of goods" value={`− ${money(r.cogs)}`} muted />
-              <Result label="Left after cost of goods, per month" value={money(r.net)} big className="mt-2 border-t border-zinc-700 pt-4" />
-              <Result label={mode === 'retail' ? 'Over a year (11 selling months)' : 'Over a year (12 months)'} value={money(r.annual)} />
-            </dl>
-            <div className="mt-6 rounded-xl border p-4" style={{ borderColor: RED, backgroundColor: 'rgba(227,30,36,0.15)' }}>
-              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: RED }}>Build cost comparison</p>
-              <p className="mt-1 text-3xl font-extrabold tabular-nums" style={DISPLAY}>{r.payback < 1 ? '< 1' : Math.ceil(r.payback)} months</p>
-              <p className="text-xs text-zinc-400">of this monthly amount to equal a {money(build)} starting build (your quote may differ), before your other costs</p>
-            </div>
-            <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-4">
-              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: RED }}>Check your numbers with the founder</p>
-              <p className="mt-1 text-xs leading-snug text-zinc-300">Walk through equipment, pricing and your assumptions on a 15-minute call.</p>
-              <CallButton where="calculator_call" className="mt-3 block w-full rounded-lg px-4 py-2.5 text-center text-xs font-extrabold uppercase tracking-wide text-white hover:brightness-110" style={{ backgroundColor: RED }}>Book a 15-minute call</CallButton>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Section>
-  );
-}
-
-function Slider({ label, value, onChange, min, max, step = 1, format, hint }) {
-  const id = useId();
-  return (
-    <div>
-      <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-        <label htmlFor={id} className="text-[15px] font-semibold text-zinc-800">{label}</label>
-        <output htmlFor={id} className="text-lg font-extrabold tabular-nums" style={{ color: RED }}>{format(value)}</output>
-      </div>
-      <input id={id} type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} className="mt-1 h-8 w-full cursor-pointer" style={{ accentColor: RED }} />
-      <div className="flex justify-between text-[11px] text-zinc-400"><span>{format(min)}</span><span>{format(max)}</span></div>
-      {hint ? <p className="mt-1 text-xs text-zinc-500">{hint}</p> : null}
-    </div>
-  );
-}
-
-function Result({ label, value, big = false, muted = false, className = '' }) {
-  return (
-    <div className={`flex items-baseline justify-between gap-3 py-2 ${className}`}>
-      <dt className={`text-sm ${muted ? 'text-zinc-500' : 'text-zinc-300'}`}>{label}</dt>
-      <dd className={`font-extrabold tabular-nums ${big ? 'text-2xl' : 'text-base'} ${muted ? 'text-zinc-500' : 'text-white'}`}>{value}</dd>
     </div>
   );
 }

@@ -42,7 +42,7 @@ function seasonOptions(now = new Date()) {
 
 const QUESTIONS = {
   use: {
-    title: 'What are you planning?',
+    title: 'What are you planning to use your Coffee Bike for?',
     options: [
       { v: 'new_business', t: 'Start a mobile coffee business', short: 'Start my own coffee business', d: 'A side business or a full-time one' },
       { v: 'expansion', t: 'Add a mobile bar to my café or roastery', short: 'Add to my café or roastery' },
@@ -563,7 +563,7 @@ export function QuoteFlow({ where = 'inline' }) {
   };
   const blur = (k) => () => setBlurred((b) => ({ ...b, [k]: true }));
   const suggestion = emailFix(q.contact.email);
-  const title = key === 'fit' ? M.fitQuestion : key === 'contact' ? (q.wantsCall ? 'Who should we expect on the call?' : 'Where should we send your price breakdown and builder link?') : QUESTIONS[key].title;
+  const title = key === 'fit' ? M.fitQuestion : key === 'contact' ? (q.wantsCall ? 'Who should we expect on the call?' : 'Where should we send your custom build options and prices, the full specs PDF and the financing link?') : QUESTIONS[key].title;
 
   return (
     <div className="text-left">
@@ -587,11 +587,7 @@ export function QuoteFlow({ where = 'inline' }) {
         {title}
       </h3>
       {key === 'contact' && !q.wantsCall ? (
-        <ul className="mt-2.5 grid gap-1 text-[14px] font-semibold leading-snug text-zinc-800">
-          {['Your price breakdown and your own builder link', 'The full specs PDF', `Financing options in ${q.market === 'ca' ? 'Canada' : 'the US'}, on approved credit`, 'A team member to answer your questions'].map((x) => (
-            <li key={x} className="flex gap-2"><Check className="mt-0.5 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
-          ))}
-        </ul>
+        <p className="mt-2 text-[14px] leading-snug text-zinc-700">Email, SMS and WhatsApp messages are sent right away, and our team member will be in touch within 1 business day or sooner. You choose your build in the builder; your price follows from the options you pick.</p>
       ) : null}
 
       <div className="mt-4">
@@ -969,7 +965,7 @@ export function QuoteFullForm() {
         <p className="mb-3 rounded-xl bg-zinc-100 p-4 text-[15px] leading-relaxed text-zinc-800">{M.fitLine}</p>
         <Tiles name={M.fitQuestion} options={M.fit} value={q.answers.fit} onPick={(v) => pick('fit', v)} />
       </Question>
-      <Question n={5} innerRef={refs.contact} flash={flash === 'contact'} title="Where should we send your price breakdown and builder link?" data-contact="">
+      <Question n={5} innerRef={refs.contact} flash={flash === 'contact'} title="Where should we send your custom build options and prices, the full specs PDF and the financing link?" data-contact="">
         <div className="grid gap-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Full name" error={show('name')} data-field="name">
@@ -1033,9 +1029,7 @@ function Thanks() {
       ? { t: 'Explore financing', d: `${M.lender.name}, on approved credit. Applying is optional; our specialist can go through it with you on the call.`, href: M.lender.href, cta: `Continue to ${M.lender.name}`, where: 'thanks_financing' }
       : stage === 'invoice'
       ? { t: 'Want your spot now?', d: 'A US$250 deposit reserves a production spot and is applied in full to your order.', href: DEPOSIT_URL, cta: 'Reserve my spot', where: 'thanks_deposit' }
-      : stage === 'comparing'
-        ? { t: 'Comparing options?', d: 'See the bike next to a truck, trailer, cart and storefront, side by side.', href: '#compare', cta: 'Open the comparison', where: 'thanks_compare', close: true }
-        : stage === 'research'
+      : stage === 'research'
           ? { t: 'Starting your research?', d: 'The health inquiry package tells you what your city will ask for.', href: SPEC_SHEET, cta: 'Get the permit package (PDF)', where: 'thanks_permits' }
           : null;
   return (
@@ -1046,7 +1040,7 @@ function Thanks() {
       <h3 className="mt-4 text-2xl font-extrabold leading-tight text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>
         Thank you{r.first ? `, ${r.first}` : ''}. {q.booking ? 'Your call is booked.' : q.wantsCall ? 'Now pick your time.' : 'Your request is in.'}
       </h3>
-      <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">{q.booking ? 'We’ll come to the call with your price and build options ready.' : q.wantsCall ? 'Your answers are in. Choose a time below and we’ll come to the call with your price and build options.' : 'Your price breakdown, builder link, specs PDF and financing options are on their way by email. Our team gets back to you within one business day to answer your questions.'}</p>
+      <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">{q.booking ? 'We’ll come to the call with your price and build options ready.' : q.wantsCall ? 'Your answers are in. Choose a time below and we’ll come to the call with your price and build options.' : 'Your builder link with every option and its price, the full specs PDF and the financing link are on their way by email, SMS and WhatsApp. Our team member will be in touch within 1 business day or sooner.'}</p>
 
       {/* the call comes first: 8 of 9 buyers planned their build on one (Vlad, 7 Oct 2026). Once booked, the booking and
           the walkthrough stand on their own, full width, so the video starts as high on a phone as it can (13 Oct 2026) */}
@@ -1056,8 +1050,8 @@ function Thanks() {
         </div>
       ) : (
         <div className="mt-5 rounded-xl border-2 border-zinc-900 p-4">
-          <p className="flex items-center gap-2 font-extrabold text-zinc-950"><Calendar className="h-5 w-5" aria-hidden /> Step 1 of 2 done. Next: pick a time to review your build</p>
-          <p className="mt-1 text-sm text-zinc-600">A 15-minute call. Most owners planned their build on one with us. Nothing to type again: just pick the time.</p>
+          <p className="flex items-center gap-2 font-extrabold text-zinc-950"><Calendar className="h-5 w-5" aria-hidden /> One more option: book a 15-minute call</p>
+          <p className="mt-1 text-sm text-zinc-600">Optional. Most owners planned their build on a call with us. Nothing to type again: just pick the time.</p>
           {/* our own picker (3 Oct 2026): the calendar widget asked for name, email and phone a second time */}
           <div className="mt-3">
             <TimePicker leadId={r.id} calendar="discovery" fallbackUrl={booking} market={q.market} intent={q.intent} booked={q.booking} onBooked={q.setBooking} />
@@ -1096,9 +1090,6 @@ function Thanks() {
           </a>
         )}
       </div>
-      <a href={whatsappLink(q.market)} target="_blank" rel="noopener" onClick={() => track('whatsapp_click', { where: 'thanks', market: q.market, intent: q.intent })} className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-zinc-900 underline underline-offset-4">
-        <MessageCircle className="h-4 w-4" aria-hidden /> Questions now? Message us on WhatsApp
-      </a>
     </div>
   );
 }
@@ -1399,9 +1390,6 @@ function SimpleThanks({ where }) {
           <FileText className="h-5 w-5 flex-none" /> Specs and health inquiry package (PDF)
         </a>
       </div>
-      <a href={whatsappLink(q.market)} target="_blank" rel="noopener" onClick={() => track('whatsapp_click', { where: 'thanks', market: q.market, intent: q.intent })} className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-zinc-900 underline underline-offset-4">
-        <MessageCircle className="h-4 w-4" aria-hidden /> Questions now? Message us on WhatsApp
-      </a>
     </div>
   );
 }
@@ -1465,7 +1453,7 @@ export function HeroQuestion() {
 function HeroTiles() {
   const q = useQuote();
   if (q.status === 'done') {
-    return <div className="rounded-xl bg-emerald-50 p-4 font-semibold text-emerald-900">Thank you. Your request is in: we’ll reply within one business day.</div>;
+    return <div className="rounded-xl bg-emerald-50 p-4 font-semibold text-emerald-900">Thank you. Your request is in: our team member will be in touch within 1 business day or sooner.</div>;
   }
   if (q.step > 0) {
     return (
@@ -1476,7 +1464,8 @@ function HeroTiles() {
   }
   return (
     <div>
-      <p className="text-[15px] font-bold leading-snug text-zinc-950">Get your price breakdown, your own builder link, the specs PDF and financing options, on approved credit. What are you planning?</p>
+      <p className="text-[15px] leading-snug text-zinc-800">See your custom build options and prices, the full specs PDF and the financing link. Fill in the quick step-by-step form below to get in touch.</p>
+      <p className="mt-2.5 text-[16px] font-extrabold leading-snug text-zinc-950">{QUESTIONS.use.title}</p>
       <div className="mt-2.5 grid grid-cols-2 gap-2">
         {QUESTIONS.use.options.slice(0, 4).map((o) => (
           <button
@@ -1493,7 +1482,7 @@ function HeroTiles() {
           </button>
         ))}
       </div>
-      <p className="mt-2 text-[13px] text-zinc-600">About a minute. No payment, no obligation. We reply within one business day.</p>
+      <p className="mt-2 text-[13px] text-zinc-600">About a minute. No payment, no obligation. Email, SMS and WhatsApp messages are sent right away, and our team member will be in touch within 1 business day or sooner.</p>
     </div>
   );
 }
