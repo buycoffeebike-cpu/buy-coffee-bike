@@ -1481,7 +1481,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
                 <div className="h-px sm:w-px sm:h-auto bg-white/15" />
                 <div className="px-5 py-3 flex items-center gap-2 flex-1 sm:min-w-[180px]">
                   <Award className="w-5 h-5 flex-shrink-0" style={{ color: RED }} />
-                  <div className="text-xs text-zinc-300">Trusted since 2018<br/><strong className="text-white">1.5M+ cups served</strong></div>
+                  <div className="text-xs text-zinc-300">Founded in 2017<br/><strong className="text-white">1.5M+ cups served</strong></div>
                 </div>
               </div>
               <div className="flex flex-wrap gap-3">
@@ -1534,7 +1534,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
             <ValueCard icon={<Zap />} title="Low Running Costs" desc="No fuel, no engine maintenance, no storefront lease. Charging costs about a dollar a day (our estimate), and the bike rolls indoors in winter." red={RED} tint={RED_TINT} />
             <ValueCard icon={<Award />} title="No Franchise Fees or Obligations" desc="No royalties, no contracts, no strings attached. You own 100% of your brand and your profits — forever." red={RED} tint={RED_TINT} />
             <ValueCard icon={<Users />} title="Non-Obligatory Global Community" desc="Join a growing global network of Coffee Bike owners — all connected and supporting each other daily. New to coffee? We provide all the training you need to get started." red={RED} tint={RED_TINT} />
-            <ValueCard icon={<Star />} title="Tested on the Street" desc="Refined by running our own bikes at markets, festivals and events since 2018: over 1.5 million cups served." red={RED} tint={RED_TINT} />
+            <ValueCard icon={<Star />} title="Tested on the Street" desc="Refined by running our own bikes at markets, festivals and events since 2017: over 1.5 million cups served." red={RED} tint={RED_TINT} />
             <ValueCard icon={<Sparkles />} title="Turnkey, Electric & Ready to Roll" desc="Fully equipped, fully tested, fully assembled — and powered by a real e-bike motor that conquers hills, even fully loaded. Brew espresso the day it arrives, anywhere you can ride." red={RED} tint={RED_TINT} />
             <ValueCard icon={<Calendar />} title="Many Ways to Sell" desc="Catering, weddings, corporate events, daily retail, festivals: one bike, many places to serve." red={RED} tint={RED_TINT} />
             <ValueCard icon={<Check />} title="Built for Health Compliance" desc="Various sink configurations, food-safe surfaces, and commercial-grade equipment — customizable to meet your local health code requirements." red={RED} tint={RED_TINT} />
@@ -1703,7 +1703,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
                 ))}
               </div>
 
-              <ConfigSection stepKey="step1" flash={flashStep === 'step1'} number="1" title="Choose Your Base Package" desc="Select the foundation setup that fits your workflow and service style." red={RED} collapsible isOpen={stepOpen.step1} onToggle={() => toggleStep('step1')}>
+              <ConfigSection stepKey="step1" flash={flashStep === 'step1'} number="1" title="Choose Your Base Package" desc="Select the foundation that fits your workflow. These are base package prices: the equipment setup is chosen in step 2. A fully equipped Coffee Bike starts at $15,850 USD ($22,500 CAD before tax)." red={RED} collapsible isOpen={stepOpen.step1} onToggle={() => toggleStep('step1')}>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                   {Object.entries(basePackages).map(([key, p]) => (
                     <div key={key} onClick={() => { setBasePackage(key); advanceFromStep('step1', 'step2'); }} className="relative text-left p-3 rounded-lg border-2 transition bg-white cursor-pointer flex flex-col" style={{ borderColor: basePackage === key ? RED : '#e4e4e7' }}>
@@ -1713,6 +1713,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
                       <div className="text-xs text-zinc-600 mb-2 leading-snug">{p.desc}</div>
                       {p.popular && <div className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded mb-2 text-white w-fit" style={{ backgroundColor: RED }}>Most Popular</div>}
                       <div className="text-sm font-bold mt-auto">{p.isCustom ? `Starts at ${fmt(p.price)}` : fmt(p.price)}</div>
+                      {!p.isCustom && <div className="text-[10px] text-zinc-500 leading-snug mt-0.5">Base package. Equipment setup is added in step 2.</div>}
                       {p.isCustom && basePackage === key && (
                         <textarea value={baseCustomInquiry} onChange={e => setBaseCustomInquiry(e.target.value)} onClick={e => e.stopPropagation()} placeholder="Tell us about your vision..." rows={3} className="mt-2 w-full text-xs px-2 py-1.5 border border-zinc-200 rounded resize-none" />
                       )}
@@ -2201,7 +2202,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
 
         <tbody>
           {[
-            { row: 'Startup Cost', cb: '$10K – $20K', others: '$5K – $40K+', cafe: '$80K – $500K', truck: '$50K – $175K', highlight: true },
+            { row: 'Startup Cost', cb: 'From $15,850 fully equipped', others: '$5K – $40K+', cafe: '$80K – $500K', truck: '$50K – $175K', highlight: true },
             { row: 'Time to Launch', cb: '6–10 weeks (built + delivered)', others: '2–6 months', cafe: '6–18 months', truck: '3–12 months' },
             { row: 'Build Quality', cb: '✓ Brand new, commercial-grade, refined by 8+ years of hands-on operations and 1.5M+ cups served', others: '~ Varies widely — often based on theoretical knowledge with no hands-on experience', cafe: 'Custom-built by expensive contractors', truck: 'Most often used truck/trailer, custom-built' },
             { row: 'Espresso Capability', cb: '✓ Dual-fuel commercial machine — 60–100 cups/hr proven productivity', others: '~ Often looks good in photos but untested in real-world busy operations', cafe: 'Commercial setup', truck: 'Similar efficiency to ours, but much bulkier footprint' },
@@ -2250,7 +2251,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
         {
           icon: <DollarSign className="w-4 h-4" />,
           category: 'Startup Cost',
-          coffeeBike: '$10K – $20K',
+          coffeeBike: 'From $15,850 fully equipped',
           otherBikes: '$5K – $40K+',
           cafe: '$80K – $500K',
           truck: '$50K – $175K',
