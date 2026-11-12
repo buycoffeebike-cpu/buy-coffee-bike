@@ -1512,10 +1512,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
         <a href="https://www.cbc.ca/dragonsden/pitches/coffee-bike" target="_blank" rel="noopener noreferrer" className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 text-center sm:text-left hover:opacity-90 transition group">
           <div className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-bold">As Featured On</div>
           <div className="flex items-center gap-2 text-white">
-          <img loading="lazy" decoding="async"   src="https://coffeebike.ca/wp-content/uploads/2026/05/Dragons-Den-2.png"
-  alt="Dragons' Den Canada"
-  className="h-10 w-auto object-contain"
-/>
+          <Image src="https://coffeebike.ca/wp-content/uploads/2026/05/Dragons-Den-2.png" alt="Dragons' Den Canada" width={40} height={40} className="h-10 w-auto object-contain" />
             <span className="text-base sm:text-lg font-bold tracking-tight">Dragons' Den Canada</span>
           </div>
           <span className="text-xs text-zinc-400 group-hover:text-white transition flex items-center gap-1">Watch our pitch <ArrowRight className="w-3 h-3" /></span>
@@ -2564,10 +2561,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
             <a href="https://www.cbc.ca/dragonsden/pitches/coffee-bike" target="_blank" rel="noopener noreferrer" className="bg-white border border-zinc-200 rounded-lg p-5 text-center hover:shadow-md hover:border-zinc-300 transition group block">
               <div className="w-12 h-12 rounded mx-auto mb-3 flex items-center justify-center text-white" style={{ backgroundColor: '' }}>
               <div className="mx-auto mb-4 flex items-center justify-center">
-  <img loading="lazy" decoding="async"     src="https://coffeebike.ca/wp-content/uploads/2026/05/Dragons-Den-2.png"
-    alt="Dragons' Den Canada"
-    className="h-16 w-auto object-contain"
-  />
+  <Image src="https://coffeebike.ca/wp-content/uploads/2026/05/Dragons-Den-2.png" alt="Dragons' Den Canada" width={64} height={64} className="h-16 w-auto object-contain" />
 </div>
               </div>
               <div className="text-sm font-semibold mb-1">Dragons' Den Canada</div>
