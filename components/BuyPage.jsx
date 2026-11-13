@@ -597,6 +597,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
       name: 'Tom',
       loc: 'Lithia, FL',
       biz: 'Monkeynuts Cafe',
+      ig: 'monkeynuts.cafe',
       months: 16,
       img: 'https://coffeebike.ca/wp-content/uploads/2026/05/Monkeynuts.png',
       quote: "I'm retired and I wanted something that kept me moving and kept me social… The Coffee Bike checks every box. I take great care of mine and it takes great care of me. Got a steady event circuit going now and the locals know me. Already talking with Vlad about a second one — apparently retirement is busier than I planned.",
@@ -613,6 +614,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
       name: 'Anais',
       loc: 'Tempe, AZ',
       biz: "Lucy's Coffee Express",
+      ig: 'lucyscoffeexpress',
       months: 8,
       img: 'https://coffeebike.ca/wp-content/uploads/2026/05/Lucys.png',
       quote: "This was a complete career change for me and I'm not going to pretend it was easy. There were real challenges getting started — permits, location, building a customer base from zero. What kept me going was Vlad and the Coffee Bike team actually answering when I called. I'm still building my name in Tempe but every week is better than the last. Not giving up.",
@@ -621,6 +623,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
       name: 'Davina',
       loc: 'Portland, OR',
       biz: 'Dibina Coffee',
+      ig: 'dibinacoffee',
       months: 15,
       img: 'https://coffeebike.ca/wp-content/uploads/2026/05/Dibina.png',
       quote: "I already had a coffee cart, and the Coffee Bike became the next chapter — a way to bring my Guam heritage to more people through coffee and snacks you can't find anywhere else in Portland. The mobility is what makes it. I can take my flavors to the events and neighborhoods where they resonate. It's coffee, but it's also home.",
@@ -637,6 +640,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
       name: 'Chris',
       loc: 'Lawndale, CA',
       biz: 'Ampelos Coffee',
+      ig: 'ampelos_coffee',
       months: 9,
       img: 'https://coffeebike.ca/wp-content/uploads/2026/05/Ampelos.png',
       quote: "I went all in — three bikes from day one. We're building Ampelos Coffee as a brand, not a single cart, and the bikes let us scale that vision with consistency. The aesthetic and the detail matter to us, and the build quality holds up to what we're going for. None of this happens without my wife and kids putting in the work alongside me. Family business, family-built.",
@@ -2140,6 +2144,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
                 <div className="p-4 flex-1">
                   <div className="text-sm font-bold leading-tight">{t.name}</div>
                   <div className="text-xs text-zinc-600 mb-1">{t.loc} · {t.biz}</div>
+                  {variant?.ownerLinks && t.ig ? <a href={`https://www.instagram.com/${t.ig}/`} target="_blank" rel="noopener noreferrer" className="inline-block text-xs font-semibold underline underline-offset-2 mb-1" style={{ color: RED }}>@{t.ig}</a> : null}
                   <div className="text-[10px] text-zinc-500 mb-2">Owner since {Math.floor(t.months / 12) >= 1 ? `${Math.floor(t.months / 12)}+ years` : `${t.months} months ago`}</div>
                   <div className="flex mb-2" style={{ color: RED }}>{[...Array(5)].map((_, i) => <Star key={i} className="w-3.5 h-3.5" fill={RED} />)}</div>
                   <div className="text-[11px] text-zinc-700 leading-snug italic">{t.quote}</div>

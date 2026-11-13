@@ -90,6 +90,7 @@ export const VARIANTS = {
     lender: 'us',
     buildCost: 15850,
     usSection: true,
+    ownerLinks: true, // the US owners' Instagram accounts under their quotes (Vlad, 12 Nov 2026)
     faqs: usFaqs,
   },
 };
