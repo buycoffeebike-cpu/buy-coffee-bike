@@ -1149,11 +1149,15 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
               </>
             ) : (
               <>
- <div>
-  <div className="text-lg sm:text-xl font-extrabold text-white leading-tight">
-    Instant Quote
-  </div>
-</div>
+                {/* The words looked like a button and did nothing (audit, 10 Nov 2026). Same look; a tap now goes to the
+                    Builder, like the red button beside it. The whole left part of the bar is the tap area. */}
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('configurator-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                  className="block w-full text-left py-1 text-lg sm:text-xl font-extrabold text-white leading-tight"
+                >
+                  Instant Quote
+                </button>
               </>
             )}
           </div>
