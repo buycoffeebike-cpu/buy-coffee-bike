@@ -34,6 +34,8 @@ export const WALKTHROUGH_ID = 'uVGy63fO6uk';
  *  US pages carry the US and international amount, Canadian pages the Canadian one. Ends by itself: BF_UNTIL is the
  *  first moment of 3 Dec in Vancouver (UTC-7); the layout hides every .bf-offer element from then on. */
 export const BF_UNTIL = 1796281200000;
+// From this moment (3 Dec 2026 00:00 Vancouver) a visitor who is only researching is not reported to Meta as a lead.
+export const META_INTENT_FROM = 1796281200000;
 export const BF_SPRING = 'Order now and be ready to serve by spring 2027.';
 export const BF = {
   us: { off: 'US$1,500', short: 'Black Friday: US$1,500 off · order by Dec 2', line: 'Black Friday: US$1,500 off a fully equipped Coffee Bike.', terms: 'First 5 bikes. Orders placed by Dec 2.' },

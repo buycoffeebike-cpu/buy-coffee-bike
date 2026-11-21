@@ -9,7 +9,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Calendar, Check, FileText, Loader2, MessageCircle, PlayCircle, X } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { ADS_CONVERSION, BF, BF_UNTIL, CALL_API, CALL_URL, DEPOSIT_URL, DETAILS_API, INCLUDED, LEAD_API, MARKETS, OWNERS, PHONE_API, QUOTE_FORM_URL, SPEC_SHEET, whatsappLink } from './content';
+import { ADS_CONVERSION, BF, BF_UNTIL, CALL_API, META_INTENT_FROM, CALL_URL, DEPOSIT_URL, DETAILS_API, INCLUDED, LEAD_API, MARKETS, OWNERS, PHONE_API, QUOTE_FORM_URL, SPEC_SHEET, whatsappLink } from './content';
 
 // the call-time picker and the walkthrough are needed only once a request is in: they load then, not with the first
 // screen (7 Nov 2026 speed work)
@@ -339,7 +339,9 @@ export function QuoteProvider({ market, intent, extra, children }) {
         window.gtag?.('event', 'conversion', { send_to: ADS_CONVERSION, value: phoneCheck === 'skipped' ? 25 : 100, currency: 'CAD', transaction_id: j.data?.id });
         window.gtag?.('event', 'generate_lead', { form: 'quote_flow', form_variant: form, market, intent, use: answers.use, timeline: answers.timeline, stage: answers.stage, fit: answers.fit, next_step: wantsCall ? 'call' : 'quote', phone_check: phoneCheck });
         // the event every Coffee Bike Sales ad set optimises for; the OS sends the server copy with the same id
-        if (phoneCheck !== 'skipped') window.fbq?.('track', 'SubmitApplication', { content_name: 'Coffee Bike quote', content_category: market, form_variant: form, next_step: wantsCall ? 'call' : 'quote' }, { eventID: eventId });
+        // from 3 Dec 2026: 'just researching' at the research stage is a lead for us but not for Meta's optimiser
+        const browsing = Date.now() >= META_INTENT_FROM && answers.timeline === 'research' && answers.stage === 'research';
+        if (phoneCheck !== 'skipped' && !browsing) window.fbq?.('track', 'SubmitApplication', { content_name: 'Coffee Bike quote', content_category: market, form_variant: form, next_step: wantsCall ? 'call' : 'quote' }, { eventID: eventId });
         // ChatGPT ads (21 Nov 2026): OpenAI's pixel exists only for a ChatGPT ad visitor (layout.tsx); the event is the
         // Ads Manager conversion "Coffee Bike lead" (lead_created), fired like the others once the texted code is back
         window.oaiq?.('measure', 'lead_created', { type: 'customer_action' }, { event_id: eventId });
