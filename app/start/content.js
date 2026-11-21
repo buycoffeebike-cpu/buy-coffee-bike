@@ -30,6 +30,14 @@ export const FINANCING_URL = 'https://apply.ifinancecanada.com/23545';
 /** US financing (founder, 29 Oct 2026): Equinox Funding, on approved credit; the buyer enters Coffee Bike World as the vendor and the build total in USD. */
 export const EQUINOX_URL = 'https://equinox-funding.com/efapplication/';
 export const WALKTHROUGH_ID = 'uVGy63fO6uk';
+/** Black Friday 2026 (founder, 20 Nov 2026): off a fully equipped Coffee Bike, first 5 bikes, orders placed by Dec 2.
+ *  US pages carry the US and international amount, Canadian pages the Canadian one. Ends by itself: BF_UNTIL is the
+ *  first moment of 3 Dec in Vancouver (UTC-7); the layout hides every .bf-offer element from then on. */
+export const BF_UNTIL = 1796281200000;
+export const BF = {
+  us: { off: 'US$1,500', short: 'Black Friday: US$1,500 off · order by Dec 2', line: 'Black Friday: US$1,500 off a fully equipped Coffee Bike.', terms: 'First 5 bikes. Orders placed by Dec 2.' },
+  ca: { off: 'CA$2,250', short: 'Black Friday: CA$2,250 off · order by Dec 2', line: 'Black Friday: CA$2,250 off a fully equipped Coffee Bike.', terms: 'First 5 bikes. Orders placed by Dec 2.' },
+};
 
 // Google Ads: account tag and the conversion this page fires when the quote form is sent
 export const ADS_TAG = 'AW-369959194';

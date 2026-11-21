@@ -7,7 +7,7 @@ import { ArrowLeft, ArrowRight, Calendar, Check, ChevronDown, Coffee, CreditCard
 import LiteYouTube from '../../components/LiteYouTube';
 import FinancingBanner, { FINANCING } from '../../components/FinancingBanner';
 import {
-  ADDRESS, ADS_TAG, BASE_PATH, DEPOSIT_URL, EMAIL, FEATURES, INCLUDED, INTENTS, LOGO, MARKETS, OWNERS, PHOTOS, PRICING,
+  ADDRESS, ADS_TAG, BASE_PATH, BF, DEPOSIT_URL, EMAIL, FEATURES, INCLUDED, INTENTS, LOGO, MARKETS, OWNERS, PHOTOS, PRICING,
   SPECS, TRUST, WALKTHROUGH_ID, faqs, steps, whatsappLink,
 } from './content';
 import { FinishBar, HeroQuestion, QuestionTiles, QuoteModal, QuoteProvider, RED, useQuote } from './quote';
@@ -271,6 +271,8 @@ function Page({ intent, market }) {
         </div>
       </header>
 
+      <div className="bf-offer hidden bg-[#E31E24] px-4 py-2 text-center text-sm font-bold text-white md:block">{BF[market].line} {BF[market].terms}</div>
+
       {elsewhere ? (
         <a href={elsewhere.href} onClick={() => track('market_switch', { from: market, to: elsewhere.market, intent })} className="block bg-zinc-900 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-zinc-800">
           {elsewhere.market === 'ca' ? 'In Canada? See Canadian prices in CA$ →' : 'In the US? See US prices in US$ →'}
@@ -281,7 +283,8 @@ function Page({ intent, market }) {
       <section className="bg-[#F4F4F3]">
         <div className="hero-grid mx-auto grid max-w-6xl gap-x-12 gap-y-3 px-4 pb-8 pt-4 sm:px-6 sm:gap-y-4 sm:pt-6 md:grid-cols-[1fr_1fr] md:pb-16 md:pt-14">
           <div className="md:col-start-1 md:row-start-1">
-            <p className="text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{I.eyebrow}</p>
+            <p className="bf-fallback text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{I.eyebrow}</p>
+            <p className="bf-offer inline-block rounded-md px-2 py-1 text-[13px] font-extrabold leading-tight text-white" style={{ backgroundColor: RED }}>{BF[market].short}</p>
             <h1 className="mt-2 text-[2.15rem] font-extrabold leading-[1.02] tracking-tight text-zinc-950 md:text-[3.6rem]" style={{ ...DISPLAY, ...BALANCE }}>{I.h1}</h1>
             <p className="mt-4 hidden max-w-xl text-lg leading-relaxed text-zinc-700 md:block">{I.sub}</p>
           </div>
@@ -454,6 +457,7 @@ function Page({ intent, market }) {
             <p className="text-sm font-bold uppercase tracking-wider text-zinc-400">Fully equipped</p>
             <p className="mt-1 text-5xl font-extrabold tabular-nums sm:text-6xl" style={DISPLAY}>{P.lead}</p>
             <p className="mt-2 max-w-md text-[15px] leading-relaxed text-zinc-300">{P.leadNote}</p>
+            <p className="bf-offer mt-3 inline-block rounded-lg px-3 py-2 text-[15px] font-extrabold leading-snug text-white" style={{ backgroundColor: RED }}>{BF[market].line} <span className="font-semibold">{BF[market].terms}</span></p>
             <ul className="mt-6 grid gap-2.5 text-[15px] leading-snug text-zinc-100">
               {INCLUDED.map((x) => (
                 <li key={x} className="flex gap-3"><Check className="mt-0.5 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
@@ -557,6 +561,7 @@ function Page({ intent, market }) {
           <div>
             <h2 className="text-3xl font-extrabold md:text-4xl" style={{ ...DISPLAY, ...BALANCE }}>See your custom build options and prices</h2>
             <p className="mt-2 text-zinc-400">{M.heroPrice} {M.heroPriceNote}. {M.financingNote}</p>
+            <p className="bf-offer mt-2 font-bold text-white">{BF[market].line} {BF[market].terms}</p>
           </div>
           <PriceButton where="footer" className="w-full md:w-auto">Get in touch <ArrowRight className="h-5 w-5" /></PriceButton>
         </div>

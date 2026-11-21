@@ -106,3 +106,8 @@ html:not([data-cbw-form="simple"]) .cbw-simple { display: none; }
   html[data-cbw-form="simple"] .hero-photo-box { aspect-ratio: 16 / 9; }
 }
 html[data-cbw-form="simple"] .cbw-lean { display: none; }
+
+/* Black Friday 2026 on the /start pages: the offer elements go and the usual ones return once the layout marks the
+   deadline as passed (data-bf-over on <html>, set before the first paint). */
+html[data-bf-over] .bf-offer { display: none !important; }
+html:not([data-bf-over]) .bf-fallback { display: none; }
