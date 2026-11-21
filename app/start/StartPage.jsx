@@ -307,7 +307,7 @@ function Page({ intent, market }) {
         <div className="hero-grid mx-auto grid max-w-6xl gap-x-12 gap-y-3 px-4 pb-8 pt-4 sm:px-6 sm:gap-y-4 sm:pt-6 md:grid-cols-[1fr_1fr] md:pb-16 md:pt-14">
           <div className="md:col-start-1 md:row-start-1">
             <p className="bf-fallback text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{I.eyebrow}</p>
-            <p className="bf-offer inline-block rounded-md px-2 py-1 text-[13px] font-extrabold leading-tight text-white" style={{ backgroundColor: RED }}><BfTag market={market} /></p>
+            <p className="bf-offer bf-pulse inline-block rounded-md px-2.5 py-1.5 text-[14px] font-extrabold leading-tight text-white" style={{ backgroundColor: RED }}><BfTag market={market} /></p>
             <h1 className="mt-2 text-[2.15rem] font-extrabold leading-[1.02] tracking-tight text-zinc-950 md:text-[3.6rem]" style={{ ...DISPLAY, ...BALANCE }}>{I.h1}</h1>
             <p className="mt-4 hidden max-w-xl text-lg leading-relaxed text-zinc-700 md:block">{I.sub}</p>
           </div>
@@ -480,7 +480,7 @@ function Page({ intent, market }) {
             <p className="text-sm font-bold uppercase tracking-wider text-zinc-400">Fully equipped</p>
             <p className="mt-1 text-5xl font-extrabold tabular-nums sm:text-6xl" style={DISPLAY}>{P.lead}</p>
             <p className="mt-2 max-w-md text-[15px] leading-relaxed text-zinc-300">{P.leadNote}</p>
-            <p className="bf-offer mt-3 inline-block rounded-lg px-3 py-2 text-[15px] font-extrabold leading-snug text-white" style={{ backgroundColor: RED }}>{BF[market].line} <span className="font-semibold">{BF[market].terms}</span><BfEnds /> <span className="font-semibold">{BF_SPRING}</span></p>
+            <p className="bf-offer bf-pulse mt-3 inline-block rounded-lg px-3 py-2 text-[15px] font-extrabold leading-snug text-white" style={{ backgroundColor: RED }}>{BF[market].line} <span className="font-semibold">{BF[market].terms}</span><BfEnds /> <span className="font-semibold">{BF_SPRING}</span></p>
             <ul className="mt-6 grid gap-2.5 text-[15px] leading-snug text-zinc-100">
               {INCLUDED.map((x) => (
                 <li key={x} className="flex gap-3"><Check className="mt-0.5 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
