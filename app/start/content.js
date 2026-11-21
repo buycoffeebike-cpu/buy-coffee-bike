@@ -185,6 +185,16 @@ export const INTENTS = {
     compare: 'truck',
     title: 'Coffee Bike: what’s inside, what it costs',
   },
+  // ChatGPT ads (20 Nov 2026): /start/ai (US) and /start/ca/ai (Canada). The ad answers someone asking ChatGPT how to
+  // start a mobile coffee business, so the page opens on the whole shop, not on a cart or truck comparison. The country
+  // comes from the route; a Canadian on the US route is sent to /start/ca/ai by the middleware (CA$ prices).
+  ai: {
+    eyebrow: 'Thinking about a mobile coffee business?',
+    h1: 'A complete coffee shop on an electric bike, delivered to your door',
+    sub: 'A commercial espresso bar built onto an electric cargo bike: dual-fuel espresso machine, sinks and a fridge on board. Branded with your name, delivered to your door in the US and Canada, and 100% yours: no lease, no franchise fees, no royalties.',
+    compare: 'cafe',
+    title: 'The Coffee Bike: a complete mobile coffee shop on an electric bike',
+  },
   // Meta ads (the "build something of your own" reel, caption "Make 2027 the year you open your own coffee business")
   own: {
     eyebrow: 'Make 2027 the year',

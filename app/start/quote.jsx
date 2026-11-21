@@ -81,7 +81,8 @@ export function readAttribution() {
     const fresh = {
       // placement + siteSource: Meta's {{placement}} and {{site_source_name}} (PROSPECTING 4, 8 Oct 2026)
       utm: clean({ source: p.get('utm_source'), medium: p.get('utm_medium'), campaign: p.get('utm_campaign'), content: p.get('utm_content'), term: p.get('utm_term'), placement: p.get('utm_placement'), siteSource: p.get('utm_site_source') }),
-      click: clean({ gclid: p.get('gclid'), gbraid: p.get('gbraid'), wbraid: p.get('wbraid'), fbclid: p.get('fbclid') }),
+      // oppref: the click reference ChatGPT ads append to the landing page (20 Nov 2026)
+      click: clean({ gclid: p.get('gclid'), gbraid: p.get('gbraid'), wbraid: p.get('wbraid'), fbclid: p.get('fbclid'), oppref: p.get('oppref') }),
       ids: clean({ utmId: p.get('utm_id'), fbCampaign: p.get('fb_campaign_id'), fbAdset: p.get('fb_adset_id'), fbAd: p.get('fb_ad_id') }),
     };
     if ([fresh.utm, fresh.click, fresh.ids].some((o) => Object.keys(o).length)) {
