@@ -112,9 +112,26 @@ function useBfLeft() {
   const text = soon ? `${Math.floor(left / 3600e3)}h ${String(Math.floor((left % 3600e3) / 60e3)).padStart(2, '0')}m` : '';
   return { soon, text };
 }
-function BfTag({ market }) {
+/** The offer at headline size (Vlad, 21 Nov 2026: "similar size to main title at least"): on phones a block above the
+ *  title, on wide screens the band across the page. Same facts as before: amount, first 5 bikes, orders placed by Dec 2. */
+function BfBig({ market, wide = false }) {
   const { soon, text } = useBfLeft();
-  return <>{soon ? `Black Friday: ${BF[market].off} off · ends in ${text}` : BF[market].short}</>;
+  const terms = soon ? `First 5 bikes · ends in ${text}` : 'First 5 bikes · orders placed by Dec 2';
+  if (wide) {
+    return (
+      <div className="bf-offer hidden bg-[#E31E24] px-6 py-4 text-center text-white md:block">
+        <p className="bf-pump text-[3.1rem] font-extrabold leading-none tracking-tight lg:text-[3.6rem]" style={DISPLAY}>Black Friday: {BF[market].off} off</p>
+        <p className="mt-2 text-lg font-bold leading-tight">a fully equipped Coffee Bike · {terms}</p>
+      </div>
+    );
+  }
+  return (
+    <p className="bf-offer bf-pulse inline-block rounded-xl px-3.5 pb-2.5 pt-2 text-white md:hidden" style={{ backgroundColor: RED }}>
+      <span className="block text-[2.15rem] font-extrabold leading-[1.02] tracking-tight" style={DISPLAY}>Black Friday</span>
+      <span className="block text-[2.15rem] font-extrabold leading-[1.02] tracking-tight" style={DISPLAY}>{BF[market].off} off</span>
+      <span className="mt-1 block text-[13px] font-bold leading-tight">{terms}</span>
+    </p>
+  );
 }
 function BfEnds() {
   const { soon, text } = useBfLeft();
@@ -294,7 +311,7 @@ function Page({ intent, market }) {
         </div>
       </header>
 
-      <div className="bf-offer hidden bg-[#E31E24] px-4 py-2 text-center text-sm font-bold text-white md:block">{BF[market].line} {BF[market].terms}</div>
+      <BfBig market={market} wide />
 
       {elsewhere ? (
         <a href={elsewhere.href} onClick={() => track('market_switch', { from: market, to: elsewhere.market, intent })} className="block bg-zinc-900 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-zinc-800">
@@ -307,7 +324,7 @@ function Page({ intent, market }) {
         <div className="hero-grid mx-auto grid max-w-6xl gap-x-12 gap-y-3 px-4 pb-8 pt-4 sm:px-6 sm:gap-y-4 sm:pt-6 md:grid-cols-[1fr_1fr] md:pb-16 md:pt-14">
           <div className="md:col-start-1 md:row-start-1">
             <p className="bf-fallback text-xs font-bold uppercase tracking-[0.16em]" style={{ color: RED }}>{I.eyebrow}</p>
-            <p className="bf-offer bf-pulse inline-block rounded-md px-2.5 py-1.5 text-[14px] font-extrabold leading-tight text-white" style={{ backgroundColor: RED }}><BfTag market={market} /></p>
+            <BfBig market={market} />
             <h1 className="mt-2 text-[2.15rem] font-extrabold leading-[1.02] tracking-tight text-zinc-950 md:text-[3.6rem]" style={{ ...DISPLAY, ...BALANCE }}>{I.h1}</h1>
             <p className="mt-4 hidden max-w-xl text-lg leading-relaxed text-zinc-700 md:block">{I.sub}</p>
           </div>
