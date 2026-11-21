@@ -9,7 +9,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Calendar, Check, FileText, Loader2, MessageCircle, PlayCircle, X } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { ADS_CONVERSION, BF, BF_UNTIL, CALL_API, META_INTENT_FROM, CALL_URL, DEPOSIT_URL, DETAILS_API, INCLUDED, LEAD_API, MARKETS, OWNERS, PHONE_API, QUOTE_FORM_URL, SPEC_SHEET, whatsappLink } from './content';
+import { ADS_CONVERSION, BF, BF_DEPOSIT, BF_UNTIL, CALL_API, META_INTENT_FROM, CALL_URL, DEPOSIT_URL, DETAILS_API, INCLUDED, LEAD_API, MARKETS, OWNERS, PHONE_API, QUOTE_FORM_URL, SPEC_SHEET, whatsappLink } from './content';
 
 // the call-time picker and the walkthrough are needed only once a request is in: they load then, not with the first
 // screen (7 Nov 2026 speed work)
@@ -648,7 +648,7 @@ export function QuoteFlow({ where = 'inline' }) {
               </label>
             </div>
             {q.status === 'error' && q.lastForm === 'steps' ? <SendError /> : null}
-            <p className="bf-offer rounded-lg bg-red-50 px-3 py-2 text-[14px] font-bold leading-snug text-zinc-900">{BF[q.market].line} <span className="font-semibold text-zinc-700">{BF[q.market].terms}</span></p>
+            <p className="bf-offer rounded-lg bg-red-50 px-3 py-2 text-[14px] font-bold leading-snug text-zinc-900">{BF[q.market].line} <span className="font-semibold text-zinc-700">{BF[q.market].terms} {BF_DEPOSIT}</span></p>
             <SendButton />
             <Reassurance />
             <Consent />
@@ -1037,7 +1037,7 @@ function Thanks() {
     q.answers.fit === 'finance'
       ? { t: 'Explore financing', d: `${M.lender.name}, on approved credit. Applying is optional; our specialist can go through it with you on the call.`, href: M.lender.href, cta: `Continue to ${M.lender.name}`, where: 'thanks_financing' }
       : stage === 'invoice'
-      ? { t: 'Want your spot now?', d: 'A $250 deposit reserves a production spot and is applied in full to your order.', href: DEPOSIT_URL, cta: 'Reserve my spot', where: 'thanks_deposit' }
+      ? { t: 'Want your spot now?', d: 'A fully refundable $250 deposit reserves a production spot and is applied in full to your order.', href: DEPOSIT_URL, cta: 'Reserve my spot', where: 'thanks_deposit' }
       : stage === 'research'
           ? { t: 'Starting your research?', d: 'The health inquiry package tells you what your city will ask for.', href: SPEC_SHEET, cta: 'Get the permit package (PDF)', where: 'thanks_permits' }
           : null;
@@ -1049,7 +1049,7 @@ function Thanks() {
       <h3 className="mt-4 text-2xl font-extrabold leading-tight text-zinc-950" style={{ fontFamily: 'var(--font-display), Inter, system-ui, sans-serif' }}>
         Thank you{r.first ? `, ${r.first}` : ''}. {q.booking ? 'Your call is booked.' : q.wantsCall ? 'Now pick your time.' : 'Your request is in.'}
       </h3>
-      <p className="bf-offer mt-3 rounded-lg bg-red-50 px-3 py-2 text-[14px] font-bold leading-snug text-zinc-900">{BF[q.market].line} <span className="font-semibold text-zinc-700">{BF[q.market].terms}</span></p>
+      <p className="bf-offer mt-3 rounded-lg bg-red-50 px-3 py-2 text-[14px] font-bold leading-snug text-zinc-900">{BF[q.market].line} <span className="font-semibold text-zinc-700">{BF[q.market].terms} {BF_DEPOSIT}</span></p>
       <p className="mt-2 text-[16px] leading-relaxed text-zinc-700">{q.booking ? 'We’ll come to the call with your price and build options ready.' : q.wantsCall ? 'Your answers are in. Choose a time below and we’ll come to the call with your price and build options.' : 'Your builder link with every option and its price, the full specs PDF and the financing link are on their way by email, SMS and WhatsApp. Our team member will be in touch within 1 business day or sooner.'}</p>
 
       {/* the call comes first: 8 of 9 buyers planned their build on one (Vlad, 7 Oct 2026). Once booked, the booking and

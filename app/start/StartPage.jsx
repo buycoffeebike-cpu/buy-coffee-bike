@@ -7,7 +7,7 @@ import { ArrowLeft, ArrowRight, Calendar, Check, ChevronDown, Coffee, CreditCard
 import LiteYouTube from '../../components/LiteYouTube';
 import FinancingBanner, { FINANCING } from '../../components/FinancingBanner';
 import {
-  ADDRESS, ADS_TAG, BASE_PATH, BF, BF_SPRING, BF_UNTIL, DEPOSIT_URL, EMAIL, FEATURES, INCLUDED, INTENTS, LOGO, MARKETS, OWNERS, PHOTOS, PRICING,
+  ADDRESS, ADS_TAG, BASE_PATH, BF, BF_DEPOSIT, BF_SPRING, BF_UNTIL, DEPOSIT_URL, EMAIL, FEATURES, INCLUDED, INTENTS, LOGO, MARKETS, OWNERS, PHOTOS, PRICING,
   SPECS, TRUST, WALKTHROUGH_ID, faqs, steps, whatsappLink,
 } from './content';
 import { FinishBar, HeroQuestion, QuestionTiles, QuoteModal, QuoteProvider, RED, useQuote } from './quote';
@@ -122,6 +122,7 @@ function BfBig({ market, wide = false }) {
       <div className="bf-offer hidden bg-[#E31E24] px-6 py-4 text-center text-white md:block">
         <p className="bf-pump text-[3.1rem] font-extrabold leading-none tracking-tight lg:text-[3.6rem]" style={DISPLAY}>Black Friday: {BF[market].off} off</p>
         <p className="mt-2 text-lg font-bold leading-tight">a fully equipped Coffee Bike · {terms}</p>
+        <p className="mt-1 text-[15px] font-semibold leading-tight"><a href={DEPOSIT_URL} target="_blank" rel="noopener" className="underline decoration-white/60 underline-offset-2 hover:decoration-white">{BF_DEPOSIT}</a></p>
       </div>
     );
   }
@@ -130,6 +131,7 @@ function BfBig({ market, wide = false }) {
       <span className="block text-[2.15rem] font-extrabold leading-[1.02] tracking-tight" style={DISPLAY}>Black Friday</span>
       <span className="block text-[2.15rem] font-extrabold leading-[1.02] tracking-tight" style={DISPLAY}>{BF[market].off} off</span>
       <span className="mt-1 block text-[13px] font-bold leading-tight">{terms}</span>
+      <span className="mt-0.5 block text-[12px] font-semibold leading-tight">Fully refundable $250 deposit locks it in</span>
     </p>
   );
 }
@@ -498,6 +500,7 @@ function Page({ intent, market }) {
             <p className="mt-1 text-5xl font-extrabold tabular-nums sm:text-6xl" style={DISPLAY}>{P.lead}</p>
             <p className="mt-2 max-w-md text-[15px] leading-relaxed text-zinc-300">{P.leadNote}</p>
             <p className="bf-offer bf-pulse mt-3 inline-block rounded-lg px-3 py-2 text-[15px] font-extrabold leading-snug text-white" style={{ backgroundColor: RED }}>{BF[market].line} <span className="font-semibold">{BF[market].terms}</span><BfEnds /> <span className="font-semibold">{BF_SPRING}</span></p>
+            <p className="bf-offer mt-2 text-[15px] font-semibold leading-snug text-zinc-900">{BF_DEPOSIT} <a href={DEPOSIT_URL} target="_blank" rel="noopener" className="font-bold underline underline-offset-2" style={{ color: RED }}>Reserve with $250</a></p>
             <ul className="mt-6 grid gap-2.5 text-[15px] leading-snug text-zinc-100">
               {INCLUDED.map((x) => (
                 <li key={x} className="flex gap-3"><Check className="mt-0.5 h-4 w-4 flex-none" style={{ color: RED }} aria-hidden />{x}</li>
@@ -522,7 +525,7 @@ function Page({ intent, market }) {
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {[
                 { icon: CreditCard, ...P.payment },
-                { icon: Calendar, t: 'Reserve with $250', d: 'Holds a production spot and is applied in full to your order. Invoiced by Coffee Bike World, Vancouver, BC.', href: DEPOSIT_URL, cta: 'Reserve' },
+                { icon: Calendar, t: 'Reserve with $250', d: 'Fully refundable. Holds a production spot and is applied in full to your order. Invoiced by Coffee Bike World, Vancouver, BC.', href: DEPOSIT_URL, cta: 'Reserve' },
               ].map(({ icon: Icon, t, d, href, cta }) => (
                 <div key={t} className="rounded-xl border border-zinc-200 p-4">
                   <Icon className="h-5 w-5" style={{ color: RED }} aria-hidden />
@@ -601,7 +604,7 @@ function Page({ intent, market }) {
           <div>
             <h2 className="text-3xl font-extrabold md:text-4xl" style={{ ...DISPLAY, ...BALANCE }}>See your custom build options and prices</h2>
             <p className="mt-2 text-zinc-400">{M.heroPrice} {M.heroPriceNote}. {M.financingNote}</p>
-            <p className="bf-offer mt-2 font-bold text-white">{BF[market].line} {BF[market].terms} {BF_SPRING}</p>
+            <p className="bf-offer mt-2 font-bold text-white">{BF[market].line} {BF[market].terms} {BF_DEPOSIT}</p>
           </div>
           <PriceButton where="footer" className="w-full md:w-auto">Get in touch <ArrowRight className="h-5 w-5" /></PriceButton>
         </div>
