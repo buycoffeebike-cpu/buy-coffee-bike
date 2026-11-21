@@ -340,6 +340,9 @@ export function QuoteProvider({ market, intent, extra, children }) {
         window.gtag?.('event', 'generate_lead', { form: 'quote_flow', form_variant: form, market, intent, use: answers.use, timeline: answers.timeline, stage: answers.stage, fit: answers.fit, next_step: wantsCall ? 'call' : 'quote', phone_check: phoneCheck });
         // the event every Coffee Bike Sales ad set optimises for; the OS sends the server copy with the same id
         if (phoneCheck !== 'skipped') window.fbq?.('track', 'SubmitApplication', { content_name: 'Coffee Bike quote', content_category: market, form_variant: form, next_step: wantsCall ? 'call' : 'quote' }, { eventID: eventId });
+        // ChatGPT ads (21 Nov 2026): OpenAI's pixel exists only for a ChatGPT ad visitor (layout.tsx); the event is the
+        // Ads Manager conversion "Coffee Bike lead" (lead_created), fired like the others once the texted code is back
+        window.oaiq?.('measure', 'lead_created', { type: 'customer_action' }, { event_id: eventId });
       } catch {}
       setResult({ first, last: rest.join(' '), email: body.email, phone: body.phone, id: j.data?.id });
       setStatus('done');
