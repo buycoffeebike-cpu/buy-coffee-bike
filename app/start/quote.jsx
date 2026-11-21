@@ -9,7 +9,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Calendar, Check, FileText, Loader2, MessageCircle, PlayCircle, X } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { ADS_CONVERSION, BF, CALL_API, CALL_URL, DEPOSIT_URL, DETAILS_API, INCLUDED, LEAD_API, MARKETS, OWNERS, PHONE_API, QUOTE_FORM_URL, SPEC_SHEET, whatsappLink } from './content';
+import { ADS_CONVERSION, BF, BF_UNTIL, CALL_API, CALL_URL, DEPOSIT_URL, DETAILS_API, INCLUDED, LEAD_API, MARKETS, OWNERS, PHONE_API, QUOTE_FORM_URL, SPEC_SHEET, whatsappLink } from './content';
 
 // the call-time picker and the walkthrough are needed only once a request is in: they load then, not with the first
 // screen (7 Nov 2026 speed work)
@@ -21,7 +21,7 @@ const STEP_KEYS = ['use', 'timeline', 'stage', 'fit', 'contact'];
 const STORE = 'cbw_quote_v2';
 
 /** "When do you want to be serving?" in seasons, from today's date: the next three seasons after this one. */
-function seasonOptions(now = new Date()) {
+function seasonOptions(now = new Date(), market = 'us') {
   const m = now.getMonth(); // 0 = January
   const y = now.getFullYear();
   // season index: 0 winter (Dec–Feb), 1 spring, 2 summer, 3 fall
@@ -37,7 +37,9 @@ function seasonOptions(now = new Date()) {
     const label = s === 0 ? `This winter${cur === 3 && i === 1 ? ', indoors' : ''}` : `${names[s]} ${year}`;
     out.push({ v: `s${i}`, t: i === 3 ? `${label} or later` : label });
   }
-  return [{ v: 'asap', t: 'As soon as possible' }, ...out, { v: 'research', t: 'Just researching for now' }];
+  // Black Friday 2026: the buyers who want the discount say so here and are called first (the label reaches the CRM)
+  const bf = now.getTime() < BF_UNTIL ? [{ v: 'bf', t: `I want the ${BF[market].off} Black Friday discount and to order by Dec 2`, label: `PRIORITY Black Friday: order by Dec 2 (${BF[market].off} off)` }] : [];
+  return [...bf, { v: 'asap', t: 'As soon as possible' }, ...out, { v: 'research', t: 'Just researching for now' }];
 }
 
 const QUESTIONS = {
@@ -213,7 +215,7 @@ export function QuoteProvider({ market, intent, extra, children }) {
   const [fails, setFails] = useState(0);
   const [open, setOpen] = useState(false);
   const [result, setResult] = useState(null);
-  const [seasons, setSeasons] = useState(() => seasonOptions());
+  const [seasons, setSeasons] = useState(() => seasonOptions(new Date(), market));
   // which form sent (or last tried to send) the request: the step-by-step widget or the full form in the page
   const [lastForm, setLastForm] = useState('steps');
   // opened from a "book a call" button: the same questions, then the calendar (founder, 3 Oct 2026: a booking is a lead too)
@@ -229,7 +231,7 @@ export function QuoteProvider({ market, intent, extra, children }) {
   const restored = useRef(false);
 
   // the page is built ahead of time: work the seasons out from the visitor's own date
-  useEffect(() => setSeasons(seasonOptions(new Date())), []);
+  useEffect(() => setSeasons(seasonOptions(new Date(), market)), [market]);
 
   // remember the ad click on arrival, not only at sending, so a visitor who comes back later still counts for it
   useEffect(() => {
@@ -362,7 +364,7 @@ export function QuoteProvider({ market, intent, extra, children }) {
       market,
       use: answers.use,
       timeline: answers.timeline,
-      timelineLabel: season?.t,
+      timelineLabel: season?.label ?? season?.t,
       stage: answers.stage,
       fit: answers.fit,
       question: contact.question.trim() || undefined,
