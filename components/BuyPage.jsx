@@ -2761,7 +2761,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
   </div>
 
   <div className="max-w-7xl mx-auto border-t border-zinc-800 mt-10 pt-6 text-xs text-zinc-500 flex flex-wrap gap-4 justify-between">
-    <span>© Vladvik International dba Coffee Bike World. All rights reserved.</span>
+    <span>© Vladvik Holding Inc. dba Coffee Bike World. All rights reserved.</span>
     <div className="flex gap-4">
       
       
