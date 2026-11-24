@@ -114,14 +114,35 @@ function useBfLeft() {
 }
 /** The offer at headline size (Vlad, 21 Nov 2026: "similar size to main title at least"): on phones a block above the
  *  title, on wide screens the band across the page. Same facts as before: amount, first 5 bikes, orders placed by Dec 2. */
+/** The live clock to the one fixed deadline (24 Nov 2026, the same as on the Buy page's band). Dashes until the browser
+ *  has the time, in boxes of a fixed size, so nothing moves when the numbers arrive; it never resets. */
+function BfClock({ small = false }) {
+  const [left, setLeft] = useState(null);
+  useEffect(() => {
+    const tick = () => { const l = Math.max(0, BF_UNTIL - Date.now()); setLeft(l); if (l === 0) document.documentElement.setAttribute('data-bf-over', '1'); };
+    tick(); const t = setInterval(tick, 1000); return () => clearInterval(t);
+  }, []);
+  const parts = left === null ? ['--', '--', '--', '--'] : [Math.floor(left / 864e5), Math.floor((left % 864e5) / 36e5), Math.floor((left % 36e5) / 6e4), Math.floor((left % 6e4) / 1e3)].map((n) => String(n).padStart(2, '0'));
+  return (
+    <span className={`flex ${small ? 'gap-1.5' : 'gap-2 justify-center'}`} role="timer" aria-label="Time left on the Black Friday offer">
+      {['days', 'hours', 'min', 'sec'].map((u, i) => (
+        <span key={u} className={`block rounded-lg bg-[#0a0a0a] text-center ${small ? 'w-[56px] py-1.5' : 'w-[76px] py-2'}`}>
+          <span className={`block font-extrabold leading-none tabular-nums ${small ? 'text-[1.45rem]' : 'text-[2rem]'}`}>{parts[i]}</span>
+          <span className="mt-0.5 block text-[9px] font-bold uppercase tracking-[0.16em] text-white/70">{u}</span>
+        </span>
+      ))}
+    </span>
+  );
+}
 function BfBig({ market, wide = false }) {
-  const { soon, text } = useBfLeft();
-  const terms = soon ? `First 5 bikes · ends in ${text}` : 'First 5 bikes · orders placed by Dec 2';
+  const terms = 'First 5 bikes · orders placed by Dec 2';
   if (wide) {
     return (
       <div className="bf-offer hidden bg-[#E31E24] px-6 py-4 text-center text-white md:block">
         <p className="bf-pump text-[3.1rem] font-extrabold leading-none tracking-tight lg:text-[3.6rem]" style={DISPLAY}>Black Friday: {BF[market].off} off</p>
         <p className="mt-2 text-lg font-bold leading-tight">a fully equipped Coffee Bike · {terms}</p>
+        <p className="mt-3 text-[12px] font-extrabold uppercase tracking-[0.2em]">Ends Dec 2 · time left</p>
+        <p className="mt-1.5"><BfClock /></p>
         <p className="mt-1 text-[15px] font-semibold leading-tight"><a href={DEPOSIT_URL} target="_blank" rel="noopener" className="underline decoration-white/60 underline-offset-2 hover:decoration-white">{BF_DEPOSIT}</a></p>
       </div>
     );
@@ -131,6 +152,8 @@ function BfBig({ market, wide = false }) {
       <span className="block text-[2.15rem] font-extrabold leading-[1.02] tracking-tight" style={DISPLAY}>Black Friday</span>
       <span className="block text-[2.15rem] font-extrabold leading-[1.02] tracking-tight" style={DISPLAY}>{BF[market].off} off</span>
       <span className="mt-1 block text-[13px] font-bold leading-tight">{terms}</span>
+      <span className="mt-2 block text-[10px] font-extrabold uppercase tracking-[0.18em]">Ends Dec 2 · time left</span>
+      <span className="mt-1 block"><BfClock small /></span>
       <span className="mt-0.5 block text-[12px] font-semibold leading-tight">Fully refundable $250 deposit locks it in</span>
     </p>
   );
