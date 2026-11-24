@@ -10,6 +10,29 @@ import FinancingBanner, { FINANCING } from './FinancingBanner';
 import CallGate from './CallGate';
 import InquiryForm from './InquiryForm';
 import { FinishBar, QuoteProvider } from '../app/start/quote';
+import { BF_UNTIL } from '../app/start/content';
+
+/** Black Friday band: the time left to the one fixed deadline (end of 2 Dec, Vancouver). Dashes until the browser has
+ *  the time, in boxes of a fixed size, so the page does not move when the numbers arrive. It never resets. */
+function BfClock() {
+  const [left, setLeft] = useState(null);
+  useEffect(() => {
+    // at zero the offer leaves the page at once, also for a visitor who kept it open over midnight
+    const tick = () => { const l = Math.max(0, BF_UNTIL - Date.now()); setLeft(l); if (l === 0) document.documentElement.setAttribute('data-bf-over', '1'); };
+    tick(); const t = setInterval(tick, 1000); return () => clearInterval(t);
+  }, []);
+  const parts = left === null ? ['--', '--', '--', '--'] : [Math.floor(left / 864e5), Math.floor((left % 864e5) / 36e5), Math.floor((left % 36e5) / 6e4), Math.floor((left % 6e4) / 1e3)].map((n) => String(n).padStart(2, '0'));
+  return (
+    <div className="flex gap-1.5 sm:gap-2" role="timer" aria-label="Time left on the Black Friday offer">
+      {['days', 'hours', 'min', 'sec'].map((u, i) => (
+        <div key={u} className="w-[68px] sm:w-[78px] rounded-lg bg-[#0a0a0a] py-2.5 text-center shadow-lg">
+          <div className="text-[1.9rem] sm:text-[2.3rem] font-extrabold leading-none tabular-nums">{parts[i]}</div>
+          <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white/70">{u}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
 import { ChevronDown, ChevronLeft, ChevronRight, Edit2, Check, Info, Lock, Search, Leaf, Globe, Clock, Award, Mail, MapPin, Play, TrendingUp, DollarSign, Calendar, Users, Zap, Coffee, Star, ArrowRight, Sparkles, ZoomIn, X, Eye } from 'lucide-react';
 
 /** WhatsApp Business number connected to GoHighLevel: chats land straight in the CRM. Offered as WhatsApp only. */
@@ -222,6 +245,7 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
   const fmtMoney = (usd) => `${cur[currency]}${Math.round(usd * rates[currency]).toLocaleString()}`;
   const fmtCAD = (n) => `$${Math.round(n).toLocaleString()} CAD`;
 
+
   const basePackages = {
     classic: {
       name: 'Classic',
@@ -341,6 +365,12 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
     }
     lines.push('');
     lines.push(`Estimated Total: ${fmt(total)} (excludes shipping)`);
+    // Black Friday (to 2 Dec 2026): the team reads the same after-discount figure the buyer saw
+    if (total >= 15850 && Date.now() < BF_UNTIL) {
+      const cad = currency === 'CAD';
+      const after = cad ? Math.round(total * rates.CAD) - 2250 : Math.round((total - 1500) * rates[currency]);
+      lines.push(`Black Friday price: ${cur[currency]}${after.toLocaleString()} ${symbols[currency]} (after ${cad ? 'CA$2,250' : 'US$1,500'} off; shipping and taxes are extra)`);
+    }
     lines.push(`Currency: ${currency}`);
     return lines.join('\n');
   }, [basePackage, baseCustomInquiry, setup, ulCertifiedMap, color, colorInput, pantoneInput, addOns, extraBatteryType, customInquiryText, support, total, currency]);
@@ -401,9 +431,67 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
   };
 
   const openInquiry = () => setInquiryModalOpen(true);
+  // Every action on this page, for the analytics (24 Nov 2026: Google ads land here). See the note at the top of
+  // wt/_patch/patch_buy_tracking.py: presses, sections seen, scroll depth; never anything a visitor typed.
+  useEffect(() => {
+    const ga = (name, params) => { try { window.gtag && window.gtag('event', name, params); } catch (e) {} };
+    const SECTIONS = ['why-section', 'walkthrough-section', 'configurator-section', 'order-actions', 'faq-section', 'setup-series-section'];
+    const sectionOf = (el) => {
+      if (el.closest('.bf-band')) return 'bf-band';
+      if (el.closest('.modal-shell-86')) return 'form-window';
+      if (el.closest('#mobile-summary-ctas') || el.closest('#order-actions')) return 'order-summary';
+      for (const id of SECTIONS) { const sec = document.getElementById(id); if (sec && sec.contains(el)) return id; }
+      return el.closest('nav') ? 'menu' : el.closest('footer') ? 'footer' : 'page';
+    };
+    const onClick = (e) => {
+      const t = e.target && e.target.closest && e.target.closest('a,button,summary,.cursor-pointer');
+      if (!t) return;
+      const label = (t.getAttribute('aria-label') || t.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+      if (label) ga('buy_action', { where: sectionOf(t), step: t.tagName === 'A' ? 'link' : 'press', answer: label });
+    };
+    document.addEventListener('click', onClick, true);
+    const seen = new Set();
+    const io = 'IntersectionObserver' in window ? new IntersectionObserver((entries) => entries.forEach((en) => {
+      const id = en.target.id || 'bf-band';
+      if (en.isIntersecting && !seen.has(id)) { seen.add(id); ga('buy_section_view', { where: id }); }
+    }), { rootMargin: '-35% 0px -35% 0px' }) : null;
+    if (io) { SECTIONS.forEach((id) => { const el = document.getElementById(id); if (el) io.observe(el); }); const band = document.querySelector('.bf-band'); if (band) io.observe(band); }
+    const hit = new Set();
+    const onScroll = () => {
+      const h = document.documentElement.scrollHeight - window.innerHeight; if (h <= 0) return;
+      const pct = (window.scrollY / h) * 100;
+      [25, 50, 75, 100].forEach((m) => { if (pct >= m - 1 && !hit.has(m)) { hit.add(m); ga('buy_scroll', { step: String(m) }); } });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => { document.removeEventListener('click', onClick, true); window.removeEventListener('scroll', onScroll); if (io) io.disconnect(); };
+  }, []);
+  // Black Friday band (to 2 Dec 2026): its button opens the same form, and says so in the analytics
+  const bfBand = (action) => {
+    try { window.gtag && window.gtag('event', 'bf_banner_click', { where: 'band', step: action, market: currency }); } catch (e) {}
+    if (action === 'builder') document.getElementById('configurator-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    else setIsGetInTouchOpen(true);
+  };
   const openSchedule = () => setScheduleModalOpen(true);
   // the quote questions inside "Schedule a Call": Canadian dollars = the Canadian form (financing), everyone else = US
   const quoteMarket = variantKey === 'us' ? 'us' : currency === 'CAD' ? 'ca' : 'us';
+  // Black Friday (to 2 Dec 2026): CA$2,250 off for Canadian orders, US$1,500 off for US + international ones
+  const bfOff = currency === 'CAD' ? { label: 'CA$2,250', after: Math.round(total * rates.CAD) - 2250 } : { label: 'US$1,500', after: Math.round((total - 1500) * rates[currency]) };
+  const bfAfter = `${cur[currency]}${Math.max(0, bfOff.after).toLocaleString()} ${symbols[currency]}`;
+  const bfLock = (where) => { try { window.gtag && window.gtag('event', 'bf_lock_click', { where, market: currency, answer: String(Math.round(total)) }); } catch (e) {} };
+  // only a fully equipped build qualifies (Vlad, 24 Nov 2026): a total of US$15,850 or more
+  const BF_MIN_USD = 15850;
+  const bfEligible = total >= BF_MIN_USD;
+  const bfSummary = total > 0 && !bfEligible ? (
+    <p className="bf-offer rounded-lg border px-3 py-2 mb-3 text-left text-[12px] leading-snug text-zinc-800" style={{ borderColor: RED, backgroundColor: RED_TINT }}>
+      <span className="font-extrabold" style={{ color: RED }}>Black Friday: {bfOff.label} off</span> a fully equipped Coffee Bike (builds from {fmt(BF_MIN_USD)}). Add {fmt(BF_MIN_USD - total)} more to your build to qualify.
+    </p>
+  ) : total > 0 ? (
+    <div className="bf-offer rounded-lg border-2 px-3 py-2.5 mb-3 text-left" style={{ borderColor: RED, backgroundColor: RED_TINT }}>
+      <div className="flex items-baseline justify-between gap-3 text-sm font-extrabold" style={{ color: RED }}><span>Black Friday discount</span><span className="whitespace-nowrap">−{bfOff.label}</span></div>
+      <div className="mt-1 flex items-baseline justify-between gap-3"><span className="text-[11px] font-bold uppercase tracking-wide text-zinc-700">Your Black Friday price</span><span className="text-2xl font-extrabold text-zinc-950 whitespace-nowrap">{bfAfter}</span></div>
+      <p className="mt-1 text-[11px] leading-snug text-zinc-700">On a fully equipped Coffee Bike. First 5 bikes, orders placed by Dec 2. A fully refundable $250 deposit placed by Dec 2 locks it in.</p>
+    </div>
+  ) : null;
   // the configured build travels with the quote request (CRM note + lead email) instead of the calendar form
   // the configured build and the financing interest go with every request from this page, as they did in the old Save
   // My Build form (Vlad, 10 Nov 2026: "submit my build as well, and it should record the build")
@@ -834,10 +922,25 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
           {Object.values(addOns).some(v => v) && ` · +${Object.values(addOns).filter(v => v).length} add-on${Object.values(addOns).filter(v => v).length > 1 ? 's' : ''}`}
         </div>
       </div>
-      <div className="text-right flex-shrink-0">
-        <div className="text-[10px] uppercase tracking-wider font-bold text-zinc-500">Total</div>
-        <div className="text-base font-bold" style={{ color: RED }}>{fmt(total)}</div>
-      </div>
+      {bfEligible ? (
+        <>
+          <div className="bf-offer text-right flex-shrink-0">
+            <div className="text-[10px] uppercase tracking-wider font-bold" style={{ color: RED }}>Black Friday price</div>
+            <div className="text-lg font-extrabold leading-tight" style={{ color: RED }}>{bfAfter}</div>
+            <div className="text-[11px] text-zinc-500 leading-tight"><span className="line-through">{fmt(total)}</span> · −{bfOff.label}</div>
+            <div className="text-[11px] font-semibold text-zinc-700 leading-tight">Shipping and taxes are extra</div>
+          </div>
+          <div className="bf-fallback text-right flex-shrink-0">
+            <div className="text-[10px] uppercase tracking-wider font-bold text-zinc-500">Total</div>
+            <div className="text-base font-bold" style={{ color: RED }}>{fmt(total)}</div>
+          </div>
+        </>
+      ) : (
+        <div className="text-right flex-shrink-0">
+          <div className="text-[10px] uppercase tracking-wider font-bold text-zinc-500">Total</div>
+          <div className="text-base font-bold" style={{ color: RED }}>{fmt(total)}</div>
+        </div>
+      )}
     </div>
     <div className="text-[10px] text-zinc-500 mt-1.5 flex items-center gap-1">
       <Check className="w-3 h-3" style={{ color: RED }} strokeWidth={3} />
@@ -1295,9 +1398,10 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
   )}
 </OrderItem>
                 <div id="mobile-summary-ctas" className="border-t border-zinc-200 pt-3 mt-3 scroll-mt-4">
+                  {bfSummary}
                   <p className="text-[12px] text-zinc-800 leading-snug mb-2">{FINANCING[quoteMarket].short} <button type="button" onClick={() => { setMobileSummaryOpen(false); openFinancing(); }} className="font-semibold underline decoration-dotted underline-offset-2">How it works</button></p>
-                  <button onClick={() => { setMobileSummaryOpen(false); openInquiry(); }} className="w-full text-white font-bold py-2.5 rounded text-sm hover:opacity-90 flex items-center justify-center gap-2 mb-2" style={{ backgroundColor: RED }}>
-                  Send my build <ArrowRight className="w-4 h-4" />
+                  <button onClick={() => { setMobileSummaryOpen(false); if (bfEligible) bfLock('summary_phone'); openInquiry(); }} className="w-full text-white font-bold py-2.5 rounded text-sm hover:opacity-90 flex items-center justify-center gap-2 mb-2" style={{ backgroundColor: RED }}>
+                  {bfEligible ? <><span className="bf-offer">Lock in my Black Friday price</span><span className="bf-fallback">Send my build</span></> : 'Send my build'} <ArrowRight className="w-4 h-4" />
                   </button>
                   <button onClick={() => { setMobileSummaryOpen(false); openSchedule(); }} className="w-full bg-black text-white font-bold py-2.5 rounded text-sm">Schedule a Call</button>
                   <a href={whatsappHref} target="_blank" rel="noopener" onClick={() => trackWhatsApp('build_summary_mobile')} className="mt-2 w-full border-2 font-bold py-2 rounded text-sm flex items-center justify-center gap-2" style={{ borderColor: WHATSAPP_GREEN, color: '#128C4A' }}>
@@ -1459,6 +1563,30 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
     )}
   </div>
 </nav>
+
+      <div className="bf-offer bf-band relative z-10 overflow-hidden text-white" style={{ backgroundColor: RED }}>
+        <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 py-5 sm:py-7 flex flex-col lg:flex-row lg:items-center gap-5 lg:gap-12">
+          <div className="flex-1 min-w-0">
+            <p className="font-extrabold uppercase tracking-tight leading-[0.92] text-[3.1rem] sm:text-7xl lg:text-[5.2rem]">Black Friday</p>
+            <p className="mt-2 font-extrabold tracking-tight leading-[1.05] text-[2rem] sm:text-4xl lg:text-[2.8rem]">
+              <span className="bf-lead-ca">CA$2,250 off</span><span className="bf-lead-us">US$1,500 off</span>
+              <span className="font-bold text-white/90"> a fully equipped Coffee Bike</span>
+            </p>
+            <p className="mt-1.5 text-[15px] sm:text-lg font-bold text-white">
+              <span className="bf-lead-ca">US$1,500 off for US and international orders</span><span className="bf-lead-us">CA$2,250 off in Canada</span> · first 5 bikes only
+            </p>
+          </div>
+          <div className="flex-shrink-0 lg:w-[350px]">
+            <p className="text-[13px] sm:text-sm font-extrabold uppercase tracking-[0.18em]">Ends Dec 2 · time left</p>
+            <div className="mt-2"><BfClock /></div>
+            <p className="mt-2.5 text-[13px] sm:text-sm font-semibold leading-snug text-white">A fully refundable $250 deposit placed by Dec 2 locks in your discount.</p>
+            <div className="mt-3 flex flex-col sm:flex-row lg:flex-col gap-2.5">
+              <button onClick={() => bfBand('builder')} className="rounded-lg bg-white px-5 py-3.5 text-base font-extrabold text-[#0a0a0a] shadow-lg transition hover:bg-zinc-100 flex items-center justify-center gap-2">Get my Black Friday price <ArrowRight className="w-4 h-4" /></button>
+              <button onClick={() => bfBand('get_in_touch')} className="rounded-lg border-2 border-white/80 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10">Get In Touch</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="bg-black text-white py-10 sm:py-14 px-4 sm:px-6">
         <div className="max-w-[1400px] mx-auto">
@@ -2009,11 +2137,12 @@ export default function CoffeeBikePage({ variantKey = null } = {}) {
     Select a base package to see your estimate
   </div>
 )}
+                  {bfSummary}
                   <p className="text-[11px] text-zinc-500 leading-snug mb-2">Shipping is not included in the estimated total; it is quoted for your address before you confirm your order.</p>
                   <p className="text-[12px] text-zinc-800 leading-snug mb-4">{FINANCING[quoteMarket].short} <button type="button" onClick={openFinancing} className="font-semibold underline decoration-dotted underline-offset-2 hover:text-black">How it works</button></p>
                 </div>
-                <button onClick={openInquiry} className="w-full text-white font-bold py-3 rounded mb-2 hover:opacity-90 flex items-center justify-center gap-2 text-sm" style={{ backgroundColor: RED }}>
-                Send my build <ArrowRight className="w-4 h-4" />
+                <button onClick={() => { if (bfEligible) bfLock('summary'); openInquiry(); }} className="w-full text-white font-bold py-3 rounded mb-2 hover:opacity-90 flex items-center justify-center gap-2 text-sm" style={{ backgroundColor: RED }}>
+                {bfEligible ? <><span className="bf-offer">Lock in my Black Friday price</span><span className="bf-fallback">Send my build</span></> : 'Send my build'} <ArrowRight className="w-4 h-4" />
                 </button>
                 <p className="text-[11px] text-zinc-500 leading-snug mb-2 text-center">Our team gets back to you within one business day to review your build and shipping.</p>
                 <button onClick={openSchedule} className="w-full bg-black hover:bg-zinc-800 text-white font-bold py-3 rounded mb-2 text-sm">Schedule a call with our specialist</button>
